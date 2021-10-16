@@ -10,7 +10,9 @@ This package is Open Source According to [MIT license](LICENSE.md)
 
 * [Installing](#installing)
 * [Set up Database Connection](#set-up-database-connection)
-	* [Available Database Setting](#available-database-setting)
+* [Available Database Setting](#available-database-setting)
+* [Configuration Table Name](#configuration-table-name)
+* [Configuration Primary Key](#configuration-primary-key)
 
 
 ## Installing
@@ -81,5 +83,31 @@ $connector->selectConnection('mysql');
 | sslkey             | To set SSL Key in Postgres SQL             |
 | sslrootcert        | To set SSL Root Certificate in Postgres SQL|
 
+## Configuration Table Name
 
+In Ichi ORM, one model class which is extended "JiJiHoHoCoCo\Database\Model" abstract class is represented one table.
 
+In default, the table name of the model class will show the format according to below
+
+| Model     | Table       |
+|-----------|-------------|
+| Item      | items       |
+| OrderItem | order_items |
+
+If the above format is not suitable for the model class, you can customize in your model class
+
+```php
+protected function getTable(){
+	return "order_item_details";
+}
+```
+
+## Configuration Primary Key
+
+In default, the primary key for the table is represented "id". If you want to change that you can customize in your model class
+
+```php
+protected function getID(){
+	return "blog_id";
+}
+```
