@@ -13,7 +13,7 @@ This package is Open Source According to [MIT license](LICENSE.md)
 * [Available Database Setting](#available-database-setting)
 * [Configuration Table Name](#configuration-table-name)
 * [Configuration Primary Key](#configuration-primary-key)
-
+* [Querying](#querying)
 
 ## Installing
 
@@ -104,7 +104,7 @@ protected function getTable(){
 
 ## Configuration Primary Key
 
-In default, the primary key for the table is represented "id". If you want to change that you can customize in your model class
+In default, the primary key for the table is represented "id". If you want to change that, you can customize in your model class
 
 ```php
 protected function getID(){
