@@ -11,16 +11,7 @@ This package is Open Source According to [MIT license](LICENSE.md)
 * [Installing](#installing)
 * [Set up Database Connection](#set-up-database-connection)
 	* [Available Database Setting](#available-database-setting)
-* [Querying](#querying)
-	* [Select](#select)
-	* [Where](#where)
-	* [SubQuery](#subquery)
-	* [Configuration](#configuration)
-* [Create](#create)
-* [Update](#update)
-* [Delete](#delete)
-	* [Deleting from Soft Delete Model](#deleting_from_soft_delete_model)
-	* [Restoring from Soft Delete Model](#restoring_from_soft_delete_model)
+
 
 ## Installing
 
@@ -38,7 +29,6 @@ $connector->connect('mysql',[
 	'dbname' => 'database_name',
 	'charset' => 'utf8mb4',
 	'collation' => 'utf8mb4_unicode_ci',
-	'prefix' => '',
 	'host' => '127.0.0.1',
 	'user_name' => 'user_name',
 	'user_password' => 'user_password'
@@ -52,7 +42,6 @@ $connector->addConnection('new_mysql_connection')->connect('new_mysql_connection
 	'dbname' => 'database_name',
 	'charset' => 'utf8mb4',
 	'collation' => 'utf8mb4_unicode_ci',
-	'prefix' => '',
 	'host' => '127.0.0.1',
 	'user_name' => 'user_name',
 	'user_password' => 'user_password'
@@ -84,12 +73,13 @@ $connector->selectConnection('mysql');
 | strict             | Strict Mode (True or False)                |
 | time_zone          | Database Time Zone                         |
 | isolation_level    | To set Isolation Level in MySQL            |
-| modes              | To set sql_mode in MySQL (Array Parameter) |
+| modes              | To set sql_mode in MySQL (Array)           |
 | application_name   | To set Application Name in Postgres SQL    |
 | synchronous_commit | To set Synchronous Commit in Postgres SQL  |
 | sslmode            | To set SSL Mode in Postgres SQL            |
-
-## Querying
+| sslcert            | To set SSL Certificate in Postgres SQL     |
+| sslkey             | To set SSL Key in Postgres SQL             |
+| sslrootcert        | To set SSL Root Certificate in Postgres SQL|
 
 
 
