@@ -296,7 +296,9 @@ abstract class Model{
 			'>=',
 			'<=',
 			'!<',
-			'!>'
+			'!>',
+			'like',
+			'LIKE'
 		];
 	}
 

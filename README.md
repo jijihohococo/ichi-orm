@@ -17,6 +17,8 @@ This package is Open Source According to [MIT license](LICENSE.md)
 	* [SELECT](#select)
 	* [WHERE](#where)
 	* [OR WHERE](#or-where)
+	* [WHERE IN](#where-in)
+	* [WHERE NOT IN](#where-not-in)
 
 ## Installing
 
@@ -30,7 +32,6 @@ use JiJiHoHoCoCo\IchiORM\Database\Connector;
 
 $connector=new Connector;
 $connector->connect('mysql',[
-	'driver' => 'mysql',
 	'dbname' => 'database_name',
 	'charset' => 'utf8mb4',
 	'collation' => 'utf8mb4_unicode_ci',
@@ -40,6 +41,10 @@ $connector->connect('mysql',[
 ]);
 ```
 If you want to add another custom database connection, you can do just like that.
+
+You must add dbname,host,user_name and user_password in your database connection. I recomend you to use "utf8mb4" for your database charset and "utf8mb4_unicode_ci" for your database collation.
+
+<i>In defalt database connections, you don't need to add driver parameters but in your custom database connection you have to add driver parameters.</i>
 
 ```php
 $connector->addConnection('new_mysql_connection')->connect('new_mysql_connection',[
@@ -66,13 +71,13 @@ $connector->selectConnection('mysql');
 
 | Name               | Description                                |
 |--------------------|--------------------------------------------|
-| driver             | Database driver name                       |
-| dbname             | Database name                              |
+| driver        (R)  | Database driver name                       |
+| dbname        (R)  | Database name                              |
 | charset            | Charset Font                               |
 | collation          | Collation Font                             |
-| host               | Database Host Address                      |
-| user_name          | Database User Name                         |
-| user_password      | Database User Password                     |
+| host          (R)  | Database Host Address                      |
+| user_name     (R)  | Database User Name                         |
+| user_password (R)  | Database User Password                     |
 | unix_socket        | Unix Socket For MySQL                      |
 | port               | Databse Port Number                        |
 | strict             | Strict Mode (True or False)                |
@@ -85,6 +90,8 @@ $connector->selectConnection('mysql');
 | sslcert            | To set SSL Certificate in Postgres SQL     |
 | sslkey             | To set SSL Key in Postgres SQL             |
 | sslrootcert        | To set SSL Root Certificate in Postgres SQL|
+
+<i>R means required</i>
 
 ## Configuration Table Name
 
@@ -139,38 +146,54 @@ Blog::select(['blogs.id','blogs.name'])
 
 To get your query result you must use "get()" or "toArray()" functions
 
-"get()" function can use main query and subquery. This function will return the object array of related model as shown as below
+"get()" function can use in main query and subquery. This function will return the object array of related model when it is used in main query as shown as below.
 
 
-<b>Array ( [0] => App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 ) )<b>
+<b>Array ( [0] => App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 ) )</b>
 
 ```php
-Blog::select(['id','name'])->get()
+Blog::select(['id','name'])->get();
 ```
 
-"toArray()" function can use in only main query. This function will return the array for thre query as shown as below
+"toArray()" function can use in only main query. This function will return the array for thre query as shown as below.
 
 <b>Array ( [0] => Array ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 ) )</b>
 
 ```php
-Blog::select(['id','name'])->toArray()
+Blog::select(['id','name'])->toArray();
 ```
 
 ### WHERE
 
 To make "WHERE" sql query, you can use "where" function as shown as below
 
-<i>In case of equal</i>
+<i>In case of '='</i>
 ```php
-Blog::where('id',1)
+Blog::where('id',1)->get();
 ```
-If you want to add operators
+<i>If you want to add operators</i>
+
 ```php
-Blog::where('id','=',1)
+Blog::where('id','=',1)->get();
+
+Blog::where('content','like','%Content%')->get();
 ```
+
 
 ### OR WHERE
 
 To make "OR WHERE" sql query, you can use "orWhere" function as shown as below
 
 
+<i>In case of '=' </i>
+```php
+Blog::where('id',1)->orWhere('content','Content')->get();
+```
+
+<i>If you want to add operators</i>
+
+```php
+Blog::where('id',1)->orWhere('content','=','Content')->get();
+
+Blog::where('id',1)->orWhere('content','like','%Content%')->get();
+```
