@@ -14,6 +14,9 @@ This package is Open Source According to [MIT license](LICENSE.md)
 * [Configuration Table Name](#configuration-table-name)
 * [Configuration Primary Key](#configuration-primary-key)
 * [Querying](#querying)
+	* [SELECT](#select)
+	* [WHERE](#where)
+	* [OR WHERE](#or-where)
 
 ## Installing
 
@@ -61,7 +64,7 @@ $connector->selectConnection('mysql');
 
 ### Available Database Setting
 
-| name               | description                                |
+| Name               | Description                                |
 |--------------------|--------------------------------------------|
 | driver             | Database driver name                       |
 | dbname             | Database name                              |
@@ -111,3 +114,63 @@ protected function getID(){
 	return "blog_id";
 }
 ```
+
+## Querying
+
+### SELECT
+
+To make "SELECT" sql query, you can use "select" function as shown as below
+
+```php
+Blog::select(['id'])
+```
+
+```php
+Blog::select(['blogs.id'])
+```
+
+```php
+Blog::select(['id','name'])
+```
+
+```php
+Blog::select(['blogs.id','blogs.name'])
+```
+
+To get your query result you must use "get()" or "toArray()" functions
+
+"get()" function can use main query and subquery. This function will return the object array of related model as shown as below
+
+
+<b>Array ( [0] => App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 ) )<b>
+
+```php
+Blog::select(['id','name'])->get()
+```
+
+"toArray()" function can use in only main query. This function will return the array for thre query as shown as below
+
+<b>Array ( [0] => Array ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 ) )</b>
+
+```php
+Blog::select(['id','name'])->toArray()
+```
+
+### WHERE
+
+To make "WHERE" sql query, you can use "where" function as shown as below
+
+<i>In case of equal</i>
+```php
+Blog::where('id',1)
+```
+If you want to add operators
+```php
+Blog::where('id','=',1)
+```
+
+### OR WHERE
+
+To make "OR WHERE" sql query, you can use "orWhere" function as shown as below
+
+
