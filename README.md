@@ -197,3 +197,20 @@ Blog::where('id',1)->orWhere('content','=','Content')->get();
 
 Blog::where('id',1)->orWhere('content','like','%Content%')->get();
 ```
+
+### WHERE IN
+
+To make "WHERE IN" sql query, you can use "whereIn" function as shown as below
+
+```php
+Blog::whereIn('id',[1,2])->get();
+```
+
+
+### WHERE NOT IN
+
+To make "WHERE NOT IN" sql query, you can user "whereNotIn" function as shown as below
+
+```php
+Blog::whereNotIn('id',[1,2])->get();
+```
