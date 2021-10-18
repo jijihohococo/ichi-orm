@@ -13,6 +13,11 @@ This package is Open Source According to [MIT license](LICENSE.md)
 * [Available Database Setting](#available-database-setting)
 * [Configuration Table Name](#configuration-table-name)
 * [Configuration Primary Key](#configuration-primary-key)
+* [CRUD](#crud)
+	* [Create](#create)
+	* [Retrieve](#retrieve)
+	* [Update](#update)
+	* [Delete](#delete)
 * [Querying](#querying)
 	* [SELECT](#select)
 	* [WHERE](#where)
@@ -121,6 +126,26 @@ protected function getID(){
 	return "blog_id";
 }
 ```
+
+## CRUD
+
+### Create
+
+You can create the data as shown as below
+
+```php
+Blog::create([
+	'author_id' => 1,
+	'content' => 'Content'
+]);
+```
+
+### Retrieve
+
+### Update
+
+### Delete
+
 
 ## Querying
 

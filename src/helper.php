@@ -58,3 +58,13 @@ if(!function_exists('getCurrentField')){
 		return substr_replace(array_keys($subQueries)[$subQueries[$currentField.$currentSubQueryNumber]], NULL, -strlen($currentSubQueryNumber+1) );
 	}
 }
+
+if(!function_exists('mappingModelData')){
+	function mappingModelData(array $primaryData,array $attributes,$object){
+		$dataArray=$primaryData+$attributes;
+		foreach ($dataArray as $key => $value) {
+			$object->{$key}=$value;
+		}
+		return $object;
+	}
+}

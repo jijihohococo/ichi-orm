@@ -158,25 +158,97 @@ abstract class Model{
 		return self::${$where}[self::$currentField.self::$currentSubQueryNumber]['groupBy'];
 	}
 
-	public function create(array $data){
+	private function checkAndPutData($field,$data){
+		return $this->checkProperty($field) ? [ $field => $data ] : [];
+	}
+
+	public static function create(array $data){
 		self::boot();
-		self::$pdo=$pdo;
-		$fields=array_keys($data);
-		$insertedData=array_values($data);
-		$stmt=$pdo->prepare("INSERT INTO ".self::$table." (". implode(',', $fields ) .")  VALUES (". addArray($fields).")");
-		$stmt->execute($insertedData);
-		self::disableBooting();
-		return self::find($pdo,$pdo->lastInsertId());
+		$instance=self::$instance;
+		
+		$createdData=$data+$instance->checkAndPutData('created_at',now())+
+		$instance->checkAndPutData('updated_at',now());
+
+		$fields=array_keys($createdData);
+		$insertedData=array_values($createdData);
+
+		$stmt=self::$pdo->prepare("INSERT INTO ".self::$table." (". implode(',', $fields ) .")  VALUES (". addArray($fields).")");
+		self::bindValues($stmt,$insertedData);
+		$stmt->execute();
+		$id=self::$instance->getID();
+
+		return mappingModelData([
+			$id => self::$pdo->lastInsertId()
+		], array_combine($fields,$insertedData) , $instance );
 	}
 
 	public function update(array $data){
-		$fields=array_keys($data);
-		$updatedData=array_values($data);
-		$self=self::$instance;
+		$createdData=$data+$this->checkAndPutData('updated_at',now());
+		$fields=array_keys($createdData);
+		$updatedData=array_values($createdData);
 		$id=$this->getID();
-		$stmt=$pdo->prepare("UPDATE ".self::$table." SET ".implode("=?,", $fields)."=? WHERE ".$id."=".$self->{$id});
-		$stmt->execute($updatedData);
-		return self::find($pdo,$self->{$id});
+		$stmt=connectPDO()->prepare("UPDATE ".$this->getTable()." SET ".implode("=?,", $fields)."=? WHERE ".$id."=".$this->{$id});
+		self::bindValues($stmt,$updatedData);
+		$stmt->execute();
+		return mappingModelData([
+			$id => $this->{$id}
+		], array_combine($fields,$updatedData) , $this );
+	}
+
+	public static function find($id){
+		self::boot();
+		$pdo=self::$pdo;
+		$getId=self::$instance->getID();
+		$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$getId ." = ? ".self::$limitOne);
+		self::bindValues($stmt,[
+			0 => $id
+		]);
+		$stmt->execute();
+		$instance=$stmt->fetchObject(self::$className);
+		self::disableBooting();
+		return $instance;
+	}
+
+	public static function findBy($field,$value){
+		self::boot();
+		$pdo=self::$pdo;
+		$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$field." = ? ".self::$limitOne);
+		self::bindValues($stmt,[
+			0 => $value
+		]);
+		$stmt->execute();
+		$instance=$stmt->fetchObject(self::$className);
+		self::disableBooting();
+		return $instance;
+	}
+
+	public function delete(){
+		$id=$this->getID();
+		$table=$this->getTable();
+		$pdo=connectPDO();
+		if( property_exists($this, 'deleted_at') ){
+			$stmt=$pdo->prepare("UPDATE ".$table." SET deleted_at='".now()."'" );
+			$stmt->execute();
+		}else{
+			$stmt=$pdo->prepare("DELETE FROM ".$table." WHERE ".$id."=".$this->{$id});
+			$stmt->execute();
+		}
+	}
+
+	public function forceDelete(){
+		$id=$this->getID();
+		$table=$this->getTable();
+		$stmt=connectPDO()->prepare("DELETE FROM ".$table." WHERE ".$id.'='.$this->{$id});
+		$stmt->execute();
+	}
+
+	public function restore(){
+		$pdo=connectPDO();
+		$table=$this->getTable();
+		if(property_exists($this, 'deleted_at')){
+			$stmt=$pdo->prepare("UPDATE ".$table." SET deleted_at=NULL");
+			$stmt->execute();
+		}
 	}
 
 	private static function getWhereTypes(){
@@ -421,6 +493,10 @@ abstract class Model{
 	private static function getLimit(){ return self::$limit; }
 
 	private static function checkTrashed(){ return property_exists(self::$instance, 'deleted_at') && self::$withTrashed==FALSE; }
+
+	private function checkProperty($field){
+		return property_exists(self::$instance??$this,$field);
+	}
 
 	private static function checkSubQueryTrashed($where){
 		
@@ -880,42 +956,6 @@ abstract class Model{
 			'to' => $to<=0 || $to>$total ? NULL: $to,
 			'total' => $totalPerPage
 		];
-	}
-
-	public static function find($id){
-		self::boot();
-		$pdo=self::$pdo;
-		$stmt=$pdo->prepare(self::getSelect() . " WHERE ".self::$id." =? ".self::$limitOne);
-		$stmt->execute([$id]);
-		self::$instance=$stmt->fetchObject(self::$className);
-		return self::$instance;
-	}
-
-	public static function findBy($field,$value){
-		self::boot();
-		$pdo=self::$pdo;
-		$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$field." = ? ".self::$limitOne);
-		$stmt->execute([$value]);
-		self::$instance=$stmt->fetchObject(self::$className);
-		return self::$instance;
-	}
-
-	public function delete(){
-		$id=$this->getID();
-		if( property_exists($this, 'deleted_at') ){
-			$stmt=self::$pdo->prepare("UPDATE ".self::$table." SET deleted_at='".now()."'" );
-			$stmt->execute();
-		}else{
-			$stmt=self::$pdo->prepare("DELETE FROM ".self::$table." WHERE ".$id."=".$this->{$id});
-			$stmt->execute();
-		}
-	}
-
-	public function restore(){
-		if(property_exists($this, 'deleted_at')){
-			$stmt=self::$pdo->prepare("UPDATE ".self::$table." SET deleted_at=NULL");
-			$stmt->execute();
-		}
 	}
 
 	private static function getJoin($sqlArray,$joinSQL){
