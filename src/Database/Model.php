@@ -177,9 +177,11 @@ abstract class Model{
 		$stmt->execute();
 		$id=self::$instance->getID();
 
-		return mappingModelData([
+		$object= mappingModelData([
 			$id => self::$pdo->lastInsertId()
 		], array_combine($fields,$insertedData) , $instance );
+		self::disableBooting();
+		return $object;
 	}
 
 	public function update(array $data){
