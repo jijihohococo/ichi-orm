@@ -1026,25 +1026,13 @@ abstract class Model{
 	}
 
 	public function refersTo($class,$field,$referField='id'){
-		self::disableBooting();
 		$result=$referField=='id' ? $class::find($this->{$field}) : $class::findBy($referField,$this->{$field});
 		return $result!==FALSE ? $result : NULL;
 	}
 
-	public function getMainSQL(){ return $this->mainSQL; }
-
-	public function makeObjectArrayByQuery($query){
-		$stmt=self::$pdo->prepare($query);
-		$stmt->execute();
-		$object=$stmt->fetchAll(PDO::FETCH_CLASS,get_called_class());
-		return $object;
-	}
-
-
 	public function refersMany($class,$field,$referField='id'){
-		$pdo=self::$pdo;
-		self::disableBooting();
-		$class=$class::connect($pdo);
-		return $class->where($class->getTable() . '.'.$field,$this->{$referField})->get();
+		$class=$class::connect(connectPDO());
+		$objectArray=$class->where($class->getTable() . '.'.$field,$this->{$referField});
+		return $objectArray;
 	}
 }
