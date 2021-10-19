@@ -1032,7 +1032,6 @@ abstract class Model{
 
 	public function refersMany($class,$field,$referField='id'){
 		$class=$class::connect(connectPDO());
-		$objectArray=$class->where($class->getTable() . '.'.$field,$this->{$referField});
-		return $objectArray;
+		return $class->where($class->getTable() . '.'.$field,$this->{$referField});
 	}
 }
