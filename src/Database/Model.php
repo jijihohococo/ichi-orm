@@ -1027,7 +1027,7 @@ abstract class Model{
 
 	public function refersTo($class,$field,$referField='id'){
 		$result=$referField=='id' ? $class::find($this->{$field}) : $class::findBy($referField,$this->{$field});
-		return $result!==FALSE ? $result : NULL;
+		return $result!==FALSE ? $result : (new NullModel)->nullExecute();
 	}
 
 	public function refersMany($class,$field,$referField='id'){
