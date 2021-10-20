@@ -1,7 +1,7 @@
 <?php
 
 namespace JiJiHoHoCoCo\IchiORM\Database;
-class NullModel extends Model{
+class NullModel{
 
 	public function nullExecute(){
 		return $this;
