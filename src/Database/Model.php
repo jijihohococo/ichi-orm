@@ -802,6 +802,9 @@ abstract class Model{
 
 			case 'NULL':
 			return PDO::PARAM_NULL;
+
+			case 'resource':
+			return PDO::PARAM_LOB;
 			
 			default:
 			return PDO::PARAM_STR;
