@@ -331,6 +331,7 @@ abstract class Model{
 			'table' => self::$table,
 			'select'=> self::$table.'.*',
 			'className' => NULL,
+			'object' => NULL,
 			'havingNumber' => NULL ,
 			'havingField' => NULL ,
 			'havingOperator' => NULL ,
@@ -411,8 +412,15 @@ abstract class Model{
 		throw new \Exception("You can use 'from' function in sub queries", 1);
 	}
 
+	private static function getSubQueryClassObject($where,$className){
+		if(self::${$where}[self::$currentField.self::$currentSubQueryNumber]['object']==NULL){
+			self::${$where}[self::$currentField.self::$currentSubQueryNumber]['object']=new $className;
+		}
+		return self::${$where}[self::$currentField.self::$currentSubQueryNumber]['object'];
+	}
+
 	private static function addTableToSubQuery($where,$className){
-		$obj=new $className;
+		$obj=self::getSubQueryClassObject($where,$className);
 		self::${$where}[self::$currentField.self::$currentSubQueryNumber]['table']=$obj->getTable();
 		self::${$where}[self::$currentField.self::$currentSubQueryNumber]['className']=$className;
 	}
@@ -739,11 +747,18 @@ abstract class Model{
 	}
 
 	private static function makeSubQueryOrderBy($where,$field,$sort){
+		if($field==NULL){
+			$object=self::getSubQueryClassObject($where, 
+				self::${$where}[self::$currentField.self::$currentSubQueryNumber]['className']
+			 );
+			$field=$object->getID();
+		}
 		self::${$where}[self::$currentField.self::$currentSubQueryNumber]['order']=" ORDER BY ".$field . " ". $sort;
 	}
 
-	public static function latest($field='id'){
+	public static function latest($field=null){
 		if(self::$currentSubQueryNumber==NULL){
+			$field=$field==null ? self::$instance->getID() : $field;
 			self::boot();
 			self::$order=" ORDER BY " . self::$table . '.'  . $field . " DESC";
 		}else{

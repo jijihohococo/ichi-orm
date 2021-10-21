@@ -24,6 +24,13 @@ This package is Open Source According to [MIT license](LICENSE.md)
 	* [OR WHERE](#or-where)
 	* [WHERE IN](#where-in)
 	* [WHERE NOT IN](#where-not-in)
+	* [Join](#join)
+		* [Inner Join](#inner-join)
+		* [Left Join](#left-join)
+		* [Right Join](#right-join)
+	* [Subqueries](#subqueries)
+* [Using PDO Functions](#using-pdo-functions)
+* [Using Different Databases](#using-different-databases)
 
 ## Installing
 
@@ -129,7 +136,7 @@ protected function getID(){
 
 ## CRUD
 
-Firstly, you need to extend Model Class from your class and need to declare your data fields as attributes in your model as shown as below.
+Firstly, you need to extend Model Class from your class and declare your data fields as attributes in your model as shown as below.
 
 ```php
 use JiJiHoHoCoCo\IchiORM\Database\Model;
@@ -323,3 +330,52 @@ To make "WHERE NOT IN" sql query, you can user "whereNotIn" function as shown as
 ```php
 Blog::whereNotIn('id',[1,2])->get();
 ```
+
+### Join
+
+#### Inner Join
+
+You can do inner join as shown as below.
+
+```php
+
+```
+
+#### Left Join
+
+You can do left join as shown as below.
+
+```php
+
+```
+
+#### Right Join
+
+You can do right join as shown as below.
+
+```php
+
+```
+
+### Subqueries
+
+If you want to use subquery within one table you can do as shown as before.
+
+<i>You can use subqueries as shown as below in "where","orWhere" and "whereIn" functions.</i>
+```php
+Blog::whereIn('author_id',function($query){
+$query->select(['id'])->where('id',1)->get();
+})->get();
+```
+
+If you want to use subquery from different table you can do as shown as before.
+
+```php
+Blog::whereIn('author_id',function($query){
+	$query->select(['id'])->where('id',1)->from('App\Models\Author')->get();
+})->get();
+```
+You can use "from" function in only subqueries. You need to add model class name which is represented the another table in "from" function.
+
+
+## Using Different Databases
