@@ -7,7 +7,7 @@ use PDO;
 class Connector{
 
 	private $connections,$pdos=[];
-	private static $pdo=NULL;
+	private static $pdo,$instance=NULL;
 
 	private function getPDO(array $config){
 		if(!isset($config['driver'])){
@@ -59,6 +59,7 @@ class Connector{
 		if(array_key_exists($connection, $this->connections)){
 			$resultConnection=isset($this->connections[$connection]['driver']) ? $this->connections[$connection]+$config : $config;
 			$this->pdos[$connection]=$this->getPDO($resultConnection);
+			self::$instance=$this;
 		}else{
 			throw new Exception("You are connecting to unavialble database connection", 1);
 		}
@@ -75,6 +76,8 @@ class Connector{
 	}
 
 	public static function getConnection(){ return self::$pdo; }
+
+	public static function getInstance(){ return self::$instance; }
 
 	public function executeConnect(string $connection){
 		if(isset($this->pdos[$connection])){
