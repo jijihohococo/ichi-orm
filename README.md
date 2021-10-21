@@ -377,5 +377,6 @@ Blog::whereIn('author_id',function($query){
 ```
 You can use "from" function in only subqueries. You need to add model class name which is represented the another table in "from" function.
 
+## Using PDO Functions
 
 ## Using Different Databases

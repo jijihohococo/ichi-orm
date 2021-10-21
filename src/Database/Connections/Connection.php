@@ -25,7 +25,7 @@ abstract class Connection{
 			return $this->connect($config,$this->defaultOptions);
 		}catch(Exception $e){
 			if($this->checkDetectableErrors($e->getMessage())){
-				return $this->connect($config,$option);
+				return $this->connect($config,$this->defaultOptions);
 			}
 			throw new Exception("The database connection is unavailable", 1);
 		}
