@@ -253,7 +253,7 @@ Blog::select(['id','name'])->get();
 Blog::select(['id','name'])->toArray();
 ```
 
-If you have soft deleted data rows, you can't seee those in your array or data object array. If you want to see the array or data object array with soft deleted data rows, you can make as shown as before.
+If you have soft deleted data rows, you can't seee those in your array or data object array. If you want to see the array or data object array with soft deleted data rows, you must use "withTrashed()" function as shown as before.
 
 ```php
 Blog::withTrashed()->select(['id','name'])->get();
@@ -261,6 +261,17 @@ Blog::withTrashed()->select(['id','name'])->get();
 Blog::withTrashed()->select(['id','name'])->toArray();
 ```
 
+If you don't use select function, you will get all data fields of related model.(If you use "withTrashed()" function you will also get soft deleted data rows)
+
+```php
+Blog::get();
+
+Blog::toArray();
+
+Blog::withTrashed()->get();
+
+Blog::withTrashed()->toArray();
+```
 ### WHERE
 
 To make "WHERE" sql query, you can use "where" function as shown as below
