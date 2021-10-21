@@ -129,6 +129,17 @@ protected function getID(){
 
 ## CRUD
 
+Firstly, you need to extend Model Class from your class and need to declare your data fields as attributes in your model as shown as below.
+
+```php
+use JiJiHoHoCoCo\IchiORM\Database\Model;
+class Blog extends Model{
+
+	publilc $id,$author_id,$content;
+
+}
+```
+
 ### Create
 
 You can create the data as shown as below
@@ -139,13 +150,63 @@ Blog::create([
 	'content' => 'Content'
 ]);
 ```
+You can get the new model object after creating.
+
+<b> App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 )</b>
 
 ### Retrieve
 
+You can get your data by your primary key as shown as below.
+
+```php
+Blog::find(1);
+```
+
+If you don't want to get your data by your primary key, you can do as shown as below.
+
+```php
+Blog::findBy('content','Content');
+```
+<i>First Parameter is field name and second parameter is value.</i>
+
+<b>You can get only single object by using "find" and findBy" function.</b>
+
 ### Update
+
+You can update your data as shown as below.
+
+```php
+Blog::find(1)->update([
+	'content' => 'New Content'
+]);
+```
+
+You can get the model object after updating
+
+<b> App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => New Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 )</b>
 
 ### Delete
 
+You can delete your data as shown as below.
+
+```php
+Blog::find(1)->delete();
+```
+If you have "deleted_at" data field and "deleted_at" data field is nullable, you have soft delete function. So, the data will not actually delete after deleting but this data will not be shown in querying in default.
+
+<i>Soft Delete Functions can't use if you don't have "delete_at" data field and the data will be deleted.</i>
+
+If you want to restore your soft deleted data, you can do as shown as before.
+
+```php
+Blog::find(1)->restore();
+```
+
+If you want to force to delete your data (whatever it is able to soft delete function or not), you can do as shown as before.
+
+```php
+Blog::find(1)->forceDelete();
+```
 
 ## Querying
 

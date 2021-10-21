@@ -229,7 +229,7 @@ abstract class Model{
 		$table=$this->getTable();
 		$pdo=connectPDO();
 		if( property_exists($this, 'deleted_at') ){
-			$stmt=$pdo->prepare("UPDATE ".$table." SET deleted_at='".now()."'" );
+			$stmt=$pdo->prepare("UPDATE ".$table." SET deleted_at='".now()."' WHERE ".$id."=".$this->{$id} );
 			$stmt->execute();
 		}else{
 			$stmt=$pdo->prepare("DELETE FROM ".$table." WHERE ".$id."=".$this->{$id});
@@ -245,10 +245,11 @@ abstract class Model{
 	}
 
 	public function restore(){
+		$id=$this->getID();
 		$pdo=connectPDO();
 		$table=$this->getTable();
 		if(property_exists($this, 'deleted_at')){
-			$stmt=$pdo->prepare("UPDATE ".$table." SET deleted_at=NULL");
+			$stmt=$pdo->prepare("UPDATE ".$table." SET deleted_at=NULL WHERE ".$id."=".$this->{$id});
 			$stmt->execute();
 		}
 	}
