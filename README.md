@@ -194,7 +194,7 @@ Blog::find(1)->delete();
 ```
 If you have "deleted_at" data field and "deleted_at" data field is nullable, you have soft delete function. So, the data will not actually delete after deleting but this data will not be shown in querying in default.
 
-<i>Soft Delete Functions can't use if you don't have "delete_at" data field and the data will be deleted.</i>
+<i>Soft Delete Functions can't be used if you don't have "delete_at" data field and the data will be deleted.</i>
 
 If you want to restore your soft deleted data, you can do as shown as before.
 
