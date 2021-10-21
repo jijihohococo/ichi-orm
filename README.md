@@ -135,14 +135,14 @@ Firstly, you need to extend Model Class from your class and need to declare your
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 class Blog extends Model{
 
-	publilc $id,$author_id,$content;
+	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
 }
 ```
 
 ### Create
 
-You can create the data as shown as below
+You can create the data as shown as below.
 
 ```php
 Blog::create([
@@ -150,9 +150,11 @@ Blog::create([
 	'content' => 'Content'
 ]);
 ```
+<b>If you have "created_at" data field, you don't need to add any data for that data field. Ichi ORM will automatically insert current date time for this data field. The data field must be in the format of timestamp or varchar.</b>
+
 You can get the new model object after creating.
 
-<b> App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 )</b>
+<b> App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => [deleted_at] => )</b>
 
 ### Retrieve
 
@@ -183,7 +185,9 @@ Blog::find(1)->update([
 
 You can get the model object after updating
 
-<b> App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => New Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 )</b>
+<b>If you have "updated_at" data field, you don't need to add any data for that data field. Ichi ORM will automatically insert current date time for this data field. The data field must be in the format of timestamp or varchar.</b>
+
+<b> App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => New Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:03:26 [deleted_at] => )</b>
 
 ### Delete
 
@@ -235,7 +239,7 @@ To get your query result you must use "get()" or "toArray()" functions
 "get()" function can use in main query and subquery. This function will return the object array of related model when it is used in main query as shown as below.
 
 
-<b>Array ( [0] => App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 ) )</b>
+<b>Array ( [0] => App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 [deleted_at] => ) )</b>
 
 ```php
 Blog::select(['id','name'])->get();
@@ -243,7 +247,7 @@ Blog::select(['id','name'])->get();
 
 "toArray()" function can use in only main query. This function will return the array for thre query as shown as below.
 
-<b>Array ( [0] => Array ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 ) )</b>
+<b>Array ( [0] => Array ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 [deleted_at] => ) )</b>
 
 ```php
 Blog::select(['id','name'])->toArray();
