@@ -202,7 +202,7 @@ If you want to restore your soft deleted data, you can do as shown as before.
 Blog::find(1)->restore();
 ```
 
-If you want to force to delete your data (whatever it is able to soft delete function or not), you can do as shown as before.
+If you want to force to delete your data (whatever it is able to be soft deleted or not), you can do as shown as before.
 
 ```php
 Blog::find(1)->forceDelete();
