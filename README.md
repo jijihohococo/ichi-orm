@@ -16,6 +16,8 @@ This package is Open Source According to [MIT license](LICENSE.md)
 * [CRUD](#crud)
 	* [Create](#create)
 	* [Retrieve](#retrieve)
+		* [Refers To](#refers-to)
+		* [Refers Many](#refers-many)
 	* [Update](#update)
 	* [Delete](#delete)
 * [Querying](#querying)
@@ -31,6 +33,7 @@ This package is Open Source According to [MIT license](LICENSE.md)
 	* [Subqueries](#subqueries)
 * [Using PDO Functions](#using-pdo-functions)
 * [Using Different Databases](#using-different-databases)
+* [JSON Response](#json-response)
 
 ## Installing
 
@@ -107,7 +110,7 @@ $connector->selectConnection('mysql');
 
 ## Configuration Table Name
 
-In Ichi ORM, one model class which is extended "JiJiHoHoCoCo\Database\Model" abstract class is represented one table.
+In Ichi ORM, one model class which is extended "JiJiHoHoCoCo\IchiORM\Database\Model" abstract class is represented one table.
 
 In default, the table name of the model class will show the format according to below
 
@@ -380,3 +383,113 @@ You can use "from" function in only subqueries. You need to add model class name
 ## Using PDO Functions
 
 ## Using Different Databases
+
+## JSON Response
+
+When you want to do json data of for your API you can simply do as shown as below.
+
+```php
+return jsonResponse([
+	'blogs' => Blog::get()
+]);
+```
+
+If you want to customize your JSON data, firstly you need to create the class.
+
+<i>You must extend "JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection" abstract class and declare "getSelectedResource()" function for your all resource collection classes.</i>
+```php
+namespace App\Resource\BlogResourceCollection;
+
+use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
+
+class BlogResourceCollection extends ResourceCollection{
+	
+	public function getSelectedResource($data){
+		return [
+			'id' => $data->id,
+			'author_id' => $data->author_id,
+			'content' => $data->content,
+			'created_at' => $data->created_at,
+			'updated_at' => $data->updated_at
+		];
+	}
+} 
+```
+
+And then, you can do to show to your custom JSON Resource as shown as below.
+
+<b>For Object Array- </b>
+```php
+return jsonResponse([
+	'blogs' => (new BlogResourceCollection)->collection( Blog::get() ) 
+]);
+```
+
+<b>For Single Object- </b>
+```php
+return jsonResponse([
+	'blog' => (new BlogResourceCollection)->singleCollection( Blog::find(1) )
+]);
+```
+
+You can declare your relationship in your resource collection class (For refers to and refers many).
+
+```php
+namespace App\Resource\BlogResourceCollection;
+
+use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
+
+class BlogResourceCollection extends ResourceCollection{
+	
+	public function getSelectedResource($data){
+		return [
+			'id' => $data->id,
+			'author' => $data->author(),
+			'content' => $data->content,
+			'created_at' => $data->created_at,
+			'updated_at' => $data->updated_at
+		];
+	}
+}
+```
+
+You can declare another resource collection (according to the data is single object or object array) in your resource collection class.
+
+
+```php
+namespace App\Resource\BlogResourceCollection;
+
+use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
+use App\Resource\AuthorResourceCollection;
+
+class BlogResourceCollection extends ResourceCollection{
+	
+	public function getSelectedResource($data){
+		return [
+			'id' => $data->id,
+			'author_id' => $data->author_id,
+			'author' => (new AuthorResourceCollection)->singleCollection( $data->author() )  ,
+			'content' => $data->content,
+			'created_at' => $data->created_at,
+			'updated_at' => $data->updated_at
+		];
+	}
+}
+```
+
+```php
+namespace App\Resource\AuthorResourceCollection;
+
+use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
+
+class AuthorResourceCollection extends ResourceCollection{
+
+	public function getSelectedResource($data){
+		return [
+			'id' => $data->id,
+			'name' => $data->name
+		];
+	}
+
+}
+```
