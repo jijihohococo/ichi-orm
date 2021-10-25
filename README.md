@@ -336,28 +336,48 @@ Blog::whereNotIn('id',[1,2])->get();
 
 ### Join
 
+The rules and flows are same as SQL Join.
+
 #### Inner Join
 
-You can do inner join as shown as below.
-
+Single SQL Query
 ```php
-
+Author::innerJoin('blogs','authors.id','=','blogs.author_id')->select(['authors.*','blogs.id AS blog_id'])->get();
 ```
+
+Subquery
+```php
+Blog::where('id',function($query){
+	$query->from('App\Models\Blog')->innerJoin('blogs','authors.id','=','blogs.author_id')->select(['blogs.id AS blog_id'])->get();
+})->get();
+``` 
 
 #### Left Join
 
-You can do left join as shown as below.
-
+Single SQL Query
 ```php
-
+Author::leftJoin('blogs','authors.id','=','blogs.author_id')->select(['authors.*','blogs.id AS blog_id'])->get();
 ```
+
+Subquery
+```php
+Blog::where('id',function($query){
+	$query->from('App\Models\Blog')->leftJoin('blogs','authors.id','=','blogs.author_id')->select(['blogs.id AS blog_id'])->get();
+})->get();
+``` 
 
 #### Right Join
 
-You can do right join as shown as below.
-
+Single SQL Query
 ```php
+Author::rightJoin('blogs','authors.id','=','blogs.author_id')->select(['authors.*','blogs.id AS blog_id'])->get();
+```
 
+Subquery
+```php
+Blog::where('id',function($query){
+	$query->from('App\Models\Blog')->rightJoin('blogs','authors.id','=','blogs.author_id')->select(['blogs.id AS blog_id'])->get();
+})->get();
 ```
 
 ### Subqueries
@@ -382,7 +402,35 @@ You can use "from" function in only subqueries. You need to add model class name
 
 ## Using PDO Functions
 
+You can use PDO functions like that. You can use all PDO functions according to 
+https://www.php.net/manual/en/class.pdo.php
+
+<i>If you want to use default database connection with PDO object</i>
+```php
+$pdo=connectPDO();
+
+```
+
+<i>If you want to use selected database connection with PDO object</i>
+```php
+use JiJiHoHoCoCo\IchiORM\Database\Connector;
+
+$pdo=Connector::getInstance()->executeConnect('new_mysql_connection');
+
+```
+
 ## Using Different Databases
+
+If you have the model which is from different database you can like that
+
+```php
+use App\Models\Author;
+use JiJiHoHoCoCo\IchiORM\Database\Connector;
+
+$pdo=Connector::getInstance()->executeConnect('new_mysql_connection');
+
+Author::connect($pdo)->get();
+```
 
 ## JSON Response
 
