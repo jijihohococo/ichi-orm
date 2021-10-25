@@ -166,8 +166,7 @@ abstract class Model{
 		self::boot();
 		$instance=self::$instance;
 		
-		$createdData=$data+$instance->checkAndPutData('created_at',now())+
-		$instance->checkAndPutData('updated_at',now());
+		$createdData=$data+$instance->checkAndPutData('created_at',now());
 
 		$fields=array_keys($createdData);
 		$insertedData=array_values($createdData);
