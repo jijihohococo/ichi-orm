@@ -824,6 +824,7 @@ abstract class Model{
 			return PDO::PARAM_NULL;
 
 			case 'resource':
+			case 'resource (closed)':
 			return PDO::PARAM_LOB;
 			
 			default:
