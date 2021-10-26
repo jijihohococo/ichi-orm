@@ -526,7 +526,7 @@ abstract class Model{
 			//$string=$current['select']==NULL ? NULL : ' WHERE ';
 			foreach($current['where'] as $key => $value){
 				$operator=$current['operators'][$key.'where'];
-				self::$fields[]=$value;
+				self::addValuesToBind($value);
 				$string .=$i==0 ? $key . $operator . '?' : ' AND '. $key . $operator . '?';
 				$i++;
 			}
@@ -555,7 +555,7 @@ abstract class Model{
 					$string.= $i==0 ? $key . self::$operators[$key.'where'] . $value : ' AND ' . $key . self::$operators[$key.'where'] . $value;
 				}else{
 					// WHERE //
-					self::$fields[]=$value;
+					self::addValuesToBind($value);
 					$string .= $i==0  ?
 					$key . self::$operators[$key.'where'] . '?' :
 					' AND ' . $key . self::$operators[$key.'where'] . '?';
@@ -610,6 +610,7 @@ abstract class Model{
 					$string .=' OR '. $key . self::$operators[$key.'orWhere'] . $value;
 				}else{
 					// OR WHERE QUERY //
+					self::addValuesToBind($value);
 					$string .= ' OR ' . $key . self::$operators[$key.'orWhere'] . '?';
 				}
 			}
@@ -622,7 +623,7 @@ abstract class Model{
 		$current=self::${$where}[self::$currentField.self::$currentSubQueryNumber];
 		if($current['orWhere']!==NULL && is_array($current['orWhere'])){
 			foreach($current['orWhere'] as $key => $value){
-				self::$fields[]=$value;
+				self::addValuesToBind($value);
 				$string .= ' OR ' . $key . $current['operators'][$key.'orWhere'] . '?';
 			}
 		}elseif($current['orWhere']!==NULL && !is_array($current['orWhere'])){
@@ -632,10 +633,10 @@ abstract class Model{
 		return $string;
 	}
 
-	private static function addValuesFromArrayToBind(array $value){
+	private static function addValuesToBind($value){
 		foreach($value as $v){
-			if(is_array($v)){
-				self::addValuesFromArrayToBind($v);
+			if(is_array($v) || is_object($v)){
+				self::addValuesToBind($v);
 			}else{
 				self::$fields[]=$v;
 			}
@@ -650,7 +651,7 @@ abstract class Model{
 				if(is_array($value) && !empty($value) ){
 					$in  = addArray($value);
 					$string .=  $i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$addTrashed==FALSE ? ' WHERE '.$key.' IN (' . $in . ') ' : ' AND '.$key.' IN (' . $in . ') ';
-					self::addValuesFromArrayToBind($value);
+					self::addValuesToBind($value);
 				}elseif($value!==NULL && !is_array($value)){
 					$string .=  $i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$addTrashed==FALSE ? ' WHERE '.$key.' IN ' . $value : ' AND '.$key.' IN ' . $value;
 				}else{
@@ -672,7 +673,7 @@ abstract class Model{
 				if(is_array($value) && !empty($value) ){
 					$in  = addArray($value);
 					$string .=  $i==0 && $current['where']==NULL && $current['whereColumn']==NULL && $current['addTrashed']==FALSE ? ' WHERE '.$key.' IN (' . $in . ') ' : ' AND '.$key.' IN (' . $in . ') ';
-					self::addValuesFromArrayToBind($value);
+					self::addValuesToBind($value);
 				}else{
 					$string .= $i==0 && $current['where']==NULL && $current['whereColumn']==NULL && $current['addTrashed']==FALSE ? self::WHERE_ZERO : self::AND_ZERO ;
 				}
@@ -696,7 +697,7 @@ abstract class Model{
 					$in=addArray($value);
 					$string .=$i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$whereIn==NULL && self::$addTrashed==FALSE ?
 					' WHERE '.$key.' NOT IN (' . $in . ') ' : ' AND '.$key.' NOT IN ('.$in.') ';
-					self::addValuesFromArrayToBind($value);
+					self::addValuesToBind($value);
 				}elseif($value!==NULL && !is_array($value)){
 					$string .=$i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$whereIn==NULL && self::$addTrashed==FALSE ? ' WHERE '.$key. ' NOT IN ' . $value : ' AND ' . $key . ' NOT IN ' .  $value;
 
@@ -719,7 +720,7 @@ abstract class Model{
 					$in=addArray($value);
 					$string .=$i==0 && $current['where']==NULL && $current['whereColumn'] && $current['whereIn']==NULL && $current['addTrashed']==FALSE ?
 					' WHERE '.$key.' NOT IN (' . $in . ') ' : ' AND '.$key.' NOT IN ('.$in.') ';
-					self::addValuesFromArrayToBind($value);
+					self::addValuesToBind($value);
 				}else{
 					$string .=$i==0 && $current['where']==NULL && $current['whereColumn'] && $current['whereIn']==NULL && $current['addTrashed']==FALSE ? self::WHERE_ZERO : self::AND_ZERO;
 				}

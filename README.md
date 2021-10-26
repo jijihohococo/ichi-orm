@@ -183,6 +183,12 @@ Blog::findBy('content','Content');
 
 <b>You can get only single object by using "find" and findBy" function.</b>
 
+#### Refers To
+
+
+#### Refers Many
+
+
 ### Update
 
 You can update your data as shown as below.
