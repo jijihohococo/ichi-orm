@@ -634,12 +634,16 @@ abstract class Model{
 	}
 
 	private static function addValuesToBind($value){
-		foreach($value as $v){
-			if(is_array($v) || is_object($v)){
-				self::addValuesToBind($v);
-			}else{
-				self::$fields[]=$v;
+		if(is_array($value) || is_object($value) ){
+			foreach($value as $v){
+				if(is_array($v) || is_object($v)){
+					self::addValuesToBind($v);
+				}else{
+					self::$fields[]=$v;
+				}
 			}
+		}else{
+			self::$fields[]=$value;
 		}
 	}
 
@@ -750,7 +754,7 @@ abstract class Model{
 		if($field==NULL){
 			$object=self::getSubQueryClassObject($where, 
 				self::${$where}[self::$currentField.self::$currentSubQueryNumber]['className']
-			 );
+			);
 			$field=$object->getID();
 		}
 		self::${$where}[self::$currentField.self::$currentSubQueryNumber]['order']=" ORDER BY ".$field . " ". $sort;
