@@ -348,7 +348,7 @@ Author::innerJoin('blogs','authors.id','=','blogs.author_id')->select(['authors.
 Subquery
 ```php
 Blog::where('id',function($query){
-	$query->from('App\Models\Blog')->innerJoin('blogs','authors.id','=','blogs.author_id')->select(['blogs.id AS blog_id'])->get();
+	$query->from('App\Models\Author')->innerJoin('blogs','authors.id','=','blogs.author_id')->select(['blogs.id AS blog_id'])->get();
 })->get();
 ``` 
 
@@ -362,7 +362,7 @@ Author::leftJoin('blogs','authors.id','=','blogs.author_id')->select(['authors.*
 Subquery
 ```php
 Blog::where('id',function($query){
-	$query->from('App\Models\Blog')->leftJoin('blogs','authors.id','=','blogs.author_id')->select(['blogs.id AS blog_id'])->get();
+	$query->from('App\Models\Author')->leftJoin('blogs','authors.id','=','blogs.author_id')->select(['blogs.id AS blog_id'])->get();
 })->get();
 ``` 
 
@@ -376,7 +376,7 @@ Author::rightJoin('blogs','authors.id','=','blogs.author_id')->select(['authors.
 Subquery
 ```php
 Blog::where('id',function($query){
-	$query->from('App\Models\Blog')->rightJoin('blogs','authors.id','=','blogs.author_id')->select(['blogs.id AS blog_id'])->get();
+	$query->from('App\Models\Author')->rightJoin('blogs','authors.id','=','blogs.author_id')->select(['blogs.id AS blog_id'])->get();
 })->get();
 ```
 
