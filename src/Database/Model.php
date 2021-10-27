@@ -59,6 +59,10 @@ abstract class Model{
 	}
 
 	private static function boot(){
+		$calledClass=get_called_class();
+		if(self::$className!==NULL && self::$className!==$calledClass){
+			self::$instance=NULL;
+		}
 		if(self::$instance==NULL){
 			self::$fields=NULL;
 			self::$where=NULL;
@@ -72,7 +76,7 @@ abstract class Model{
 			self::$groupBy=NULL;
 			self::$joinSQL=NULL;
 			self::$instance=new static;
-			self::$className=get_called_class();
+			self::$className=$calledClass;
 			self::$id=self::$instance->getID();
 			self::$table=self::$instance->getTable();
 			self::$select=self::$table.'.*';
