@@ -22,6 +22,7 @@ This package is Open Source According to [MIT license](LICENSE.md)
 	* [Delete](#delete)
 * [Querying](#querying)
 	* [SELECT](#select)
+	* [LIMIT](#limit)
 	* [WHERE](#where)
 	* [OR WHERE](#or-where)
 	* [WHERE IN](#where-in)
@@ -160,6 +161,9 @@ Blog::create([
 	'content' => 'Content'
 ]);
 ```
+
+<b>It is your choice to add or not to add the nullable field data into array in "create" function.</b>
+
 <b>If you have "created_at" data field, you don't need to add any data for that data field. Ichi ORM will automatically insert current date time for this data field. The data field must be in the format of timestamp or varchar.</b>
 
 You can get the new model object after creating.
@@ -185,8 +189,109 @@ Blog::findBy('content','Content');
 
 #### Refers To
 
+If you have one to one relationship in your database (with foreign keys or without foreign keys), you can use "refersTo" function in child model class as shown as below
+
+<i>You must add parent model name, the field that represent parent id into "refersTo" function if parent model's primary key is "id".</i>
+
+```php
+namespace App\Models\Blog;
+
+use JiJiHoHoCoCo\Database\Model;
+
+class Blog extends Model{
+
+	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
+
+	public function author(){
+		return $this->refersTo('App\Models\Author','author_id');
+	}
+}
+```
+
+<i>You must add parent model name, the field name that represent parent id and parent primary key field into "refersTo" function if parent model's primary key is not "id".</i>
+
+```php
+namespace App\Models\Blog;
+
+use JiJiHoHoCoCo\Database\Model;
+
+class Blog extends Model{
+
+	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
+
+	public function author(){
+		return $this->refersTo('App\Models\Author','author_id','authorID');
+	}
+}
+```
+
+You can get parent data as single object in your controller or class.
+
+```php
+use App\Models\Blog;
+
+$blogObject=Blog::find(1);
+$authorObject=$blogObject->author();
+$authorId=$authorObject->id;
+```
+
+<b>You don't need to worry about null. It has null safety.</b>
 
 #### Refers Many
+
+If you have one to many relationship in your database (with foreign keys or without foreign keys), you can use "refersMany" function in parent model class as shown as below
+
+<i>You must add child model name and the field name that represent parent id in child model into "refersMany" function if parent model's primary key is "id".</i>
+
+```php
+namespace App\Models\Author;
+
+use JiJiHoHoCoCo\Database\Model;
+
+class Author extends Model{
+ 	
+ 	publilc $id,$name,$created_at,$updated_at,$deleted_at;
+
+ 	public function blogs(){
+ 		return $this->refersMany('App\Models\Blog','author_id')->get();
+ 	}
+
+}
+```
+
+<i>You must add child model name, the field name that represent parent id in child model and parent primary key field into "refersMany" function if parent model's primary key is not "id".</i>
+
+```php
+namespace App\Models\Author;
+
+use JiJiHoHoCoCo\Database\Model;
+
+class Author extends Model{
+ 	
+ 	publilc $authorID,$name,$created_at,$updated_at,$deleted_at;
+
+ 	public function blogs(){
+ 		return $this->refersMany('App\Models\Blog','author_id','authorID')->get();
+ 	}
+
+}
+```
+
+<i>You can customize the child query</i>
+
+```php
+return $this->refersMany('App\Models\Blog','author_id','authorID')->latest()->get();
+```
+
+
+You can get child data as object array in your controller or class.
+
+```php
+use App\Models\Author;
+
+$authorObject=Author::find(1);
+$blogs=$authorObject->blogs();
+```
 
 
 ### Update
@@ -288,6 +393,17 @@ Blog::withTrashed()->get();
 
 Blog::withTrashed()->toArray();
 ```
+
+### LIMIT
+
+To make limit sql query, you can use "limit" function and put the integer into this function as shown as below
+
+```php
+Blog::limit(1)->get();
+
+Blog::limit(1)->toArray();
+```
+
 ### WHERE
 
 To make "WHERE" sql query, you can use "where" function as shown as below

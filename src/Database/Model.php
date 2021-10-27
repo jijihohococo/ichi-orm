@@ -592,6 +592,7 @@ abstract class Model{
 			foreach($current['whereColumn'] as $key => $value){
 				$result=$key. $current['operators'][$key.'whereColumn'] . $value;
 				$string .= $i==0 && $current['where']==NULL && $current['addTrashed']==FALSE ? ' WHERE ' . $result  : ' AND '. $result;
+				$i++;
 			}
 		}elseif($current['whereColumn']!==NULL && !is_array($current['whereColumn'])){
 			$currentField=getCurrentField(self::$subQueries,self::$currentField,self::$currentSubQueryNumber);
