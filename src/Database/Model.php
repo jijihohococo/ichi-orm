@@ -63,8 +63,8 @@ abstract class Model{
 		if(self::$className!==NULL && self::$className!==$calledClass){
 			self::$instance=NULL;
 		}
+
 		if(self::$instance==NULL){
-			self::$fields=NULL;
 			self::$where=NULL;
 			self::$whereColumn=NULL;
 			self::$orWhere=NULL;
@@ -82,7 +82,7 @@ abstract class Model{
 			self::$select=self::$table.'.*';
 			self::$addSelect=FALSE;
 			self::$withTrashed=FALSE;
-			self::$toSQL=FALSE;
+
 			self::$subQuery=NULL;
 			self::$addTrashed=FALSE;
 			if(self::$pdo==NULL){
@@ -787,12 +787,18 @@ abstract class Model{
 		self::$subQueries=[];
 	}
 
+	private static function disableForSQL(){
+		self::$pdo=self::$instance=self::$id=self::$table=self::$where=self::$whereColumn=self::$orWhere=self::$whereIn=self::$whereNotIn=self::$operators=self::$order=self::$limit=self::$groupBy=self::$joinSQL=self::$select=self::$addSelect=self::$withTrashed=self::$addTrashed=self::$className=self::$numberOfSubQueries=self::$currentSubQueryNumber=self::$currentField=self::$whereSubQuery=self::$subQuery=self::$havingNumber=self::$havingField=self::$havingOperator=self::$havingValue=NULL;
+		self::$subQueries=[];
+		self::$toSQL=FALSE;
+	}
+
 	public static function get(){
 		if(self::$currentSubQueryNumber==NULL){
 			self::boot();
 			$mainSQL=self::getSQL();
 			if(self::$toSQL==TRUE){
-				self::disableBooting();
+				self::disableForSQL();
 				return $mainSQL;
 			}
 			$fields=self::getFields();
@@ -887,10 +893,6 @@ abstract class Model{
 	public static function toArray(){
 		self::boot();
 		$mainSQL=self::getSQL();
-		if(self::$toSQL==TRUE){
-			self::disableBooting();
-			return $mainSQL;
-		}
 		$fields=self::getFields();
 		$stmt=self::$pdo->prepare($mainSQL);
 		self::bindValues($stmt,$fields);
