@@ -440,12 +440,20 @@ abstract class Model{
 
 	private static function makeWhereQuery(array $parameters,$where){
 		$countParameters=count($parameters);
+		$value=$operator=$field=NULL;
 		if($countParameters==2 || $countParameters==3 ){
 			$field=$parameters[0];
-			if(isset($parameters[1]) && in_array($parameters[1], self::databaseOperators()) && isset($parameters[2]) ){
+			if(isset($parameters[1]) && in_array($parameters[1], self::databaseOperators()) && (isset($parameters[2]) || $parameters[2]==NULL) ){
 				$operator=$parameters[1];
 				$value=$parameters[2];
-			}elseif(isset($parameters[1]) && !in_array($parameters[1],self::databaseOperators()) ){
+				if($value==NULL && ($operator=='=' || $operator=='IS' || $operator=='is') ){
+					$operator=' IS ';
+				}elseif($value==NULL && ($operator=='!=' || $operator=='<>' || $operator=='IS NOT' || $operator=='is not' ) ){
+					$operator=' IS NOT ';
+				}elseif($value==NULL && ($operator!=='=' || $operator!=='!=' || $operator!=='<>' || $operator!=='IS' || $operator!=='is' || $operator!=='IS NOT' || $operator!=='is not'  )){
+					throw new \Exception("Invalid Argument Parameter For Null Value", 1);
+				}
+			}elseif(isset($parameters[1]) && !in_array($parameters[1],self::databaseOperators()) && !isset($parameters[2]) ){
 				$value=$parameters[1];
 				$operator='=';
 			}
@@ -530,8 +538,12 @@ abstract class Model{
 			//$string=$current['select']==NULL ? NULL : ' WHERE ';
 			foreach($current['where'] as $key => $value){
 				$operator=$current['operators'][$key.'where'];
-				self::addValuesToBind($value);
-				$string .=$i==0 ? $key . $operator . '?' : ' AND '. $key . $operator . '?';
+				if($value==NULL){
+					$string .=$i==0 ? $key . $operator . 'NULL' : ' AND '. $key . $operator . 'NULL';
+				}else{
+					self::addValuesToBind($value);
+					$string .=$i==0 ? $key . $operator . '?' : ' AND '. $key . $operator . '?';
+				}
 				$i++;
 			}
 		}elseif($current['where']!==NULL && !is_array($current['where'])){
@@ -559,10 +571,14 @@ abstract class Model{
 					$string.= $i==0 ? $key . self::$operators[$key.'where'] . $value : ' AND ' . $key . self::$operators[$key.'where'] . $value;
 				}else{
 					// WHERE //
-					self::addValuesToBind($value);
-					$string .= $i==0  ?
-					$key . self::$operators[$key.'where'] . '?' :
-					' AND ' . $key . self::$operators[$key.'where'] . '?';
+					if($value==NULL){
+						$string .=$i==0 ? $key . self::$operators[$key.'where'] . 'NULL' : ' AND ' . $key . self::$operators[$key.'where'] . 'NULL';
+					}else{
+						self::addValuesToBind($value);
+						$string .= $i==0  ?
+						$key . self::$operators[$key.'where'] . '?' :
+						' AND ' . $key . self::$operators[$key.'where'] . '?';
+					}
 				}
 				$i++;
 			}
