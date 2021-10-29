@@ -9,12 +9,13 @@ abstract class Model{
 	private static $pdo,$instance,$id,$table,$fields,$where,$whereColumn,$orWhere,$whereIn,$whereNotIn,$operators,$order,$limit,$groupBy,$joinSQL,$select,$addSelect,$withTrashed,$addTrashed,$className,$toSQL;
 	private static $numberOfSubQueries,$currentSubQueryNumber,$currentField,$whereSubQuery;
 	private static $subQuery;
-	private static $subQueries=[];
+	private static $subQueries,$selectedFields=[];
 	private static $havingNumber=NULL;
 	private static $havingField,$havingOperator,$havingValue;
 	private const WHERE_ZERO=' WHERE 0 = 1 ';
 	private const AND_ZERO=' AND 0 = 1 ';
 	private const GROUP_BY=' GROUP BY ';
+	private static $countObject,$countByObject;
 
 	protected function getTable(){
 		return getTableName((string)get_called_class());
@@ -272,6 +273,18 @@ abstract class Model{
 			}
 			
 			foreach($fields as $key => $field){
+				if( strpos($field,'(')==FALSE && strpos($field,')')==FALSE && !isset(self::$selectedFields[self::$className][$field]) ){
+					$selectedField=function() use ($field){
+						if(strpos($field, '.')!==FALSE){
+							$getField=explode('.', $field);
+							return $getField[1];
+						}else{
+							return $field;
+						}
+					};
+					$newSelectedField=$selectedField();
+					self::$selectedFields[self::$className][$newSelectedField]=$newSelectedField;
+				}
 				self::$select  .= $key+1==count($fields) ? $field : $field . ',';
 			}
 		}else{
@@ -822,9 +835,32 @@ abstract class Model{
 			self::bindValues($stmt,$fields);
 			$stmt->execute();
 			self::disableBooting();
-			return  $stmt->fetchAll(PDO::FETCH_CLASS,get_called_class());
+			$class=get_called_class();
+			$object=$stmt->fetchAll(PDO::FETCH_CLASS,$class);
+			self::$selectedFields=[];
+			return $object;
 		}else{
 			self::makeSubQuery(self::showCurrentSubQuery());
+		}
+	}
+
+	public function __construct(){
+		$class=get_called_class();
+		$selectedValues=[];
+		if(!empty(self::$selectedFields) && isset(self::$selectedFields[$class])){
+			foreach (get_object_vars($this) as $key => $value) {
+				if(isset(self::$selectedFields[$class][$key])){
+					$selectedValues[$key]=$value;
+				}
+				unset($this->{$key});
+			}
+			$id=$this->getID();
+			if(isset($this->{$id}) ){
+				unset($this->{$id});
+			}
+			foreach(self::$selectedFields[$class] as $key => $value){
+				$this->{$key}=$selectedValues[$key];
+			}
 		}
 	}
 
@@ -931,6 +967,9 @@ abstract class Model{
 			self::makeSubQueryAddSelect(self::showCurrentSubQuery());
 		}
 		foreach($fields as $select => $query){
+			if(self::$addSelect==TRUE){
+				self::$selectedFields[self::$className][$select]=$select;
+			}
 			self::select(['('.$query.') AS ' . $select]);
 		}
 		return self::$instance;
@@ -979,6 +1018,7 @@ abstract class Model{
 		$countStmt->execute( self::getFields() );
 
 		$objectArray=$stmt->fetchAll(PDO::FETCH_CLASS,get_called_class());
+		self::$selectedFields=[];
 
 		$total=intval($countStmt->fetchColumn());
 		$total_pages=ceil($total/$per_page);
