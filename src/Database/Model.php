@@ -855,7 +855,7 @@ abstract class Model{
 				unset($this->{$key});
 			}
 			$id=$this->getID();
-			if(isset($this->{$id}) ){
+			if($id=='id'){
 				unset($this->{$id});
 			}
 			foreach(self::$selectedFields[$class] as $key => $value){

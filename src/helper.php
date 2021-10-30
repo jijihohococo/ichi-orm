@@ -68,3 +68,10 @@ if(!function_exists('mappingModelData')){
 		return $object;
 	}
 }
+
+
+if(!function_exists('getFirstObject')){
+	function getFirstObject(array $objectArray){
+		return isset($objectArray[0]) ? $objectArray[0] : NULL;
+	}
+}
