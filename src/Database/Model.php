@@ -459,11 +459,11 @@ abstract class Model{
 			if(isset($parameters[1]) && in_array($parameters[1], self::databaseOperators()) && (isset($parameters[2]) || $parameters[2]==NULL) ){
 				$operator=$parameters[1];
 				$value=$parameters[2];
-				if($value==NULL && ($operator=='=' || $operator=='IS' || $operator=='is') ){
+				if($value==NULL && $operator=='=' ){
 					$operator=' IS ';
-				}elseif($value==NULL && ($operator=='!=' || $operator=='<>' || $operator=='IS NOT' || $operator=='is not' ) ){
+				}elseif($value==NULL && ($operator=='!=' || $operator=='<>') ){
 					$operator=' IS NOT ';
-				}elseif($value==NULL && ($operator!=='=' || $operator!=='!=' || $operator!=='<>' || $operator!=='IS' || $operator!=='is' || $operator!=='IS NOT' || $operator!=='is not'  )){
+				}elseif($value==NULL && ($operator!=='=' || $operator!=='!=' || $operator!=='<>') ){
 					throw new \Exception("Invalid Argument Parameter For Null Value", 1);
 				}
 			}elseif(isset($parameters[1]) && !in_array($parameters[1],self::databaseOperators()) && !isset($parameters[2]) ){
