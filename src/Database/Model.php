@@ -389,7 +389,9 @@ abstract class Model{
 			'!<',
 			'!>',
 			'like',
-			'LIKE'
+			'LIKE',
+			'not like',
+			'NOT LIKE'
 		];
 	}
 
