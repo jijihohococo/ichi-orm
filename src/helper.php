@@ -1,6 +1,6 @@
 <?php
 
-use JiJiHoHoCoCo\Database\Connector;
+use JiJiHoHoCoCo\IchiORM\Database\{Connector,NullModel};
 
 if(!function_exists('connectPDO')){
 	function connectPDO(){
@@ -72,6 +72,6 @@ if(!function_exists('mappingModelData')){
 
 if(!function_exists('getFirstObject')){
 	function getFirstObject(array $objectArray){
-		return isset($objectArray[0]) ? $objectArray[0] : NULL;
+		return isset($objectArray[0]) ? $objectArray[0] : (new NullModel)->nullExecute();
 	}
 }
