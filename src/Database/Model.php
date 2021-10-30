@@ -2,19 +2,19 @@
 
 namespace JiJiHoHoCoCo\IchiORM\Database;
 use PDO;
-abstract class Model{
+trait Model{
 
 	private static $limitOne=" LIMIT 1";
 
-	private static $pdo,$instance,$id,$table,$fields,$where,$whereColumn,$orWhere,$whereIn,$whereNotIn,$operators,$order,$limit,$groupBy,$joinSQL,$select,$addSelect,$withTrashed,$addTrashed,$className,$toSQL;
+	private static $pdo,$instance,$getID,$table,$fields,$where,$whereColumn,$orWhere,$whereIn,$whereNotIn,$operators,$order,$limit,$groupBy,$joinSQL,$select,$addSelect,$withTrashed,$addTrashed,$className,$toSQL;
 	private static $numberOfSubQueries,$currentSubQueryNumber,$currentField,$whereSubQuery;
 	private static $subQuery;
 	private static $subQueries,$selectedFields=[];
 	private static $havingNumber=NULL;
 	private static $havingField,$havingOperator,$havingValue;
-	private const WHERE_ZERO=' WHERE 0 = 1 ';
-	private const AND_ZERO=' AND 0 = 1 ';
-	private const GROUP_BY=' GROUP BY ';
+	private static $whereZero=' WHERE 0 = 1 ';
+	private static $andZero=' AND 0 = 1 ';
+	private static $groupByString=' GROUP BY ';
 
 	protected function getTable(){
 		return getTableName((string)get_called_class());
@@ -49,7 +49,7 @@ abstract class Model{
 
 	private static function countData(){
 		$table=self::$table;
-		return "SELECT COUNT(".$table.".".self::$id.") FROM ".$table. self::getJoinSQL();
+		return "SELECT COUNT(".$table.".".self::$getID.") FROM ".$table. self::getJoinSQL();
 	}
 
 	public static function connect(PDO $pdo){
@@ -60,9 +60,6 @@ abstract class Model{
 
 	private static function boot(){
 		$calledClass=get_called_class();
-		if(self::$className!==NULL && self::$className!==$calledClass){
-			self::$instance=NULL;
-		}
 
 		if(self::$instance==NULL){
 			self::$where=NULL;
@@ -77,7 +74,7 @@ abstract class Model{
 			self::$joinSQL=NULL;
 			self::$instance=new static;
 			self::$className=$calledClass;
-			self::$id=self::$instance->getID();
+			self::$getID=self::$instance->getID();
 			self::$table=self::$instance->getTable();
 			self::$select=self::$table.'.*';
 			self::$addSelect=FALSE;
@@ -94,7 +91,7 @@ abstract class Model{
 	public static function groupBy($groupBy){
 		if(self::$currentSubQueryNumber==NULL){
 			self::boot();
-			self::$groupBy=self::GROUP_BY . $groupBy;
+			self::$groupBy=self::$groupByString . $groupBy;
 		}else{
 			self::makeSubQueryGroupBy(self::showCurrentSubQuery(),$groupBy);
 		}
@@ -129,7 +126,7 @@ abstract class Model{
 	}
 
 	private static function makeSubQueryGroupBy($where,$groupBy){
-		self::${$where}[self::$currentField.self::$currentSubQueryNumber]['groupBy']=self::GROUP_BY . $groupBy;
+		self::${$where}[self::$currentField.self::$currentSubQueryNumber]['groupBy']=self::$groupByString . $groupBy;
 	}
 
 	private static function getGroupBy(){ return self::$groupBy; }
@@ -357,10 +354,16 @@ abstract class Model{
 	private static function setSubWhere($where,$value,$field,$operator,$whereSelect){
 		self::${$where}[self::$currentField.self::$currentSubQueryNumber][$whereSelect][$field]=$value;
 		self::${$where}[self::$currentField.self::$currentSubQueryNumber]['operators'][$field.$whereSelect]=$operator;
+		if($value!==NULL){
+			self::$fields[]=$value;
+		}
 	}
 
 	private static function setSubWhereIn($where,$value,$field,$whereInSelect){
 		self::${$where}[self::$currentField.self::$currentSubQueryNumber][$whereInSelect][$field]=$value;
+		if($value!==NULL){
+			self::$fields[]=$value;
+		}
 	}
 
 	private static function makeDefaultSubQueryData(){
@@ -478,6 +481,9 @@ abstract class Model{
 				self::boot();
 				self::${$where}[$field]=$value;
 				self::$operators[$field.$where]=$operator;
+				if($value!==NULL){
+					self::$fields[]=$value;
+				}
 			}elseif(is_callable($value) && self::$currentSubQueryNumber==NULL ){
 				self::boot();
 				self::$operators[$field.$where]=$operator;
@@ -555,7 +561,6 @@ abstract class Model{
 				if($value==NULL){
 					$string .=$i==0 ? $key . $operator . 'NULL' : ' AND '. $key . $operator . 'NULL';
 				}else{
-					self::addValuesToBind($value);
 					$string .=$i==0 ? $key . $operator . '?' : ' AND '. $key . $operator . '?';
 				}
 				$i++;
@@ -588,7 +593,6 @@ abstract class Model{
 					if($value==NULL){
 						$string .=$i==0 ? $key . self::$operators[$key.'where'] . 'NULL' : ' AND ' . $key . self::$operators[$key.'where'] . 'NULL';
 					}else{
-						self::addValuesToBind($value);
 						$string .= $i==0  ?
 						$key . self::$operators[$key.'where'] . '?' :
 						' AND ' . $key . self::$operators[$key.'where'] . '?';
@@ -645,7 +649,7 @@ abstract class Model{
 					$string .=' OR '. $key . self::$operators[$key.'orWhere'] . $value;
 				}else{
 					// OR WHERE QUERY //
-					self::addValuesToBind($value);
+					
 					$string .= ' OR ' . $key . self::$operators[$key.'orWhere'] . '?';
 				}
 			}
@@ -658,7 +662,7 @@ abstract class Model{
 		$current=self::${$where}[self::$currentField.self::$currentSubQueryNumber];
 		if($current['orWhere']!==NULL && is_array($current['orWhere'])){
 			foreach($current['orWhere'] as $key => $value){
-				self::addValuesToBind($value);
+				
 				$string .= ' OR ' . $key . $current['operators'][$key.'orWhere'] . '?';
 			}
 		}elseif($current['orWhere']!==NULL && !is_array($current['orWhere'])){
@@ -666,20 +670,6 @@ abstract class Model{
 			$string .= ' OR ' . $currentField . $current['operators'][$currentField.'orWhere'] . ' (' . $current['orWhere'] . ') ';
 		}
 		return $string;
-	}
-
-	private static function addValuesToBind($value){
-		if(is_array($value) || is_object($value) ){
-			foreach($value as $v){
-				if(is_array($v) || is_object($v)){
-					self::addValuesToBind($v);
-				}else{
-					self::$fields[]=$v;
-				}
-			}
-		}else{
-			self::$fields[]=$value;
-		}
 	}
 
 	private static function getWhereIn(){
@@ -690,11 +680,11 @@ abstract class Model{
 				if(is_array($value) && !empty($value) ){
 					$in  = addArray($value);
 					$string .=  $i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$addTrashed==FALSE ? ' WHERE '.$key.' IN (' . $in . ') ' : ' AND '.$key.' IN (' . $in . ') ';
-					self::addValuesToBind($value);
+					
 				}elseif($value!==NULL && !is_array($value)){
 					$string .=  $i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$addTrashed==FALSE ? ' WHERE '.$key.' IN ' . $value : ' AND '.$key.' IN ' . $value;
 				}else{
-					$string .= $i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$addTrashed==FALSE ? self::WHERE_ZERO: self::AND_ZERO;
+					$string .= $i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$addTrashed==FALSE ? self::$whereZero: self::$andZero;
 				}
 				$i++;
 			}
@@ -712,9 +702,9 @@ abstract class Model{
 				if(is_array($value) && !empty($value) ){
 					$in  = addArray($value);
 					$string .=  $i==0 && $current['where']==NULL && $current['whereColumn']==NULL && $current['addTrashed']==FALSE ? ' WHERE '.$key.' IN (' . $in . ') ' : ' AND '.$key.' IN (' . $in . ') ';
-					self::addValuesToBind($value);
+					
 				}else{
-					$string .= $i==0 && $current['where']==NULL && $current['whereColumn']==NULL && $current['addTrashed']==FALSE ? self::WHERE_ZERO : self::AND_ZERO ;
+					$string .= $i==0 && $current['where']==NULL && $current['whereColumn']==NULL && $current['addTrashed']==FALSE ? self::$whereZero : self::$andZero ;
 				}
 				$i++;
 			}
@@ -736,12 +726,12 @@ abstract class Model{
 					$in=addArray($value);
 					$string .=$i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$whereIn==NULL && self::$addTrashed==FALSE ?
 					' WHERE '.$key.' NOT IN (' . $in . ') ' : ' AND '.$key.' NOT IN ('.$in.') ';
-					self::addValuesToBind($value);
+					
 				}elseif($value!==NULL && !is_array($value)){
 					$string .=$i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$whereIn==NULL && self::$addTrashed==FALSE ? ' WHERE '.$key. ' NOT IN ' . $value : ' AND ' . $key . ' NOT IN ' .  $value;
 
 				}else{
-					$string .=$i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$whereIn==NULL && self::$addTrashed==FALSE ? self::WHERE_ZERO : self::AND_ZERO;
+					$string .=$i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$whereIn==NULL && self::$addTrashed==FALSE ? self::$whereZero : self::$andZero;
 				}
 				$i++;
 			}
@@ -759,9 +749,9 @@ abstract class Model{
 					$in=addArray($value);
 					$string .=$i==0 && $current['where']==NULL && $current['whereColumn'] && $current['whereIn']==NULL && $current['addTrashed']==FALSE ?
 					' WHERE '.$key.' NOT IN (' . $in . ') ' : ' AND '.$key.' NOT IN ('.$in.') ';
-					self::addValuesToBind($value);
+					
 				}else{
-					$string .=$i==0 && $current['where']==NULL && $current['whereColumn'] && $current['whereIn']==NULL && $current['addTrashed']==FALSE ? self::WHERE_ZERO : self::AND_ZERO;
+					$string .=$i==0 && $current['where']==NULL && $current['whereColumn'] && $current['whereIn']==NULL && $current['addTrashed']==FALSE ? self::$whereZero : self::$andZero;
 				}
 				$i++;
 			}
@@ -813,12 +803,12 @@ abstract class Model{
 	}
 
 	private static function disableBooting(){
-		self::$pdo=self::$instance=self::$id=self::$table=self::$fields=self::$where=self::$whereColumn=self::$orWhere=self::$whereIn=self::$whereNotIn=self::$operators=self::$order=self::$limit=self::$groupBy=self::$joinSQL=self::$select=self::$addSelect=self::$withTrashed=self::$addTrashed=self::$className=self::$toSQL=self::$numberOfSubQueries=self::$currentSubQueryNumber=self::$currentField=self::$whereSubQuery=self::$subQuery=self::$havingNumber=self::$havingField=self::$havingOperator=self::$havingValue=NULL;
+		self::$pdo=self::$instance=self::$getID=self::$table=self::$fields=self::$where=self::$whereColumn=self::$orWhere=self::$whereIn=self::$whereNotIn=self::$operators=self::$order=self::$limit=self::$groupBy=self::$joinSQL=self::$select=self::$addSelect=self::$withTrashed=self::$addTrashed=self::$className=self::$toSQL=self::$numberOfSubQueries=self::$currentSubQueryNumber=self::$currentField=self::$whereSubQuery=self::$subQuery=self::$havingNumber=self::$havingField=self::$havingOperator=self::$havingValue=NULL;
 		self::$subQueries=[];
 	}
 
 	private static function disableForSQL(){
-		self::$pdo=self::$instance=self::$id=self::$table=self::$where=self::$whereColumn=self::$orWhere=self::$whereIn=self::$whereNotIn=self::$operators=self::$order=self::$limit=self::$groupBy=self::$joinSQL=self::$select=self::$addSelect=self::$withTrashed=self::$addTrashed=self::$className=self::$numberOfSubQueries=self::$currentSubQueryNumber=self::$currentField=self::$whereSubQuery=self::$subQuery=self::$havingNumber=self::$havingField=self::$havingOperator=self::$havingValue=NULL;
+		self::$pdo=self::$instance=self::$getID=self::$table=self::$where=self::$whereColumn=self::$orWhere=self::$whereIn=self::$whereNotIn=self::$operators=self::$order=self::$limit=self::$groupBy=self::$joinSQL=self::$select=self::$addSelect=self::$withTrashed=self::$addTrashed=self::$className=self::$numberOfSubQueries=self::$currentSubQueryNumber=self::$currentField=self::$whereSubQuery=self::$subQuery=self::$havingNumber=self::$havingField=self::$havingOperator=self::$havingValue=NULL;
 		self::$subQueries=[];
 		self::$toSQL=FALSE;
 	}
@@ -831,12 +821,12 @@ abstract class Model{
 				self::disableForSQL();
 				return $mainSQL;
 			}
+			$class=get_called_class();
 			$fields=self::getFields();
 			$stmt=self::$pdo->prepare($mainSQL);
 			self::bindValues($stmt,$fields);
 			$stmt->execute();
 			self::disableBooting();
-			$class=get_called_class();
 			$object=$stmt->fetchAll(PDO::FETCH_CLASS,$class);
 			self::$selectedFields=[];
 			return $object;
@@ -868,7 +858,11 @@ abstract class Model{
 	private static function bindValues($stmt,$fields){
 		if(is_array($fields)){
 			foreach($fields as $key => $field){
-				$stmt->bindValue($key+1,$field, self::getPDOBindDataType($field));
+				if(!is_array($field)){
+					$stmt->bindValue($key+1,$field, self::getPDOBindDataType($field));
+				}elseif(is_array($field)){
+					return self::bindValues($stmt,$field);
+				}
 			}
 		}
 	}
@@ -957,22 +951,6 @@ abstract class Model{
 	public static function toSQL(){
 		self::boot();
 		self::$toSQL=TRUE;
-		return self::$instance;
-	}
-
-	public static function addSelect(array $fields){
-		if(self::$currentSubQueryNumber==NULL){
-			self::boot();
-			self::$addSelect=TRUE;
-		}else{
-			self::makeSubQueryAddSelect(self::showCurrentSubQuery());
-		}
-		foreach($fields as $select => $query){
-			if(self::$addSelect==TRUE){
-				self::$selectedFields[self::$className][$select]=$select;
-			}
-			self::select(['('.$query.') AS ' . $select]);
-		}
 		return self::$instance;
 	}
 
