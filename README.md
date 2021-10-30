@@ -196,7 +196,7 @@ If you have one to one relationship in your database (with foreign keys or witho
 ```php
 namespace App\Models\Blog;
 
-use JiJiHoHoCoCo\Database\Model;
+use JiJiHoHoCoCo\IchiORM\Database\Model;
 
 class Blog extends Model{
 
@@ -213,7 +213,7 @@ class Blog extends Model{
 ```php
 namespace App\Models\Blog;
 
-use JiJiHoHoCoCo\Database\Model;
+use JiJiHoHoCoCo\IchiORM\Database\Model;
 
 class Blog extends Model{
 
@@ -246,7 +246,7 @@ If you have one to many relationship in your database (with foreign keys or with
 ```php
 namespace App\Models\Author;
 
-use JiJiHoHoCoCo\Database\Model;
+use JiJiHoHoCoCo\IchiORM\Database\Model;
 
 class Author extends Model{
  	
@@ -264,7 +264,7 @@ class Author extends Model{
 ```php
 namespace App\Models\Author;
 
-use JiJiHoHoCoCo\Database\Model;
+use JiJiHoHoCoCo\IchiORM\Database\Model;
 
 class Author extends Model{
  	
