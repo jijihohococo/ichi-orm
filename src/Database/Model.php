@@ -1108,8 +1108,11 @@ trait Model{
 	}
 
 	public function refersTo($class,$field,$referField='id'){
-		$result=$referField=='id' ? $class::find($this->{$field}) : $class::findBy($referField,$this->{$field});
-		return $result!==FALSE ? $result : (new NullModel)->nullExecute();
+		if(isset($this->{$field})){
+			$result=$referField=='id' ? $class::find($this->{$field}) : $class::findBy($referField,$this->{$field});
+			return $result!==FALSE ? $result : (new NullModel)->nullExecute();
+		}
+		return (new NullModel)->nullExecute();
 	}
 
 	public function refersMany($class,$field,$referField='id'){
