@@ -15,7 +15,6 @@ abstract class Model{
 	private const WHERE_ZERO=' WHERE 0 = 1 ';
 	private const AND_ZERO=' AND 0 = 1 ';
 	private const GROUP_BY=' GROUP BY ';
-	private static $countObject,$countByObject;
 
 	protected function getTable(){
 		return getTableName((string)get_called_class());
