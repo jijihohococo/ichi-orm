@@ -481,7 +481,7 @@ trait Model{
 				self::boot();
 				self::${$where}[$field]=$value;
 				self::$operators[$field.$where]=$operator;
-				if($value!==NULL){
+				if($value!==NULL && $where!=='whereColumn' ){
 					self::$fields[]=$value;
 				}
 			}elseif(is_callable($value) && self::$currentSubQueryNumber==NULL ){
@@ -951,6 +951,22 @@ trait Model{
 	public static function toSQL(){
 		self::boot();
 		self::$toSQL=TRUE;
+		return self::$instance;
+	}
+
+	public static function addSelect(array $fields){
+		if(self::$currentSubQueryNumber==NULL){
+			self::boot();
+			self::$addSelect=TRUE;
+		}else{
+			self::makeSubQueryAddSelect(self::showCurrentSubQuery());
+		}
+		foreach($fields as $select => $query){
+			if(self::$addSelect==TRUE){
+				self::$selectedFields[self::$className][$select]=$select;
+			}
+			self::select(['('.$query.') AS ' . $select]);
+		}
 		return self::$instance;
 	}
 
