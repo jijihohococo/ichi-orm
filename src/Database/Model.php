@@ -536,7 +536,7 @@ abstract class Model{
 
 	private static function makeInQuery($whereIn,$field,$value){
 
-		if(!is_array($value) && !is_callable($value)){
+		if(!is_array($value) && !is_callable($value) && $value!==NULL ){
 			throw new \Exception("You need to add array", 1);
 		}
 
