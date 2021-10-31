@@ -261,6 +261,9 @@ abstract class Model{
 
 	public static function select(array  $fields){
 		if(self::$currentSubQueryNumber==NULL){
+			if(self::$className!==NULL && self::$className!==get_called_class()){
+				self::$instance=NULL;
+			}
 			self::boot();
 			if(self::$addSelect==FALSE){
 				self::$select=NULL;
