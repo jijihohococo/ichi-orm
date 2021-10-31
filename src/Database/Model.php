@@ -15,6 +15,7 @@ abstract class Model{
 	private static $whereZero=' WHERE 0 = 1 ';
 	private static $andZero=' AND 0 = 1 ';
 	private static $groupByString=' GROUP BY ';
+	private static $union;
 
 	protected function getTable(){
 		return getTableName((string)get_called_class());
@@ -173,7 +174,7 @@ abstract class Model{
 		$insertedData=array_values($createdData);
 
 		$stmt=self::$pdo->prepare("INSERT INTO ".self::$table." (". implode(',', $fields ) .")  VALUES (". addArray($fields).")");
-		self::bindValues($stmt,$insertedData);
+		bindValues($stmt,$insertedData);
 		$stmt->execute();
 		$id=self::$instance->getID();
 
@@ -190,7 +191,7 @@ abstract class Model{
 		$updatedData=array_values($createdData);
 		$id=$this->getID();
 		$stmt=connectPDO()->prepare("UPDATE ".$this->getTable()." SET ".implode("=?,", $fields)."=? WHERE ".$id."=".$this->{$id});
-		self::bindValues($stmt,$updatedData);
+		bindValues($stmt,$updatedData);
 		$stmt->execute();
 		return mappingModelData([
 			$id => $this->{$id}
@@ -202,7 +203,7 @@ abstract class Model{
 		$pdo=self::$pdo;
 		$getId=self::$instance->getID();
 		$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$getId ." = ? ".self::$limitOne);
-		self::bindValues($stmt,[
+		bindValues($stmt,[
 			0 => $id
 		]);
 		$stmt->execute();
@@ -215,7 +216,7 @@ abstract class Model{
 		self::boot();
 		$pdo=self::$pdo;
 		$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$field." = ? ".self::$limitOne);
-		self::bindValues($stmt,[
+		bindValues($stmt,[
 			0 => $value
 		]);
 		$stmt->execute();
@@ -816,10 +817,21 @@ abstract class Model{
 		self::$toSQL=FALSE;
 	}
 
+	public static function union($data){
+		self::$union[]=$data;
+		return self::$instance;
+	}
+
 	public static function get(){
 		if(self::$currentSubQueryNumber==NULL){
 			self::boot();
 			$mainSQL=self::getSQL();
+			if(self::$union!==NULL && is_array(self::$union) ){
+				foreach(self::$union as $unionData){
+					$mainSQL .=' UNION '.$unionData.'';
+				}
+			}
+
 			if(self::$toSQL==TRUE){
 				self::disableForSQL();
 				return $mainSQL;
@@ -827,7 +839,7 @@ abstract class Model{
 			$class=get_called_class();
 			$fields=self::getFields();
 			$stmt=self::$pdo->prepare($mainSQL);
-			self::bindValues($stmt,$fields);
+			bindValues($stmt,$fields);
 			$stmt->execute();
 			self::disableBooting();
 			$object=$stmt->fetchAll(PDO::FETCH_CLASS,$class);
@@ -853,44 +865,12 @@ abstract class Model{
 				unset($this->{$id});
 			}
 			foreach(self::$selectedFields[$class] as $key => $value){
-				$this->{$key}=$selectedValues[$key];
-			}
-		}
-	}
-
-	private static function bindValues($stmt,$fields){
-		if(is_array($fields)){
-			foreach($fields as $key => $field){
-				if(!is_array($field)){
-					$stmt->bindValue($key+1,$field, self::getPDOBindDataType($field));
-				}elseif(is_array($field)){
-					return self::bindValues($stmt,$field);
+				if(isset($selectedValues[$key])){
+					$this->{$key}=$selectedValues[$key];
+				}else{
+					$this->{$key}=$value;
 				}
 			}
-		}
-	}
-	private static function getPDOBindDataType($field){
-		$type=gettype($field);
-		
-		switch ($type) {
-			case 'integer':
-			return PDO::PARAM_INT;
-			break;
-
-			case 'boolean':
-			return PDO::PARAM_BOOL;
-			break;
-
-			case 'NULL':
-			return PDO::PARAM_NULL;
-
-			case 'resource':
-			case 'resource (closed)':
-			return PDO::PARAM_LOB;
-			
-			default:
-			return PDO::PARAM_STR;
-			break;
 		}
 	}
 
@@ -945,7 +925,7 @@ abstract class Model{
 		$mainSQL=self::getSQL();
 		$fields=self::getFields();
 		$stmt=self::$pdo->prepare($mainSQL);
-		self::bindValues($stmt,$fields);
+		bindValues($stmt,$fields);
 		$stmt->execute();
 		self::disableBooting();
 		return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -1003,7 +983,7 @@ abstract class Model{
 		
 		$fields=self::getFields();
 		$stmt=self::$pdo->prepare($sql);
-		self::bindValues($stmt,$fields);
+		bindValues($stmt,$fields);
 		$stmt->execute();
 		
 		$countSQL=$countData.

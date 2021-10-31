@@ -75,3 +75,44 @@ if(!function_exists('getFirstObject')){
 		return isset($objectArray[0]) ? $objectArray[0] : (new NullModel)->nullExecute();
 	}
 }
+
+if(!function_exists('bindValues')){
+	function bindValues($stmt,$fields){
+		if(is_array($fields)){
+			foreach($fields as $key => $field){
+				if(!is_array($field)){
+					$stmt->bindValue($key+1,$field, getPDOBindDataType($field));
+				}elseif(is_array($field)){
+					return bindValues($stmt,$field);
+				}
+			}
+		}
+	}
+}
+
+if(!function_exists('getPDOBindDataType')){
+	function getPDOBindDataType($field){
+		$type=gettype($field);
+		
+		switch ($type) {
+			case 'integer':
+			return \PDO::PARAM_INT;
+			break;
+
+			case 'boolean':
+			return \PDO::PARAM_BOOL;
+			break;
+
+			case 'NULL':
+			return \PDO::PARAM_NULL;
+
+			case 'resource':
+			case 'resource (closed)':
+			return \PDO::PARAM_LOB;
+			
+			default:
+			return \PDO::PARAM_STR;
+			break;
+		}
+	}
+}
