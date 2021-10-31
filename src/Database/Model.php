@@ -384,16 +384,10 @@ abstract class Model{
 	private static function setSubWhere($where,$value,$field,$operator,$whereSelect){
 		self::${$where}[self::$currentField.self::$currentSubQueryNumber][$whereSelect][$field]=$value;
 		self::${$where}[self::$currentField.self::$currentSubQueryNumber]['operators'][$field.$whereSelect]=$operator;
-		if($value!==NULL){
-			self::$fields[]=$value;
-		}
 	}
 
 	private static function setSubWhereIn($where,$value,$field,$whereInSelect){
 		self::${$where}[self::$currentField.self::$currentSubQueryNumber][$whereInSelect][$field]=$value;
-		if($value!==NULL){
-			self::$fields[]=$value;
-		}
 	}
 
 	private static function makeDefaultSubQueryData(){
@@ -505,6 +499,9 @@ abstract class Model{
 				$operator='=';
 			}
 
+			if(is_array($value)){
+				throw new \Exception("You need to single value", 1);
+			}
 
 
 			if(!is_callable($value) && self::$currentSubQueryNumber==NULL){
@@ -524,6 +521,9 @@ abstract class Model{
 				self::makeDefaultSubQueryData();
 			}elseif(!is_callable($value) && self::$currentSubQueryNumber!==NULL ){
 				self::setSubWhere(self::showCurrentSubQuery(),$value,$field,$operator,$where);
+				if($value!==NULL && $where!=='whereColumn' ){
+					self::$fields[]=$value;
+				}
 			}elseif(is_callable($value) && self::$currentSubQueryNumber!==NULL ){
 				$check=self::showCurrentSubQuery();
 				self::${$check}[self::$currentField.self::$currentSubQueryNumber]['operators'][$field.$where]=$operator;
@@ -535,9 +535,17 @@ abstract class Model{
 	}
 
 	private static function makeInQuery($whereIn,$field,$value){
+
+		if(!is_array($value) && !is_callable($value)){
+			throw new \Exception("You need to add array", 1);
+		}
+
 		if(is_array($value) && self::$currentSubQueryNumber==NULL){
 			self::boot();
 			self::${$whereIn}[$field]=$value;
+			if($value!==NULL){
+				self::$fields[]=$value;
+			}
 		}elseif(is_callable($value) && self::$currentSubQueryNumber==NULL ){
 			self::boot();
 			$query=self::$instance;
@@ -547,6 +555,9 @@ abstract class Model{
 			self::makeDefaultSubQueryData();
 		}elseif(!is_callable($value) && self::$currentSubQueryNumber!==NULL ){
 			self::setSubWhereIn(self::showCurrentSubQuery(),$value,$field,$whereIn);
+			if($value!==NULL){
+				self::$fields[]=$value;
+			}
 		}elseif(is_callable($value) && self::$currentSubQueryNumber!==NULL ){
 			self::makeSubQueryInSubQuery($whereIn,$value,$field);
 		}
@@ -714,7 +725,7 @@ abstract class Model{
 				}elseif($value!==NULL && !is_array($value)){
 					$string .=  $i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$addTrashed==FALSE ? ' WHERE '.$key.' IN ' . $value : ' AND '.$key.' IN ' . $value;
 				}else{
-					$string .= $i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$addTrashed==FALSE ? self::$whereZero: self::$andZero;
+					$string .= $i==0 && self::$where==NULL && self::$whereColumn==NULL && self::$addTrashed==FALSE ? self::$whereZero : self::$andZero;
 				}
 				$i++;
 			}
