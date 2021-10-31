@@ -15,7 +15,7 @@ abstract class Model{
 	private static $whereZero=' WHERE 0 = 1 ';
 	private static $andZero=' AND 0 = 1 ';
 	private static $groupByString=' GROUP BY ';
-	private static $union;
+	private static $unionQuery;
 
 	protected function getTable(){
 		return getTableName((string)get_called_class());
@@ -57,6 +57,32 @@ abstract class Model{
 		self::$pdo=$pdo;
 		self::boot();
 		return self::$instance;
+	}
+
+	private static function bootForUnion($class){
+		self::$where=NULL;
+		self::$whereColumn=NULL;
+		self::$orWhere=NULL;
+		self::$whereIn=NULL;
+		self::$whereNotIn=NULL;
+		self::$operators=NULL;
+		self::$order=NULL;
+		self::$limit=NULL;
+		self::$groupBy=NULL;
+		self::$joinSQL=NULL;
+		self::$className=$class;
+		$newObject=new $class;
+		self::$getID=$newObject->getID();
+		self::$table=$newObject->getTable();
+		self::$select=self::$table.'.*';
+		self::$addSelect=FALSE;
+		self::$withTrashed=FALSE;
+
+		self::$subQuery=NULL;
+		self::$addTrashed=FALSE;
+		if(self::$pdo==NULL){
+			self::$pdo=connectPDO();
+		}
 	}
 
 	private static function boot(){
@@ -817,21 +843,19 @@ abstract class Model{
 		self::$toSQL=FALSE;
 	}
 
-	public static function union($data){
-		self::$union[]=$data;
+	public static function union($value){
+		$previousQuery=self::$unionQuery==NULL ? self::getSQL() : self::$unionQuery;
+		self::disableForSQL();
+		$newUnionQuery=$value();
+		self::boot();
+		self::$unionQuery=$previousQuery . ' UNION '.$newUnionQuery;
 		return self::$instance;
 	}
 
 	public static function get(){
 		if(self::$currentSubQueryNumber==NULL){
 			self::boot();
-			$mainSQL=self::getSQL();
-			if(self::$union!==NULL && is_array(self::$union) ){
-				foreach(self::$union as $unionData){
-					$mainSQL .=' UNION '.$unionData.'';
-				}
-			}
-
+			$mainSQL=self::$unionQuery==NULL ? self::getSQL() : self::$unionQuery ;
 			if(self::$toSQL==TRUE){
 				self::disableForSQL();
 				return $mainSQL;
@@ -844,6 +868,9 @@ abstract class Model{
 			self::disableBooting();
 			$object=$stmt->fetchAll(PDO::FETCH_CLASS,$class);
 			self::$selectedFields=[];
+			if(self::$unionQuery!==NULL){
+				self::$unionQuery=NULL;
+			}
 			return $object;
 		}else{
 			self::makeSubQuery(self::showCurrentSubQuery());
