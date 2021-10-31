@@ -111,7 +111,7 @@ $connector->selectConnection('mysql');
 
 ## Configuration Table Name
 
-In Ichi ORM, one model class which is using "JiJiHoHoCoCo\IchiORM\Database\Model" trait is represented one table.
+In Ichi ORM, one model class which is extended "JiJiHoHoCoCo\IchiORM\Database\Model" abstract class is represented one table.
 
 In default, the table name of the model class will show the format according to below
 
@@ -144,8 +144,8 @@ Firstly, you need to extend Model Class from your class and declare your data fi
 
 ```php
 use JiJiHoHoCoCo\IchiORM\Database\Model;
-class Blog{
-	use Model;
+class Blog extends Model{
+
 	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
 }
@@ -198,8 +198,8 @@ namespace App\Models\Blog;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
-class Blog{
-	use Model;
+class Blog extends Model{
+
 	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
 	public function author(){
@@ -215,8 +215,8 @@ namespace App\Models\Blog;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
-class Blog{
-	use Model;
+class Blog extends Model{
+
 	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
 	public function author(){
@@ -248,8 +248,8 @@ namespace App\Models\Author;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
-class Author{
- 	use Model;
+class Author extends Model{
+ 	
  	publilc $id,$name,$created_at,$updated_at,$deleted_at;
 
  	public function blogs(){
@@ -266,8 +266,8 @@ namespace App\Models\Author;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
-class Author{
- 	use Model;
+class Author extends Model{
+ 	
  	publilc $authorID,$name,$created_at,$updated_at,$deleted_at;
 
  	public function blogs(){

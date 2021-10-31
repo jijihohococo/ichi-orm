@@ -2,7 +2,7 @@
 
 namespace JiJiHoHoCoCo\IchiORM\Database;
 use PDO;
-trait Model{
+abstract class Model{
 
 	private static $limitOne=" LIMIT 1";
 
