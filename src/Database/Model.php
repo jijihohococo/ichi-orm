@@ -855,11 +855,19 @@ abstract class Model{
 	}
 
 	public static function union($value){
+		return self::makeUnionQuery($value,' UNION ');
+	}
+
+	public static function unionAll($value){
+		return self::makeUnionQuery($value,' UNION ALL ');
+	}
+
+	private static function makeUnionQuery($value,$union){
 		$previousQuery=self::$unionQuery==NULL ? self::getSQL() : self::$unionQuery;
 		self::disableForSQL();
 		$newUnionQuery=$value();
 		self::boot();
-		self::$unionQuery=$previousQuery . ' UNION '.$newUnionQuery;
+		self::$unionQuery=$previousQuery . $union . $newUnionQuery;
 		return self::$instance;
 	}
 
