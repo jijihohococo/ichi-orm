@@ -84,6 +84,9 @@ abstract class Model{
 
 	private static function boot(){
 		$calledClass=get_called_class();
+		if(self::$className!==NULL && self::$className!==$calledClass){
+			throw new \Exception("You are not allowed to use multiple query to execute at once. Please use sub queries", 1);
+		}
 
 		if(self::$instance==NULL){
 			self::$where=NULL;
@@ -463,11 +466,11 @@ private static function getSubQueryClassObject($where,$className){
 }
 
 private static function addTableToSubQuery($where,$className){
+	$obj=self::getSubQueryClassObject($where,$className);
+	$table=$obj->getTable();
 	if(self::${$where}[self::$currentField.self::$currentSubQueryNumber]['select']!==self::${$where}[self::$currentField.self::$currentSubQueryNumber]['table'].'.*'){
 		throw new \Exception("You must use from function before selecting the data", 1);
 	}
-	$obj=self::getSubQueryClassObject($where,$className);
-	$table=$obj->getTable();
 	self::${$where}[self::$currentField.self::$currentSubQueryNumber]['table']=$table;
 	self::${$where}[self::$currentField.self::$currentSubQueryNumber]['select']=$table.'.*';
 	self::${$where}[self::$currentField.self::$currentSubQueryNumber]['className']=$className;
@@ -488,23 +491,29 @@ private static function makeWhereQuery(array $parameters,$where){
 	$value=$operator=$field=NULL;
 	if($countParameters==2 || $countParameters==3 ){
 		$field=$parameters[0];
+
+		if($countParameters==3 && !in_array($parameters[1],databaseOperators()) ){
+			throw new \Exception("You can add only database operators in {$where} function", 1);
+		}
+		
 		if(isset($parameters[1]) && in_array($parameters[1], databaseOperators()) && (isset($parameters[2]) || $parameters[2]==NULL) ){
 			$operator=$parameters[1];
 			$value=$parameters[2];
-			if($value==NULL && $operator=='=' ){
-				$operator=' IS ';
-			}elseif($value==NULL && ($operator=='!=' || $operator=='<>') ){
-				$operator=' IS NOT ';
-			}elseif($value==NULL && ($operator!=='=' || $operator!=='!=' || $operator!=='<>') ){
-				throw new \Exception("Invalid Argument Parameter For Null Value", 1);
-			}
-		}elseif(isset($parameters[1]) && !in_array($parameters[1],databaseOperators()) && !isset($parameters[2]) ){
+		}elseif((isset($parameters[1]) && !in_array($parameters[1],databaseOperators()) || !isset($parameters[1]) ) && !isset($parameters[2]) ){
 			$value=$parameters[1];
 			$operator='=';
 		}
 
+		if($value==NULL && $operator=='=' ){
+			$operator=' IS ';
+		}elseif($value==NULL && ($operator=='!=' || $operator=='<>') ){
+			$operator=' IS NOT ';
+		}elseif($value==NULL && ($operator!=='=' || $operator!=='!=' || $operator!=='<>') ){
+			throw new \Exception("Invalid Argument Parameter For Null Value", 1);
+		}
+
 		if(is_array($value)){
-			throw new \Exception("You need to single value", 1);
+			throw new \Exception("You can add single value or sub query function in {$where} function", 1);
 		}
 
 
@@ -540,11 +549,11 @@ private static function makeWhereQuery(array $parameters,$where){
 
 private static function makeInQuery($whereIn,$field,$value){
 
-		// if(!is_array($value) && !is_callable($value) && $value!==NULL ){
-		// 	throw new \Exception("You need to add array", 1);
-		// }
+	if(!is_array($value) && !is_callable($value) && $value!==NULL ){
+		throw new \Exception("You can add only array values or sub query in {$whereIn} function", 1);
+	}
 
-	if(is_array($value) && self::$currentSubQueryNumber==NULL){
+	if((is_array($value) || $value==NULL) && self::$currentSubQueryNumber==NULL){
 		self::boot();
 		self::${$whereIn}[$field]=$value;
 		if($value!==NULL){
@@ -557,7 +566,7 @@ private static function makeInQuery($whereIn,$field,$value){
 		self::$subQueries[$field.self::$currentSubQueryNumber]=self::$currentSubQueryNumber;
 		$value($query);
 		self::makeDefaultSubQueryData();
-	}elseif(!is_callable($value) && self::$currentSubQueryNumber!==NULL ){
+	}elseif((is_array($value) || $value==NULL) && self::$currentSubQueryNumber!==NULL ){
 		self::setSubWhereIn(self::showCurrentSubQuery(),$value,$field,$whereIn);
 		if($value!==NULL){
 			self::$fields[]=$value;
@@ -1027,6 +1036,9 @@ public static function addSelect(array $fields){
 private static function addingSelect(array $fields){
 	$query=self::$instance;
 	foreach($fields as $select => $value){
+		if(!is_callable($value)){
+			throw new \Exception("You need to add function in array in addSelect function or addOnlySelect function.", 1);
+		}
 		$query->setSubQuery($select,'selectQuery');
 		self::$subQueries[$select.self::$currentSubQueryNumber]=self::$currentSubQueryNumber;
 		$value($query);
@@ -1058,6 +1070,9 @@ public static function addOnlySelect(array $fields){
 	self::${$check}[self::$currentField.self::$currentSubQueryNumber]['select']=NULL;
 	self::${$check}[self::$currentField.self::$currentSubQueryNumber]['addSelect']=TRUE;
 	foreach ($fields as $select => $value) {
+		if(!is_callable($value)){
+			throw new \Exception("You need to add function in array in addSelect function or addOnlySelect function.", 1);
+		}
 		self::makeSubQueryInSubQuery('selectQuery',$value,$select);
 	}
 }
@@ -1096,7 +1111,7 @@ public static function paginate($per_page=10){
 	$stmt=self::$pdo->prepare($sql);
 	bindValues($stmt,$fields);
 	$stmt->execute();
-	
+
 	$countSQL=$countData.
 	$getWhere.
 	$getWhereIn.
