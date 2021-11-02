@@ -57,7 +57,8 @@ abstract class Model{
 		if(isset(self::${$where}[self::$currentField.self::$currentSubQueryNumber])){
 			$current=self::${$where}[self::$currentField.self::$currentSubQueryNumber];
 
-			$select=$current['select']!==NULL ? str_replace(self::$table.'.*', $current['table'].'.*', $current['select']) : NULL;
+			// $select=$current['select']!==NULL ? str_replace(self::$table.'.*', $current['table'].'.*', $current['select']) : NULL;
+			$select=$current['select'];
 			if($current['selectQuery']!==NULL){
 				$i=0;
 				foreach($current['selectQuery'] as $selectAs => $query){
