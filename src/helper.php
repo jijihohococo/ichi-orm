@@ -116,3 +116,23 @@ if(!function_exists('getPDOBindDataType')){
 		}
 	}
 }
+
+if(!function_exists('databaseOperators')){
+	function databaseOperators(){
+		return [
+			'=',
+			'<>',
+			'!=',
+			'>',
+			'<',
+			'>=',
+			'<=',
+			'!<',
+			'!>',
+			'like',
+			'LIKE',
+			'not like',
+			'NOT LIKE'
+		];
+	}
+}
