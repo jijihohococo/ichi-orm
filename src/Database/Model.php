@@ -463,11 +463,11 @@ private static function getSubQueryClassObject($where,$className){
 }
 
 private static function addTableToSubQuery($where,$className){
-	$obj=self::getSubQueryClassObject($where,$className);
-	$table=$obj->getTable();
 	if(self::${$where}[self::$currentField.self::$currentSubQueryNumber]['select']!==self::${$where}[self::$currentField.self::$currentSubQueryNumber]['table'].'.*'){
 		throw new \Exception("You must use from function before selecting the data", 1);
 	}
+	$obj=self::getSubQueryClassObject($where,$className);
+	$table=$obj->getTable();
 	self::${$where}[self::$currentField.self::$currentSubQueryNumber]['table']=$table;
 	self::${$where}[self::$currentField.self::$currentSubQueryNumber]['select']=$table.'.*';
 	self::${$where}[self::$currentField.self::$currentSubQueryNumber]['className']=$className;
