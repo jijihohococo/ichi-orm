@@ -1210,11 +1210,9 @@ public function rightJoin($table,$field,$operator,$ownField){
 }
 
 public function refersTo($class,$field,$referField='id'){
-	if(isset($this->{$field})){
-		$result=$referField=='id' ? $class::find($this->{$field}) : $class::findBy($referField,$this->{$field});
-		return $result!==FALSE ? $result : (new NullModel)->nullExecute();
-	}
-	return (new NullModel)->nullExecute();
+	return isset($this->{$field}) ? 
+	$class::findBy($referField,$this->{$field}) : 
+	(new NullModel)->nullExecute();
 }
 
 public function refersMany($class,$field,$referField='id'){
