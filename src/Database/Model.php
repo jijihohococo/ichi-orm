@@ -451,7 +451,7 @@ public static function from($className){
 		self::addTableToSubQuery(self::showCurrentSubQuery(),$className);
 		return self::$instance;
 	}
-	throw new \Exception("You can use from function in only sub queries", 1);
+	throw new \Exception("You can use 'from' function in only sub queries", 1);
 }
 
 private static function getSubQueryClassObject($where,$className){
