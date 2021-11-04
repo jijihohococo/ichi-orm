@@ -239,7 +239,11 @@ abstract class Model{
 		$stmt->execute();
 		$instance=$stmt->fetchObject(self::$className);
 		self::disableBooting();
-		return $instance;
+		return self::getObject($instance);
+	}
+
+	private static function getObject($instance){
+		return $instance=='' ? (new NullModel)->nullExecute() : $instance;
 	}
 
 	public static function findBy($field,$value){
@@ -252,7 +256,7 @@ abstract class Model{
 		$stmt->execute();
 		$instance=$stmt->fetchObject(self::$className);
 		self::disableBooting();
-		return $instance;
+		return self::getObject($instance);
 	}
 
 	public function delete(){
