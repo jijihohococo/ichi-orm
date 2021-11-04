@@ -136,3 +136,9 @@ if(!function_exists('databaseOperators')){
 		];
 	}
 }
+
+if(!function_exists('getSubQueryTypes')){
+	function getSubQueryTypes(){
+		return ['where','whereColumn','whereIn','whereNotIn','orWhere','selectQuery'];
+	}
+}

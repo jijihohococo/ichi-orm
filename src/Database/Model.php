@@ -285,10 +285,6 @@ abstract class Model{
 		}
 	}
 
-	private static function getWhereTypes(){
-		return ['where','whereColumn','whereIn','whereNotIn','orWhere'];
-	}
-
 
 	public static function select(array  $fields){
 		if(self::$currentSubQueryNumber==NULL){
@@ -407,13 +403,10 @@ private static function makeDefaultSubQueryData(){
 }
 
 private static function showCurrentSubQuery(){
-	foreach(self::getWhereTypes() as $where){
-		if(self::checkSubQuery($where)){
-			return $where;
+	foreach(getSubQueryTypes() as $subQuery){
+		if(self::checkSubQuery($subQuery)){
+			return $subQuery;
 		}
-	}
-	if(self::checkSubQuery('selectQuery')){
-		return 'selectQuery';
 	}
 }
 
@@ -423,12 +416,11 @@ public static function where(){
 	return self::$instance;
 }
 
-private static function makeSubQueryInSubQuery($whereSelect,$value,$field){
+private static function makeSubQueryInSubQuery($whereSelect,$value,$field,$check){
 		// if 	there is sub query function in sub query //
 	$previousField=self::$currentField;
 	$previousSubQueryNumber=self::$currentSubQueryNumber;
 	$query=self::$instance;
-	$check=self::showCurrentSubQuery();
 	$query->setSubQuery($field,$check);
 	self::$subQueries[$field.self::$currentSubQueryNumber]=self::$currentSubQueryNumber;
 	$value($query);
@@ -504,16 +496,12 @@ private static function makeWhereQuery(array $parameters,$where){
 			$operator='=';
 		}
 
-		if($value==NULL && $operator=='=' ){
+		if(is_array($value)){
+			throw new \Exception("You can add single value or sub query function in {$where} function", 1);
+		}elseif($value==NULL && $operator=='=' ){
 			$operator=' IS ';
 		}elseif($value==NULL && ($operator=='!=' || $operator=='<>') ){
 			$operator=' IS NOT ';
-		}elseif($value==NULL && ($operator!=='=' || $operator!=='!=' || $operator!=='<>') ){
-			throw new \Exception("Invalid Argument Parameter For Null Value", 1);
-		}
-
-		if(is_array($value)){
-			throw new \Exception("You can add single value or sub query function in {$where} function", 1);
 		}
 
 
@@ -540,7 +528,7 @@ private static function makeWhereQuery(array $parameters,$where){
 		}elseif(is_callable($value) && self::$currentSubQueryNumber!==NULL ){
 			$check=self::showCurrentSubQuery();
 			self::${$check}[self::$currentField.self::$currentSubQueryNumber]['operators'][$field.$where]=$operator;
-			self::makeSubQueryInSubQuery($where,$value,$field);
+			self::makeSubQueryInSubQuery($where,$value,$field,$check);
 		}
 	}else{
 		throw new \Exception("Invalid Argument Parameter", 1);
@@ -572,7 +560,7 @@ private static function makeInQuery($whereIn,$field,$value){
 			self::$fields[]=$value;
 		}
 	}elseif(is_callable($value) && self::$currentSubQueryNumber!==NULL ){
-		self::makeSubQueryInSubQuery($whereIn,$value,$field);
+		self::makeSubQueryInSubQuery($whereIn,$value,$field,self::showCurrentSubQuery());
 	}
 }
 
@@ -1073,7 +1061,7 @@ public static function addOnlySelect(array $fields){
 		if(!is_callable($value)){
 			throw new \Exception("You need to add function in array in addSelect function or addOnlySelect function.", 1);
 		}
-		self::makeSubQueryInSubQuery('selectQuery',$value,$select);
+		self::makeSubQueryInSubQuery('selectQuery',$value,$select,$check);
 	}
 }
 return self::$instance;
@@ -1226,7 +1214,8 @@ public function refersTo($class,$field,$referField='id'){
 }
 
 public function refersMany($class,$field,$referField='id'){
-	$class=$class::connect(connectPDO());
-	return $class->where($class->getTable() . '.'.$field,$this->{$referField});
+
+	return isset($this->{$referField}) ? 
+	$class::connect(connectPDO())->where($class->getTable() . '.'.$field,$this->{$referField}) : [];
 }
 }
