@@ -1221,8 +1221,8 @@ public function refersTo($class,$field,$referField='id'){
 }
 
 public function refersMany($class,$field,$referField='id'){
-
+	$classObject=new $class;
 	return isset($this->{$referField}) ? 
-	$class::connect(connectPDO())->where($class->getTable() . '.'.$field,$this->{$referField}) : [];
+	$class::connect(connectPDO())->where($classObject->getTable() . '.'.$field,$this->{$referField}) : [];
 }
 }
