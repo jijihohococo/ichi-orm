@@ -142,3 +142,19 @@ if(!function_exists('getSubQueryTypes')){
 		return ['where','whereColumn','whereIn','whereNotIn','orWhere','selectQuery'];
 	}
 }
+
+if(!function_exists('unsetTimeData')){
+	function unsetTimeData(array $data){
+		if(isset($data['created_at'])){
+			unset($data,'created_at');
+		}
+
+		if(isset($data['updated_at'])){
+			unset($data,'updated_at');
+		}
+
+		if(isset($data['deleted_at'])){
+			unset($data,'deleted_at');
+		}
+	}
+}

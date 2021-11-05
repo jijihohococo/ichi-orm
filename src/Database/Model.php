@@ -197,7 +197,9 @@ abstract class Model{
 	public static function create(array $data){
 		self::boot();
 		$instance=self::$instance;
-		
+
+		unsetTimeData($data);
+
 		$createdData=$data+$instance->checkAndPutData('created_at',now());
 
 		$fields=array_keys($createdData);
@@ -216,6 +218,9 @@ abstract class Model{
 	}
 
 	public function update(array $data){
+
+		unsetTimeData($data);
+
 		$createdData=$data+$this->checkAndPutData('updated_at',now());
 		$fields=array_keys($createdData);
 		$updatedData=array_values($createdData);
