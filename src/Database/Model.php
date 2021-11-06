@@ -6,7 +6,7 @@ abstract class Model{
 
 	private static $limitOne=" LIMIT 1";
 
-	private static $pdo,$instance,$getID,$table,$fields,$where,$whereColumn,$orWhere,$whereIn,$whereNotIn,$operators,$order,$limit,$groupBy,$joinSQL,$select,$addSelect,$withTrashed,$addTrashed,$className,$toSQL;
+	private static $instance,$getID,$table,$fields,$where,$whereColumn,$orWhere,$whereIn,$whereNotIn,$operators,$order,$limit,$groupBy,$joinSQL,$select,$addSelect,$withTrashed,$addTrashed,$className,$toSQL;
 	private static $numberOfSubQueries,$currentSubQueryNumber,$currentField,$whereSubQuery;
 	private static $subQuery;
 	private static $subQueries,$selectedFields=[];
@@ -17,6 +17,10 @@ abstract class Model{
 	private static $groupByString=' GROUP BY ';
 	private static $unionQuery;
 	private static $selectQuery;
+
+	protected function connectDatabase(){
+		return connectPDO();
+	}
 
 	protected function getTable(){
 		return getTableName((string)get_called_class());
@@ -76,12 +80,6 @@ abstract class Model{
 		return "SELECT COUNT(".$table.".".self::$getID.") FROM ".$table. self::getJoinSQL();
 	}
 
-	public static function connect(PDO $pdo){
-		self::$pdo=$pdo;
-		self::boot();
-		return self::$instance;
-	}
-
 	private static function boot(){
 		$calledClass=get_called_class();
 		if(self::$className!==NULL && self::$className!==$calledClass){
@@ -109,9 +107,6 @@ abstract class Model{
 
 			self::$subQuery=NULL;
 			self::$addTrashed=FALSE;
-			if(self::$pdo==NULL){
-				self::$pdo=connectPDO();
-			}
 		}
 	}
 
@@ -225,7 +220,7 @@ abstract class Model{
 		}
 		$insertedValues=substr($insertedValues, 0,-1);
 		$fields='('.substr(implode('',array_keys($insertedFields)), 0, -1).')';
-		$stmt=self::$pdo->prepare("INSERT INTO ".self::$table." ".$fields." VALUES ". $insertedValues );
+		$stmt=self::$instance->connectDatabase()->prepare("INSERT INTO ".self::$table." ".$fields." VALUES ". $insertedValues );
 		bindValues($stmt,$insertBindValues);
 		$stmt->execute();
 		self::disableBooting();
@@ -258,11 +253,12 @@ abstract class Model{
 		$insertedValues = substr("(".addArray( $insertedArrayValues )."),",0,-1);
 		$insertBindValues= array_merge($insertBindValues,$insertedArrayValues);
 		$fields='('.substr(implode('',array_keys($insertedFields)), 0, -1).')';
-		$stmt=self::$pdo->prepare("INSERT INTO ".self::$table." ".$fields." VALUES ". $insertedValues );
+		$pdo=self::$instance->connectDatabase();
+		$stmt=$pdo->prepare("INSERT INTO ".self::$table." ".$fields." VALUES ". $insertedValues );
 		bindValues($stmt,$insertBindValues);
 		$stmt->execute();
 		$object= mappingModelData([
-			$getID => self::$pdo->lastInsertId()
+			$getID => $pdo->lastInsertId()
 		], $insertedData , $instance );
 		self::disableBooting();
 		return $object;
@@ -301,7 +297,7 @@ abstract class Model{
 
 	public static function find($id){
 		self::boot();
-		$pdo=self::$pdo;
+		$pdo=self::$instance->connectDatabase();
 		$getId=self::$instance->getID();
 		$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$getId ." = ? ".self::$limitOne);
 		bindValues($stmt,[
@@ -319,7 +315,7 @@ abstract class Model{
 
 	public static function findBy($field,$value){
 		self::boot();
-		$pdo=self::$pdo;
+		$pdo=self::$instance->connectDatabase();
 		$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$field." = ? ".self::$limitOne);
 		bindValues($stmt,[
 			0 => $value
@@ -333,7 +329,7 @@ abstract class Model{
 	public function delete(){
 		$id=$this->getID();
 		$table=$this->getTable();
-		$pdo=connectPDO();
+		$pdo=$this->connectDatabase();
 		if( property_exists($this, 'deleted_at') ){
 			$stmt=$pdo->prepare("UPDATE ".$table." SET deleted_at='".now()."' WHERE ".$id."=".$this->{$id} );
 			$stmt->execute();
@@ -346,13 +342,13 @@ abstract class Model{
 	public function forceDelete(){
 		$id=$this->getID();
 		$table=$this->getTable();
-		$stmt=connectPDO()->prepare("DELETE FROM ".$table." WHERE ".$id.'='.$this->{$id});
+		$stmt=$this->connectDatabase()->prepare("DELETE FROM ".$table." WHERE ".$id.'='.$this->{$id});
 		$stmt->execute();
 	}
 
 	public function restore(){
 		$id=$this->getID();
-		$pdo=connectPDO();
+		$pdo=$this->connectDatabase();
 		$table=$this->getTable();
 		if(property_exists($this, 'deleted_at')){
 			$stmt=$pdo->prepare("UPDATE ".$table." SET deleted_at=NULL WHERE ".$id."=".$this->{$id});
@@ -928,12 +924,12 @@ private static function getSubQueryOrder($where){
 }
 
 private static function disableBooting(){
-	self::$pdo=self::$instance=self::$getID=self::$fields=self::$where=self::$whereColumn=self::$orWhere=self::$whereIn=self::$whereNotIn=self::$operators=self::$order=self::$limit=self::$groupBy=self::$joinSQL=self::$addSelect=self::$withTrashed=self::$addTrashed=self::$className=self::$toSQL=self::$numberOfSubQueries=self::$currentSubQueryNumber=self::$currentField=self::$whereSubQuery=self::$subQuery=self::$havingNumber=self::$havingField=self::$havingOperator=self::$havingValue=self::$selectQuery=NULL;
+	self::$instance=self::$getID=self::$fields=self::$where=self::$whereColumn=self::$orWhere=self::$whereIn=self::$whereNotIn=self::$operators=self::$order=self::$limit=self::$groupBy=self::$joinSQL=self::$addSelect=self::$withTrashed=self::$addTrashed=self::$className=self::$toSQL=self::$numberOfSubQueries=self::$currentSubQueryNumber=self::$currentField=self::$whereSubQuery=self::$subQuery=self::$havingNumber=self::$havingField=self::$havingOperator=self::$havingValue=self::$selectQuery=NULL;
 	self::$subQueries=[];
 }
 
 private static function disableForSQL(){
-	self::$pdo=self::$instance=self::$getID=self::$table=self::$where=self::$whereColumn=self::$orWhere=self::$whereIn=self::$whereNotIn=self::$operators=self::$order=self::$limit=self::$groupBy=self::$joinSQL=self::$select=self::$addSelect=self::$withTrashed=self::$addTrashed=self::$className=self::$numberOfSubQueries=self::$currentSubQueryNumber=self::$currentField=self::$whereSubQuery=self::$subQuery=self::$havingNumber=self::$havingField=self::$havingOperator=self::$havingValue=self::$selectQuery=NULL;
+	self::$instance=self::$getID=self::$table=self::$where=self::$whereColumn=self::$orWhere=self::$whereIn=self::$whereNotIn=self::$operators=self::$order=self::$limit=self::$groupBy=self::$joinSQL=self::$select=self::$addSelect=self::$withTrashed=self::$addTrashed=self::$className=self::$numberOfSubQueries=self::$currentSubQueryNumber=self::$currentField=self::$whereSubQuery=self::$subQuery=self::$havingNumber=self::$havingField=self::$havingOperator=self::$havingValue=self::$selectQuery=NULL;
 	self::$subQueries=[];
 	self::$toSQL=FALSE;
 }
@@ -965,7 +961,7 @@ public static function get(){
 		}
 		$class=get_called_class();
 		$fields=self::getFields();
-		$stmt=self::$pdo->prepare($mainSQL);
+		$stmt=self::$instance->connectDatabase()->prepare($mainSQL);
 		bindValues($stmt,$fields);
 		$stmt->execute();
 		self::disableBooting();
@@ -1065,7 +1061,7 @@ public static function toArray(){
 	self::boot();
 	$mainSQL=self::getSQL();
 	$fields=self::getFields();
-	$stmt=self::$pdo->prepare($mainSQL);
+	$stmt=self::$instance->connectDatabase()->prepare($mainSQL);
 	bindValues($stmt,$fields);
 	$stmt->execute();
 	self::disableBooting();
@@ -1167,7 +1163,8 @@ public static function paginate($per_page=10){
 	$sql=$mainSQL . " LIMIT ".$per_page." OFFSET ".$start;
 
 	$fields=self::getFields();
-	$stmt=self::$pdo->prepare($sql);
+	$pdo=self::$instance->connectDatabase();
+	$stmt=$pdo->prepare($sql);
 	bindValues($stmt,$fields);
 	$stmt->execute();
 
@@ -1177,7 +1174,7 @@ public static function paginate($per_page=10){
 	$getWhereNotIn.
 	$getOrWhere;
 
-	$countStmt=self::$pdo->prepare($countSQL);
+	$countStmt=$pdo->prepare($countSQL);
 	$countStmt->execute( $fields );
 
 	$objectArray=$stmt->fetchAll(PDO::FETCH_CLASS,get_called_class());
@@ -1285,6 +1282,6 @@ public function refersTo($class,$field,$referField='id'){
 public function refersMany($class,$field,$referField='id'){
 	$classObject=new $class;
 	return isset($this->{$referField}) ? 
-	$class::connect(connectPDO())->where($classObject->getTable() . '.'.$field,$this->{$referField}) : [];
+	$class::where($classObject->getTable() . '.'.$field,$this->{$referField}) : [];
 }
 }
