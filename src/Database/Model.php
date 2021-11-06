@@ -1281,6 +1281,6 @@ public function refersTo($class,$field,$referField='id'){
 public function refersMany($class,$field,$referField='id'){
 	$classObject=new $class;
 	return isset($this->{$referField}) ? 
-	$class::where($classObject->getTable() . '.'.$field,$this->{$referField}) : [];
+	$class::where($classObject->getTable() . '.'.$field,$this->{$referField}) : (new NullModel);
 }
 }
