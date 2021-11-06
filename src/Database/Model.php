@@ -198,7 +198,15 @@ abstract class Model{
 		self::boot();
 		$instance=self::$instance;
 
-		unsetTimeData($data);
+		if(isset($data['created_at'])){
+			unset($data['created_at']);
+		}
+		if(isset($data['updated_at'])){
+			unset($data['updated_at']);
+		}
+		if(isset($data['deleted_at'])){
+			unset($data['deleted_at']);
+		}
 
 		$createdData=$data+$instance->checkAndPutData('created_at',now());
 
@@ -219,7 +227,15 @@ abstract class Model{
 
 	public function update(array $data){
 
-		unsetTimeData($data);
+		if(isset($data['created_at'])){
+			unset($data['created_at']);
+		}
+		if(isset($data['updated_at'])){
+			unset($data['updated_at']);
+		}
+		if(isset($data['deleted_at'])){
+			unset($data['deleted_at']);
+		}
 
 		$createdData=$data+$this->checkAndPutData('updated_at',now());
 		$fields=array_keys($createdData);
