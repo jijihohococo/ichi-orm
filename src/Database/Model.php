@@ -1064,6 +1064,8 @@ public static function toArray(){
 	bindValues($stmt,$fields);
 	$stmt->execute();
 	self::disableBooting();
+	self::$selectedFields=[];
+	self::$select=self::$table=NULL;
 	return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
