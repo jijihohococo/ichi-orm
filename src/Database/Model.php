@@ -265,9 +265,8 @@ abstract class Model{
 	}
 
 	public function update(array $data){
-		$instance=$this;
-		$getID=$instance->getID();
-		$arrayKeys=get_object_vars($instance);
+		$getID=$this->getID();
+		$arrayKeys=get_object_vars($this);
 		unset($arrayKeys[$getID]);
 		$updatedBindValues=[];
 		$updatedFields=NULL;
@@ -285,7 +284,7 @@ abstract class Model{
 		$insertedArrayValues=array_values($insertedData);
 		$updatedBindValues= array_merge($updatedBindValues,$insertedArrayValues);
 		$updatedFields=substr($updatedFields, 0,-1);
-		$stmt=connectPDO()->prepare("UPDATE ".$this->getTable()." SET ".$updatedFields. " WHERE ".$getID."=".$this->{$getID} );
+		$stmt=$this->connectDatabase()->prepare("UPDATE ".$this->getTable()." SET ".$updatedFields. " WHERE ".$getID."=".$this->{$getID} );
 		bindValues($stmt,$updatedBindValues);
 		$stmt->execute();
 		$object= mappingModelData([
