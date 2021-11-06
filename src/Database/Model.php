@@ -262,8 +262,8 @@ abstract class Model{
 		bindValues($stmt,$insertBindValues);
 		$stmt->execute();
 		$object= mappingModelData([
-		 	$getID => self::$pdo->lastInsertId()
-		 ], $insertedData , $instance );
+			$getID => self::$pdo->lastInsertId()
+		], $insertedData , $instance );
 		self::disableBooting();
 		return $object;
 	}
@@ -277,7 +277,7 @@ abstract class Model{
 		$updatedFields=NULL;
 		$insertedData=[];
 		foreach ($arrayKeys as $key => $value) {
-				$updatedFields .= $key . '=?,';
+			$updatedFields .= $key . '=?,';
 			if(isset($attribute[$key])){
 				$insertedData[$key]=$attribute[$key];
 			}elseif($key=='updated_at'){
@@ -293,8 +293,8 @@ abstract class Model{
 		bindValues($stmt,$updatedBindValues);
 		$stmt->execute();
 		$object= mappingModelData([
-		 	$getID => $this->{$getID}
-		 ], $insertedData , $this );
+			$getID => $this->{$getID}
+		], $insertedData , $this );
 		return $object;
 		
 	}
