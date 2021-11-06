@@ -194,45 +194,113 @@ abstract class Model{
 		return $this->checkProperty($field) ? [ $field => $data ] : [];
 	}
 
-	public static function create(array $data){
-		unset($data['created_at']);
-		unset($data['updated_at']);
-		unset($data['deleted_at']);
+	public static function insert(array $attributes){
 		self::boot();
 		$instance=self::$instance;
-
-		$createdData=$data+$instance->checkAndPutData('created_at',now());
-
-		$fields=array_keys($createdData);
-		$insertedData=array_values($createdData);
-
-		$stmt=self::$pdo->prepare("INSERT INTO ".self::$table." (". implode(',', $fields ) .")  VALUES (". addArray($fields).")");
-		bindValues($stmt,$insertedData);
+		$getID=$instance->getID();
+		$arrayKeys=get_object_vars( $instance );
+		unset($arrayKeys[$getID]);
+		unset($arrayKeys['deleted_at']);
+		unset($arrayKeys['updated_at']);
+		$insertedValues='';
+		$insertBindValues=[];
+		$insertedFields=[];
+		foreach($attributes as $attribute){
+			$insertedData=[];
+			unset($attribute[$getID]);
+			unset($attribute['created_at']);
+			unset($attribute['deleted_at']);
+			unset($attribute['updated_at']);
+			foreach ($arrayKeys as $key => $value) {
+				if(!isset($insertedFields[$key.','])){
+					$insertedFields[$key.',']=NULL;
+				}
+				if(isset($attribute[$key])){
+					$insertedData[$key]=$attribute[$key];
+				}elseif($key=='created_at'){
+					$insertedData[$key]=now();
+				}else{
+					$insertedData[$key]=$value!==null ? $value : 'NULL';
+				}
+			}
+			$insertedArrayValues=array_values($insertedData);
+			$insertedValues .= "(".addArray( $insertedArrayValues )."),";
+			$insertBindValues= array_merge($insertBindValues,$insertedArrayValues);
+		}
+		$insertedValues=substr($insertedValues, 0,-1);
+		$fields='('.substr(implode('',array_keys($insertedFields)), 0, -1).')';
+		$stmt=self::$pdo->prepare("INSERT INTO ".self::$table." ".$fields." VALUES ". $insertedValues );
+		bindValues($stmt,$insertBindValues);
 		$stmt->execute();
-		$id=self::$instance->getID();
+		self::disableBooting();
+	}
 
+	public static function create(array $attribute){
+		self::boot();
+		$instance=self::$instance;
+		$getID=$instance->getID();
+		$arrayKeys=get_object_vars($instance);
+		unset($arrayKeys[$getID]);
+		unset($arrayKeys['deleted_at']);
+		unset($arrayKeys['updated_at']);
+		$insertBindValues=[];
+		$insertedFields=[];
+		$insertedData=[];
+		foreach ($arrayKeys as $key => $value) {
+			if(!isset($insertedFields[$key.','])){
+				$insertedFields[$key.',']=NULL;
+			}
+			if(isset($attribute[$key])){
+				$insertedData[$key]=$attribute[$key];
+			}elseif($key=='created_at'){
+				$insertedData[$key]=now();
+			}else{
+				$insertedData[$key]=$value;
+			}
+		}
+		$insertedArrayValues=array_values($insertedData);
+		$insertedValues = substr("(".addArray( $insertedArrayValues )."),",0,-1);
+		$insertBindValues= array_merge($insertBindValues,$insertedArrayValues);
+		$fields='('.substr(implode('',array_keys($insertedFields)), 0, -1).')';
+		$stmt=self::$pdo->prepare("INSERT INTO ".self::$table." ".$fields." VALUES ". $insertedValues );
+		bindValues($stmt,$insertBindValues);
+		$stmt->execute();
 		$object= mappingModelData([
-			$id => self::$pdo->lastInsertId()
-		], array_combine($fields,$insertedData) , $instance );
+		 	$getID => self::$pdo->lastInsertId()
+		 ], $insertedData , $instance );
 		self::disableBooting();
 		return $object;
 	}
 
 	public function update(array $data){
-		unset($data['created_at']);
-		unset($data['updated_at']);
-		unset($data['deleted_at']);
-
-		$createdData=$data+$this->checkAndPutData('updated_at',now());
-		$fields=array_keys($createdData);
-		$updatedData=array_values($createdData);
-		$id=$this->getID();
-		$stmt=connectPDO()->prepare("UPDATE ".$this->getTable()." SET ".implode("=?,", $fields)."=? WHERE ".$id."=".$this->{$id});
-		bindValues($stmt,$updatedData);
+		$instance=$this;
+		$getID=$instance->getID();
+		$arrayKeys=get_object_vars($instance);
+		unset($arrayKeys[$getID]);
+		$updatedBindValues=[];
+		$updatedFields=NULL;
+		$insertedData=[];
+		foreach ($arrayKeys as $key => $value) {
+				$updatedFields .= $key . '=?,';
+			if(isset($attribute[$key])){
+				$insertedData[$key]=$attribute[$key];
+			}elseif($key=='updated_at'){
+				$insertedData[$key]=now();
+			}else{
+				$insertedData[$key]=$value;
+			}
+		}
+		$insertedArrayValues=array_values($insertedData);
+		$updatedBindValues= array_merge($updatedBindValues,$insertedArrayValues);
+		$updatedFields=substr($updatedFields, 0,-1);
+		$stmt=connectPDO()->prepare("UPDATE ".$this->getTable()." SET ".$updatedFields. " WHERE ".$getID."=".$this->{$getID} );
+		bindValues($stmt,$updatedBindValues);
 		$stmt->execute();
-		return mappingModelData([
-			$id => $this->{$id}
-		], array_combine($fields,$updatedData) , $this );
+		$object= mappingModelData([
+		 	$getID => $this->{$getID}
+		 ], $insertedData , $this );
+		return $object;
+		
 	}
 
 	public static function find($id){
