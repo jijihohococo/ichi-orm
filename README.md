@@ -546,12 +546,16 @@ $pdo=Connector::getInstance()->executeConnect('new_mysql_connection');
 If you have the model which is from different database you can like that
 
 ```php
-use App\Models\Author;
+namespace App\Models;
+
+use JiJiHoHoCoCo\IchiORM\Database\Model;
 use JiJiHoHoCoCo\IchiORM\Database\Connector;
+class Author extends Model{
 
-$pdo=Connector::getInstance()->executeConnect('new_mysql_connection');
-
-Author::connect($pdo)->get();
+	protected function connectDatabase(){
+		return Connector::getInstance()->executeConnect('new_mysql_connection');
+	}
+}
 ```
 
 ## JSON Response
