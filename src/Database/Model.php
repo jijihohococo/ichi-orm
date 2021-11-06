@@ -190,10 +190,6 @@ abstract class Model{
 		}
 	}
 
-	private function checkAndPutData($field,$data){
-		return $this->checkProperty($field) ? [ $field => $data ] : [];
-	}
-
 	public static function insert(array $attributes){
 		self::boot();
 		$instance=self::$instance;
@@ -656,10 +652,6 @@ public static function whereNotIn($field,$value){
 private static function getLimit(){ return self::$limit; }
 
 private static function checkTrashed(){ return property_exists(self::$instance, 'deleted_at') && self::$withTrashed==FALSE; }
-
-private function checkProperty($field){
-	return property_exists(self::$instance??$this,$field);
-}
 
 private static function checkSubQueryTrashed($where){
 
