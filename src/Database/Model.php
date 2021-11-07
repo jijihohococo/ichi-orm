@@ -193,7 +193,6 @@ abstract class Model{
 		$updatedFields=[];
 		$updatedIDs=[];
 		$updatedBindValues=[];
-		$updateString="UPDATE ".self::$table . " SET ";
 		$i=0;
 		foreach ($attributes as $key => $attribute) {
 			$i++;
