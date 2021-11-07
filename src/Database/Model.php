@@ -191,31 +191,34 @@ abstract class Model{
 		$getID=$instance->getID();
 		$arrayKeys=get_object_vars($instance);
 		$updatedFields=[];
-		$updatedIDs=[];
 		$updatedBindValues=[];
 		$i=0;
 		foreach ($attributes as $key => $attribute) {
+			if(!is_array($attribute)){
+				throw new \Exception("You need to add the array data", 1);
+				
+			}
+			if(!isset($attribute[$getID])){
+				throw new \Exception("You don't have the primary id data to update", 1);
+			}
 			$i++;
 			$j=0;
 			foreach ($attribute as $field => $value) {
 				$j++;
-				if(!isset($attribute[$getID])){
-					throw new \Exception("You don't have the primary id data to update", 1);
-				}elseif(array_key_exists($field,$arrayKeys) && $field==$getID ){
-					$updatedIDs[]=$value;
-				}elseif(array_key_exists($field,$arrayKeys) && $field!==$getID ){
+				if(array_key_exists($field,$arrayKeys) && $field!==$getID ){
+					$updatedBindValues[$field][$i.'0']=$attribute[$getID];
 					$updatedBindValues[$field][$i.$j]=$value;
 					if(!isset($updatedFields[$field])){
 						$updatedFields[$field]=$field . ' = CASE ';
 					}
-					$updatedFields[$field] .=' WHEN ' . $getID . ' = '.$attribute[$getID].' THEN ?';
+					$updatedFields[$field] .=' WHEN ' . $getID . ' = ? THEN ?';
 					if($key==array_key_last($attributes)){
 						$updatedFields[$field] .=' END, ';
 					}
 				}
 			}
 		}
-		$updateString='UPDATE '.self::$table. ' SET '. substr(implode('', $updatedFields),0,-2) . ' WHERE '.$getID.' IN ('.implode(',',$updatedIDs).')';
+		$updateString='UPDATE '.self::$table. ' SET '. substr(implode('', $updatedFields),0,-2);
 		$stmt=self::$instance->connectDatabase()->prepare($updateString);
 		$i=0;
 		foreach($updatedBindValues as $fieldNumber => $fields){
