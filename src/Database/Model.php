@@ -243,6 +243,9 @@ abstract class Model{
 		$insertBindValues=[];
 		$insertedFields=[];
 		foreach($attributes as $attribute){
+			if(!is_array($attribute)){
+				throw new \Exception("You need to add the array data", 1);
+			}
 			$insertedData=[];
 			unset($attribute[$getID]);
 			unset($attribute['created_at']);
