@@ -185,6 +185,50 @@ abstract class Model{
 		}
 	}
 
+	public static function bulkUpdate(array $attributes){
+		static::boot();
+		$instance=self::$instance;
+		$getID=$instance->getID();
+		$arrayKeys=get_object_vars($instance);
+		$updatedFields=[];
+		$updatedIDs=[];
+		$updatedBindValues=[];
+		$updateString="UPDATE ".self::$table . " SET ";
+		$i=0;
+		foreach ($attributes as $key => $attribute) {
+			$i++;
+			$j=0;
+			foreach ($attribute as $field => $value) {
+				$j++;
+				if(!isset($attribute[$getID])){
+					throw new \Exception("You don't have the primary id data to update", 1);
+				}elseif(array_key_exists($field,$arrayKeys) && $field==$getID ){
+					$updatedIDs[]=$value;
+				}elseif(array_key_exists($field,$arrayKeys) && $field!==$getID ){
+					$updatedBindValues[$field][$i.$j]=$value;
+					if(!isset($updatedFields[$field])){
+						$updatedFields[$field]=$field . ' = CASE ';
+					}
+					$updatedFields[$field] .=' WHEN ' . $getID . ' = '.$attribute[$getID].' THEN ?';
+					if($key==array_key_last($attributes)){
+						$updatedFields[$field] .=' END, ';
+					}
+				}
+			}
+		}
+		$updateString='UPDATE '.self::$table. ' SET '. substr(implode('', $updatedFields),0,-2) . ' WHERE '.$getID.' IN ('.implode(',',$updatedIDs).')';
+		$stmt=self::$instance->connectDatabase()->prepare($updateString);
+		$i=0;
+		foreach($updatedBindValues as $fieldNumber => $fields){
+			foreach($fields as $key => $value){
+				$i++;
+				$stmt->bindValue($i,$value,getPDOBindDataType($value));
+			}
+		}
+		$stmt->execute();
+		self::disableBooting();
+	}
+
 	public static function insert(array $attributes){
 		self::boot();
 		$instance=self::$instance;
@@ -211,7 +255,7 @@ abstract class Model{
 				}elseif($key=='created_at'){
 					$insertedData[$key]=now();
 				}else{
-					$insertedData[$key]=$value!==null ? $value : 'NULL';
+					$insertedData[$key]=$value;
 				}
 			}
 			$insertedArrayValues=array_values($insertedData);
@@ -220,7 +264,7 @@ abstract class Model{
 		}
 		$insertedValues=substr($insertedValues, 0,-1);
 		$fields='('.substr(implode('',array_keys($insertedFields)), 0, -1).')';
-		$stmt=self::$instance->connectDatabase()->prepare("INSERT INTO ".self::$table." ".$fields." VALUES ". $insertedValues );
+		$stmt=$instance->connectDatabase()->prepare("INSERT INTO ".self::$table." ".$fields." VALUES ". $insertedValues );
 		bindValues($stmt,$insertBindValues);
 		$stmt->execute();
 		self::disableBooting();
@@ -253,7 +297,7 @@ abstract class Model{
 		$insertedValues = substr("(".addArray( $insertedArrayValues )."),",0,-1);
 		$insertBindValues= array_merge($insertBindValues,$insertedArrayValues);
 		$fields='('.substr(implode('',array_keys($insertedFields)), 0, -1).')';
-		$pdo=self::$instance->connectDatabase();
+		$pdo=$instance->connectDatabase();
 		$stmt=$pdo->prepare("INSERT INTO ".self::$table." ".$fields." VALUES ". $insertedValues );
 		bindValues($stmt,$insertBindValues);
 		$stmt->execute();
