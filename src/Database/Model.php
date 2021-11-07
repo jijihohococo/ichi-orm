@@ -212,7 +212,7 @@ abstract class Model{
 						$updatedFields[$field]=$field . ' = CASE ';
 					}
 					$updatedFields[$field] .=' WHEN ' . $getID . ' = ? THEN ?';
-					if($key==array_key_last($attributes)){
+					if($key+1==count($attributes)){
 						$updatedFields[$field] .=' END, ';
 					}
 				}
