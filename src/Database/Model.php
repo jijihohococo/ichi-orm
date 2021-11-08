@@ -348,8 +348,8 @@ abstract class Model{
 		return $object;
 	}
 
-	public function update(array $data){
-		if(empty($data)){
+	public function update(array $attribute){
+		if(empty($attribute)){
 			throw new \Exception("You need to put non-empty array data", 1);
 		}
 		$getID=$this->getID();
@@ -363,8 +363,8 @@ abstract class Model{
 		$insertedData=[];
 		foreach ($arrayKeys as $key => $value) {
 			$updatedFields .= $key . '=?,';
-			if(isset($data[$key])){
-				$insertedData[$key]=$data[$key];
+			if(isset($attribute[$key])){
+				$insertedData[$key]=$attribute[$key];
 			}elseif($key=='updated_at'){
 				$insertedData[$key]=now();
 			}else{
