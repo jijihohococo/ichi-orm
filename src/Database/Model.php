@@ -186,56 +186,82 @@ abstract class Model{
 	}
 
 	public static function bulkUpdate(array $attributes){
-		static::boot();
-		$instance=self::$instance;
-		$getID=$instance->getID();
-		$arrayKeys=get_object_vars($instance);
-		$updatedFields=[];
-		$updatedBindValues=[];
-		$i=0;
-		foreach ($attributes as $key => $attribute) {
-			if(!is_array($attribute)){
-				throw new \Exception("You need to add the array data", 1);
-				
+		try{
+			if(empty($attributes)){
+				throw new \Exception("You need to put non-empty array data", 1);
 			}
-			if(!isset($attribute[$getID])){
-				throw new \Exception("You don't have the primary id data to update", 1);
+			static::boot();
+			$instance=self::$instance;
+			$arrayKeys=get_object_vars( $instance );
+			if(empty($arrayKeys)){
+				throw new \Exception("You need to add column data", 1);
 			}
-			$i++;
-			$j=0;
-			foreach ($attribute as $field => $value) {
-				$j++;
-				if(array_key_exists($field,$arrayKeys) && $field!==$getID ){
-					$updatedBindValues[$field][$i.'0']=$attribute[$getID];
-					$updatedBindValues[$field][$i.$j]=$value;
-					if(!isset($updatedFields[$field])){
-						$updatedFields[$field]=$field . ' = CASE ';
-					}
-					$updatedFields[$field] .=' WHEN ' . $getID . ' = ? THEN ?';
-					if($key+1==count($attributes)){
-						$updatedFields[$field] .=' END, ';
+			$getID=$instance->getID();
+			$updatedFields=[];
+			$updatedIds=[];
+			$updatedBindValues=[];
+			$i=0;
+			foreach ($attributes as $key => $attribute) {
+				if(!is_array($attribute)){
+					throw new \Exception("You need to add the array data", 1);
+
+				}
+				if(empty($attribute)){
+					throw new \Exception("You need to put non-empty array data", 1);
+				}
+				if(!isset($attribute[$getID])){
+					throw new \Exception("You don't have the primary id data to update", 1);
+				}
+				$i++;
+				$j=0;
+				if( property_exists($instance,'updated_at') ){
+					$attribute['updated_at']=now();
+				}
+				foreach ($attribute as $field => $value) {
+					$j++;
+					if(array_key_exists($field,$arrayKeys) && $field!==$getID ){
+						$updatedIds[$i.'0']=$attribute[$getID];
+						$updatedBindValues[$field][$i.'0']=$attribute[$getID];
+						$updatedBindValues[$field][$i.$j]=$value;
+						if(!isset($updatedFields[$field])){
+							$updatedFields[$field]=$field . ' = CASE ';
+						}
+						$updatedFields[$field] .=' WHEN ' . $getID . ' = ? THEN ?';
+						if($key+1==count($attributes)){
+							$updatedFields[$field] .=' END, ';
+						}
+					}elseif(!array_key_exists($field,$arrayKeys) && $field!==$getID ){
+						throw new \Exception("You need to put the available column data to update", 1);
 					}
 				}
 			}
-		}
-		$updateString='UPDATE '.self::$table. ' SET '. substr(implode('', $updatedFields),0,-2);
-		$stmt=self::$instance->connectDatabase()->prepare($updateString);
-		$i=0;
-		foreach($updatedBindValues as $fieldNumber => $fields){
-			foreach($fields as $key => $value){
-				$i++;
-				$stmt->bindValue($i,$value,getPDOBindDataType($value));
+			$updateString='UPDATE '.self::$table. ' SET '. substr(implode('', $updatedFields),0,-2);
+			$stmt=$instance->connectDatabase()->prepare($updateString);
+			$i=0;
+			foreach($updatedBindValues as $fieldNumber => $fields){
+				foreach($fields as $key => $value){
+					$i++;
+					$stmt->bindValue($i,$value,getPDOBindDataType($value));
+				}
 			}
+			$stmt->execute();
+			self::disableBooting();
+		}catch(\Throwable $e){
+			throw new \Exception($e->getMessage(), 1);
 		}
-		$stmt->execute();
-		self::disableBooting();
 	}
 
 	public static function insert(array $attributes){
+		if(empty($attributes)){
+			throw new \Exception("You need to put non-empty array data", 1);
+		}
 		self::boot();
 		$instance=self::$instance;
-		$getID=$instance->getID();
 		$arrayKeys=get_object_vars( $instance );
+		if(empty($arrayKeys)){
+			throw new \Exception("You need to add column data", 1);
+		}
+		$getID=$instance->getID();
 		unset($arrayKeys[$getID]);
 		unset($arrayKeys['deleted_at']);
 		unset($arrayKeys['updated_at']);
@@ -245,6 +271,9 @@ abstract class Model{
 		foreach($attributes as $attribute){
 			if(!is_array($attribute)){
 				throw new \Exception("You need to add the array data", 1);
+			}
+			if(empty($attribute)){
+				throw new \Exception("You need to put non-empty array data", 1);
 			}
 			$insertedData=[];
 			unset($attribute[$getID]);
@@ -276,10 +305,16 @@ abstract class Model{
 	}
 
 	public static function create(array $attribute){
+		if(empty($attribute)){
+			throw new \Exception("You need to put non-empty array data", 1);
+		}
 		self::boot();
 		$instance=self::$instance;
-		$getID=$instance->getID();
 		$arrayKeys=get_object_vars($instance);
+		if(empty($arrayKeys)){
+			throw new \Exception("You need to add column data", 1);
+		}
+		$getID=$instance->getID();
 		unset($arrayKeys[$getID]);
 		unset($arrayKeys['deleted_at']);
 		unset($arrayKeys['updated_at']);
@@ -314,16 +349,22 @@ abstract class Model{
 	}
 
 	public function update(array $data){
+		if(empty($data)){
+			throw new \Exception("You need to put non-empty array data", 1);
+		}
 		$getID=$this->getID();
 		$arrayKeys=get_object_vars($this);
+		if(empty($arrayKeys)){
+			throw new \Exception("You need to add column data", 1);
+		}
 		unset($arrayKeys[$getID]);
 		$updatedBindValues=[];
 		$updatedFields=NULL;
 		$insertedData=[];
 		foreach ($arrayKeys as $key => $value) {
 			$updatedFields .= $key . '=?,';
-			if(isset($attribute[$key])){
-				$insertedData[$key]=$attribute[$key];
+			if(isset($data[$key])){
+				$insertedData[$key]=$data[$key];
 			}elseif($key=='updated_at'){
 				$insertedData[$key]=now();
 			}else{
