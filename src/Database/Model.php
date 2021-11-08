@@ -1365,14 +1365,18 @@ public function rightJoin($table,$field,$operator,$ownField){
 }
 
 public function refersTo($class,$field,$referField='id'){
-	return isset($this->{$field}) ? 
-	$class::findBy($referField,$this->{$field}) : 
-	(new NullModel)->nullExecute();
+	if(isset($this->{$field})){
+		return $class::findBy($referField,$this->{$field});
+	}
+	throw new \Exception($field .' is not available', 1);
 }
 
 public function refersMany($class,$field,$referField='id'){
-	$classObject=new $class;
-	return isset($this->{$referField}) ? 
-	$class::where($classObject->getTable() . '.'.$field,$this->{$referField}) : (new NullModel);
+	if(isset($this->{$referField})){
+		$classObject=new $class;
+		return $class::where($classObject->getTable() . '.'.$field,$this->{$referField}); 
+	}
+	throw new \Exception($referField .' is not available', 1);
+	
 }
 }
