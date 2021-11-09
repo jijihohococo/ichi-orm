@@ -186,7 +186,6 @@ abstract class Model{
 	}
 
 	public static function bulkUpdate(array $attributes){
-		try{
 			if(empty($attributes)){
 				throw new \Exception("You need to put non-empty array data", 1);
 			}
@@ -246,9 +245,6 @@ abstract class Model{
 			}
 			$stmt->execute();
 			self::disableBooting();
-		}catch(\Throwable $e){
-			throw new \Exception($e->getMessage(), 1);
-		}
 	}
 
 	public static function insert(array $attributes){
