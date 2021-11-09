@@ -11,7 +11,7 @@ class Connector{
 
 	private function getPDO(array $config){
 		if(!isset($config['driver'])){
-			throw new Exception("You need to add database driver", 1);
+			throw new \Exception("You need to add database driver", 1);
 		}
 		$connection=NULL;
 		switch ($config['driver']) {
@@ -25,14 +25,14 @@ class Connector{
 			break;
 
 			default:
-			throw new Exception("Your database driver is not supported", 1);
+			throw new \Exception("Your database driver is not supported", 1);
 			break;
 
 		}
 
 		return $connection->getConnection($config);
 
-		throw new Exception("Your request database driver is not supported", 1);
+		throw new \Exception("Your request database driver is not supported", 1);
 	}
 
 	private function boot(){
@@ -61,7 +61,7 @@ class Connector{
 			$this->pdos[$connection]=$this->getPDO($resultConnection);
 			self::$instance=$this;
 		}else{
-			throw new Exception("You are connecting to unavialble database connection", 1);
+			throw new \Exception("You are connecting to unavialble database connection", 1);
 		}
 		
 	}
@@ -70,7 +70,7 @@ class Connector{
 		if(isset($this->pdos[$connection])){
 			self::$pdo=$this->pdos[$connection];
 		}else{
-			throw new Exception("Your database connection is unavailable", 1);
+			throw new \Exception("Your database connection is unavailable", 1);
 		}
 		
 	}
@@ -83,6 +83,6 @@ class Connector{
 		if(isset($this->pdos[$connection])){
 			return $this->pdos[$connection];
 		}
-		throw new Exception("Your database connection is unavailable", 1);
+		throw new \Exception("Your database connection is unavailable", 1);
 	}
 }

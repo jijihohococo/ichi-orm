@@ -15,10 +15,12 @@ This package is Open Source According to [MIT license](LICENSE.md)
 * [Configuration Primary Key](#configuration-primary-key)
 * [CRUD](#crud)
 	* [Create](#create)
+	* [Insert Multiple Rows In One Query](#insert-multiple-rows-in-one-query)
 	* [Retrieve](#retrieve)
 		* [Refers To](#refers-to)
 		* [Refers Many](#refers-many)
 	* [Update](#update)
+	* [Update Multiple Rows In One Query](#update-multiple-rows-in-one-query)
 	* [Delete](#delete)
 * [Querying](#querying)
 	* [SELECT](#select)
@@ -170,6 +172,25 @@ You can get the new model object after creating.
 
 <b> App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => [deleted_at] => )</b>
 
+### Insert Multiple Rows In One Query
+
+If you want to insert multiple rows in one query you can do according to below coding flow.
+
+```php
+use App\Models\Blog;
+
+$contents=$_REQUEST['content'];
+$insertBlogs=[];
+foreach ($contents as $key => $content) {
+	$insertBlogs[]=[
+		'name' => $content,
+		'author_id' => $_REQUEST['author_id'][$key]
+	];
+}
+
+Blog::insert($insertBlogs);
+```
+
 ### Retrieve
 
 You can get your data by your primary key as shown as below.
@@ -309,6 +330,27 @@ You can get the model object after updating
 <b>If you have "updated_at" data field, you don't need to add any data for that data field. Ichi ORM will automatically insert current date time for this data field. The data field must be in the format of timestamp or varchar.</b>
 
 <b> App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => New Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:03:26 [deleted_at] => )</b>
+
+### Update Multiple Rows In One Query
+
+If you want to update multiple rows in one query you can do according to below coding flow.
+
+```php
+use App\Models\Blog;
+
+$blogs=Blog::get();
+$updateBlogs=[];
+
+foreach($blogs as $key => $blog){
+
+	$updateBlogs[]=[
+		'content' => $_REQUEST['content'][$key],
+		'author_id' => $_REQUEST['author_id'][$key],
+	];
+}
+
+Blog::bulkUpdate($updateBlogs);
+```
 
 ### Delete
 
