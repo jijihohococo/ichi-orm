@@ -8,9 +8,6 @@ class NullModel{
 	}
 
 	public function __call( string $name , array $arguments){
-		if($name=='get'){
-			return [];
-		}
 		return $this;
 	}
 
