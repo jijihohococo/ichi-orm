@@ -142,3 +142,9 @@ if(!function_exists('getSubQueryTypes')){
 		return ['where','whereColumn','whereIn','whereNotIn','orWhere','selectQuery'];
 	}
 }
+
+if(!function_exists('showDuplicateModelMessage')){
+	function showDuplicateModelMessage($getCalledClass,$className){
+		return "You can't call {$getCalledClass} because you are using {$className}";
+	}
+}

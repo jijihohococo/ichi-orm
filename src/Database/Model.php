@@ -31,6 +31,9 @@ abstract class Model{
 	}
 
 	public static function withTrashed(){
+		if(self::checkInstance()){
+			throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+		}
 		if(self::$currentSubQueryNumber==NULL){
 			self::boot();
 			self::$withTrashed=TRUE;
@@ -80,11 +83,12 @@ abstract class Model{
 		return "SELECT COUNT(".$table.".".self::$getID.") FROM ".$table. self::getJoinSQL();
 	}
 
+	private static function checkInstance(){
+		return self::$className!==NULL && self::$className!==get_called_class();
+	}
+
 	private static function boot(){
 		$calledClass=get_called_class();
-		if(self::$className!==NULL && self::$className!==$calledClass){
-			throw new \Exception("You are not allowed to use multiple query to execute at once. Please use sub queries", 1);
-		}
 
 		if(self::$instance==NULL){
 			self::$where=NULL;
@@ -110,7 +114,10 @@ abstract class Model{
 		}
 	}
 
-	public static function groupBy($groupBy){
+	public static function groupBy(string $groupBy){
+		if(self::checkInstance()){
+			throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+		}
 		if(self::$currentSubQueryNumber==NULL){
 			self::boot();
 			self::$groupBy=self::$groupByString . $groupBy;
@@ -121,6 +128,9 @@ abstract class Model{
 	}
 
 	public static function having($field,$operator,$value){
+		if(self::checkInstance()){
+			throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+		}
 		if(self::$currentSubQueryNumber==NULL){
 			self::boot();
 			if(self::$havingNumber==NULL){
@@ -186,65 +196,65 @@ abstract class Model{
 	}
 
 	public static function bulkUpdate(array $attributes){
-			if(empty($attributes)){
+		if(empty($attributes)){
+			throw new \Exception("You need to put non-empty array data", 1);
+		}
+		static::boot();
+		$instance=self::$instance;
+		$arrayKeys=get_object_vars( $instance );
+		if(empty($arrayKeys)){
+			throw new \Exception("You need to add column data", 1);
+		}
+		$getID=$instance->getID();
+		$updatedFields=[];
+		$updatedIds=[];
+		$updatedBindValues=[];
+		$i=0;
+		foreach ($attributes as $key => $attribute) {
+			if(!is_array($attribute)){
+				throw new \Exception("You need to add the array data", 1);
+
+			}
+			if(empty($attribute)){
 				throw new \Exception("You need to put non-empty array data", 1);
 			}
-			static::boot();
-			$instance=self::$instance;
-			$arrayKeys=get_object_vars( $instance );
-			if(empty($arrayKeys)){
-				throw new \Exception("You need to add column data", 1);
+			if(!isset($attribute[$getID])){
+				throw new \Exception("You don't have the primary id data to update", 1);
 			}
-			$getID=$instance->getID();
-			$updatedFields=[];
-			$updatedIds=[];
-			$updatedBindValues=[];
-			$i=0;
-			foreach ($attributes as $key => $attribute) {
-				if(!is_array($attribute)){
-					throw new \Exception("You need to add the array data", 1);
-
-				}
-				if(empty($attribute)){
-					throw new \Exception("You need to put non-empty array data", 1);
-				}
-				if(!isset($attribute[$getID])){
-					throw new \Exception("You don't have the primary id data to update", 1);
-				}
-				$i++;
-				$j=0;
-				if( property_exists($instance,'updated_at') ){
-					$attribute['updated_at']=now();
-				}
-				foreach ($attribute as $field => $value) {
-					$j++;
-					if(array_key_exists($field,$arrayKeys) && $field!==$getID ){
-						$updatedIds[$i.'0']=$attribute[$getID];
-						$updatedBindValues[$field][$i.'0']=$attribute[$getID];
-						$updatedBindValues[$field][$i.$j]=$value;
-						if(!isset($updatedFields[$field])){
-							$updatedFields[$field]=$field . ' = CASE ';
-						}
-						$updatedFields[$field] .=' WHEN ' . $getID . ' = ? THEN ?';
-						if($key+1==count($attributes)){
-							$updatedFields[$field] .=' END, ';
-						}
-					}elseif(!array_key_exists($field,$arrayKeys) && $field!==$getID ){
-						throw new \Exception("You need to put the available column data to update", 1);
+			$i++;
+			$j=0;
+			if( property_exists($instance,'updated_at') ){
+				$attribute['updated_at']=now();
+			}
+			foreach ($attribute as $field => $value) {
+				$j++;
+				if(array_key_exists($field,$arrayKeys) && $field!==$getID ){
+					$updatedIds[$i.'0']=$attribute[$getID];
+					$updatedBindValues[$field][$i.'0']=$attribute[$getID];
+					$updatedBindValues[$field][$i.$j]=$value;
+					if(!isset($updatedFields[$field])){
+						$updatedFields[$field]=$field . ' = CASE ';
 					}
+					$updatedFields[$field] .=' WHEN ' . $getID . ' = ? THEN ?';
+					if($key+1==count($attributes)){
+						$updatedFields[$field] .=' END, ';
+					}
+				}elseif(!array_key_exists($field,$arrayKeys) && $field!==$getID ){
+					throw new \Exception("You need to put the available column data to update", 1);
 				}
 			}
-			$updateString='UPDATE '.self::$table. ' SET '. substr(implode('', $updatedFields),0,-2);
-			$stmt=$instance->connectDatabase()->prepare($updateString);
-			$i=0;
-			foreach($updatedBindValues as $fieldNumber => $fields){
-				foreach($fields as $key => $value){
-					$i++;
-					$stmt->bindValue($i,$value,getPDOBindDataType($value));
-				}
+		}
+		$updateString='UPDATE '.self::$table. ' SET '. substr(implode('', $updatedFields),0,-2);
+		$stmt=$instance->connectDatabase()->prepare($updateString);
+		$i=0;
+		foreach($updatedBindValues as $fieldNumber => $fields){
+			foreach($fields as $key => $value){
+				$i++;
+				$stmt->bindValue($i,$value,getPDOBindDataType($value));
 			}
-			$stmt->execute();
-			self::disableBooting();
+		}
+		$stmt->execute();
+		self::disableBooting();
 	}
 
 	public static function insert(array $attributes){
@@ -443,6 +453,9 @@ abstract class Model{
 
 
 	public static function select(array  $fields){
+		if(self::checkInstance()){
+			throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+		}
 		if(self::$currentSubQueryNumber==NULL){
 
 			// If addSelect was used after using addOnlySelect function
@@ -507,13 +520,16 @@ private static function checkSubQueryAddSelect($where){
 	return self::${$where}[self::$currentField.self::$currentSubQueryNumber]['addSelect'];
 }
 
-public static function limit($limit){
+public static function limit(int $limit){
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 	self::boot();
 	self::$limit=' LIMIT '.$limit;
 	return self::$instance;
 }
 
-public static function setSubQuery($field,$where){
+private static function setSubQuery($field,$where){
 	self::$numberOfSubQueries++;
 	self::$currentSubQueryNumber=self::$numberOfSubQueries;
 	self::$currentField=$field;
@@ -599,6 +615,9 @@ private static function makeSubQueryInSubQuery($whereSelect,$value,$field,$check
 }
 
 public static function from($className){
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 	if(self::$currentSubQueryNumber!==NULL){
 		self::addTableToSubQuery(self::showCurrentSubQuery(),$className);
 		return self::$instance;
@@ -635,6 +654,9 @@ public static function orWhere(){
 }
 
 private static function makeWhereQuery(array $parameters,$where){
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 	$countParameters=count($parameters);
 	$value=$operator=$field=NULL;
 	if($countParameters==2 || $countParameters==3 ){
@@ -692,6 +714,10 @@ private static function makeWhereQuery(array $parameters,$where){
 }
 
 private static function makeInQuery($whereIn,$field,$value){
+
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 
 	if(!is_array($value) && !is_callable($value) && $value!==NULL ){
 		throw new \Exception("You can add only array values or sub query in {$whereIn} function", 1);
@@ -969,7 +995,10 @@ private static function getSubQueryWhereNotIn($where){
 
 private static function getFields(){ return self::$fields; }
 
-public static function orderBy($field,$sort="ASC"){
+public static function orderBy(string $field,string $sort="ASC"){
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 	if(self::$currentSubQueryNumber==NULL){
 		self::boot();
 		self::$order=" ORDER BY ".$field . " ".  $sort;
@@ -989,7 +1018,10 @@ private static function makeSubQueryOrderBy($where,$field,$sort){
 	self::${$where}[self::$currentField.self::$currentSubQueryNumber]['order']=" ORDER BY ".$field . " ". $sort;
 }
 
-public static function latest($field=null){
+public static function latest(string $field=null){
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 	if(self::$currentSubQueryNumber==NULL){
 		$field=$field==null ? self::$instance->getID() : $field;
 		self::boot();
@@ -1037,6 +1069,9 @@ private static function makeUnionQuery($value,$union){
 }
 
 public static function get(){
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 	if(self::$currentSubQueryNumber==NULL){
 		self::boot();
 		$mainSQL=self::$unionQuery==NULL ? self::getSQL() : self::$unionQuery ;
@@ -1143,6 +1178,12 @@ private static function getSubQuery($where){
 }
 
 public static function toArray(){
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
+	if(self::$currentSubQueryNumber!==NULL){
+		throw new \Exception("Please use get() function in sub query to get sub query", 1);
+	}
 	self::boot();
 	$mainSQL=self::getSQL();
 	$fields=self::getFields();
@@ -1156,13 +1197,18 @@ public static function toArray(){
 }
 
 public static function toSQL(){
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 	self::boot();
 	self::$toSQL=TRUE;
 	return self::$instance;
 }
 
 public static function addSelect(array $fields){
-
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 	if(self::$currentSubQueryNumber==NULL){
 			// If addSelect was used after using addOnlySelect function
 		if(self::$instance!==NULL && self::$select==NULL && self::$addSelect==TRUE ){
@@ -1191,6 +1237,9 @@ private static function addingSelect(array $fields){
 }
 
 public static function addOnlySelect(array $fields){
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 	if(self::$currentSubQueryNumber==NULL){
 			// If addOnlySelect function was used after using select or addSelect function //
 		if(self::$instance!==NULL && self::$select!==self::$table.'.*'){
@@ -1222,6 +1271,9 @@ return self::$instance;
 }
 
 public static function paginate($per_page=10){
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 	self::boot();
 	$pageCheck=pageCheck();
 	$current_page=$pageCheck ? intval($_GET['page']) : 1;
@@ -1328,6 +1380,9 @@ private static function makeJoin($table,$field,$operator,$ownField,$join){
 }
 
 public static function innerJoin($table,$field,$operator,$ownField){
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 	$join=' INNER JOIN ';
 	if(self::$currentSubQueryNumber==NULL){
 		self::boot();
@@ -1339,6 +1394,9 @@ public static function innerJoin($table,$field,$operator,$ownField){
 }
 
 public function leftJoin($table,$field,$operator,$ownField){
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 	$join=' LEFT JOIN ';
 	if(self::$currentSubQueryNumber==NULL){
 		self::boot();
@@ -1350,6 +1408,9 @@ public function leftJoin($table,$field,$operator,$ownField){
 }
 
 public function rightJoin($table,$field,$operator,$ownField){
+	if(self::checkInstance()){
+		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
 	$join=' RIGHT JOIN ';
 	if(self::$currentSubQueryNumber==NULL){
 		self::boot();
