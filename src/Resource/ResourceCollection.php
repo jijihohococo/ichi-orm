@@ -4,14 +4,16 @@ namespace JiJiHoHoCoCo\IchiORM\Resource;
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 abstract class ResourceCollection{
 	
-	abstract protected function getSelectedResource(Model $model);
+	abstract protected function getSelectedResource($model);
 
-	public function singleCollection(Model $model){
+	public function singleCollection($model){
 		$newArray=[];
-		foreach($this->getSelectedResource($model) as $resourceKey
-			=> $newData){
-			$model->{$resourceKey}=$newData;
-		$newArray[$resourceKey]=$model->{$resourceKey};
+		if($model instanceof Model){
+			foreach($this->getSelectedResource($model) as $resourceKey
+				=> $newData){
+				$model->{$resourceKey}=$newData;
+			$newArray[$resourceKey]=$model->{$resourceKey};
+		}
 	}
 	
 	return $newArray;
