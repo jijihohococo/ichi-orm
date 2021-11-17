@@ -662,6 +662,10 @@ private static function makeWhereQuery(array $parameters,$where){
 	if($countParameters==2 || $countParameters==3 ){
 		$field=$parameters[0];
 
+		if(!is_string($parameters[0])){
+			throw new \Exception("You must add field name in string", 1);
+		}
+
 		if($countParameters==3 && !in_array($parameters[1],databaseOperators()) ){
 			throw new \Exception("You can add only database operators in {$where} function", 1);
 		}
@@ -746,12 +750,12 @@ private static function makeInQuery($whereIn,$field,$value){
 	}
 }
 
-public static function whereIn($field,$value){
+public static function whereIn(string $field,$value){
 	self::makeInQuery('whereIn',$field,$value);
 	return self::$instance;
 }
 
-public static function whereNotIn($field,$value){
+public static function whereNotIn(string $field,$value){
 	self::makeInQuery('whereNotIn',$field,$value);
 	return self::$instance;
 }
