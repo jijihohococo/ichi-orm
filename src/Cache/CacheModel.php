@@ -3,11 +3,11 @@
 namespace JiJiHoHoCoCo\IchiORM\Cache;
 
 use Redis,Memcached;
-class Cache{
+class CacheModel{
 	
 	private static $redis , $memcached;
 
-	public static function setCacheObect($cacheObject){
+	public static function setCacheObject($cacheObject){
 		
 		if(self::$redis!==NULL || self::$memcached!==NULL ){
 			throw new \Exception("You already set cached data", 1);
@@ -24,10 +24,10 @@ class Cache{
 
 	public static function remember(string $key,$data,int $expiredTime=NULL){
 		if(self::$redis!==NULL){
-			self::$redis->remember($key,$data,$expiredTime);
+			return self::$redis->remember($key,$data,$expiredTime);
 		}
 		if(self::$memcached!==NULL){
-			self::$memcached->remember($key,$data,$expiredTime==NULL ? 0 : $expiredTime);
+			return self::$memcached->remember($key,$data,$expiredTime==NULL ? 0 : $expiredTime);
 		}
 	}
 }
