@@ -25,9 +25,9 @@ class CacheModel{
 	public static function remember(string $key,$data,int $expiredTime=NULL){
 		if(self::$redis!==NULL){
 			return self::$redis->remember($key,$data,$expiredTime);
-		}
-		if(self::$memcached!==NULL){
+		}elseif(self::$memcached!==NULL){
 			return self::$memcached->remember($key,$data,$expiredTime==NULL ? 0 : $expiredTime);
 		}
+		throw new \Exception("You need to set cached object firstly", 1);
 	}
 }
