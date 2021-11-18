@@ -5,11 +5,11 @@ namespace JiJiHoHoCoCo\IchiORM\Cache;
 use Redis,Memcached;
 class Cache{
 	
-	private static $redis , $memcached , $pdo;
+	private static $redis , $memcached;
 
 	public static function setCacheObect($cacheObject){
 		
-		if(self::$redis!==NULL || self::$memcached!==NULL || self::$pdo!==NULL){
+		if(self::$redis!==NULL || self::$memcached!==NULL ){
 			throw new \Exception("You already set cached data", 1);
 		}
 
