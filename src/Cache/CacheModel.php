@@ -2,7 +2,6 @@
 
 namespace JiJiHoHoCoCo\IchiORM\Cache;
 
-use Redis,Memcached;
 class CacheModel{
 	
 	private static $redis , $memcached;
@@ -13,12 +12,12 @@ class CacheModel{
 			throw new \Exception("You already set cached data", 1);
 		}
 
-		if($cacheObject instanceof Redis){
+		if(is_a($cacheObject, 'Redis') ){
 			self::$redis=new RedisCache($cacheObject);
-		}elseif($cacheObject instanceof Memcached){
+		}elseif(is_a($cacheObject, 'Memcached')){
 			self::$memcached=new MemcachedCache($cacheObject);
 		}else{
-			throw new \Exception("You can only use redis object or memcached object", 1);
+			throw new \Exception("Error Processing Request", 1);
 		}
 	}
 
