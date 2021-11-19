@@ -18,7 +18,7 @@ class CacheModel{
 		}elseif($cacheObject instanceof Memcached){
 			self::$memcached=new MemcachedCache($cacheObject);
 		}else{
-			throw new \Exception("Error Processing Request", 1);
+			throw new \Exception("You can only use redis object or memcached object", 1);
 		}
 	}
 
@@ -28,6 +28,6 @@ class CacheModel{
 		}elseif(self::$memcached!==NULL){
 			return self::$memcached->remember($key,$data,$expiredTime==NULL ? 0 : $expiredTime);
 		}
-		throw new \Exception("You need to set cached object firstly", 1);
+		throw new \Exception("You need to set redis or memcached object firstly", 1);
 	}
 }
