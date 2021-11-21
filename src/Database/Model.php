@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace JiJiHoHoCoCo\IchiORM\Database;
 use PDO;
 use JiJiHoHoCoCo\IchiORM\Observer\{ModelObserver,ObserverSubject};
 abstract class Model implements ModelInterface{
