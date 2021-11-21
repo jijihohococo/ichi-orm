@@ -17,7 +17,7 @@ class CacheModel{
 		}elseif(is_a($cacheObject, 'Memcached')){
 			self::$memcached=new MemcachedCache($cacheObject);
 		}else{
-			throw new \Exception("Error Processing Request", 1);
+			throw new \Exception("Please set redis or memcached object", 1);
 		}
 	}
 
