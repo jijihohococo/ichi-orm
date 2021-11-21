@@ -360,9 +360,9 @@ abstract class Model implements ModelInterface{
 		return $object;
 	}
 
-	private static function makeObserver(string $className , string $method , $object){
+	private static function makeObserver(string $className , string $method , $parameters){
 		if(self::$observerSubject!==NULL && self::$observerSubject->check($className) ){
-			self::$observerSubject->use($className,$method,$object);
+			self::$observerSubject->use($className,$method,$parameters);
 		}
 	}
 
