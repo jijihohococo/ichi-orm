@@ -19,7 +19,6 @@ abstract class Model implements ModelInterface{
 	private static $unionQuery;
 	private static $selectQuery;
 	private static $observerSubject;
-	private static $modelObservers;
 
 	protected function connectDatabase(){
 		return connectPDO();
