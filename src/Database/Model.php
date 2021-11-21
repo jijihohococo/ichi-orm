@@ -1,8 +1,9 @@
 <?php
 
-namespace JiJiHoHoCoCo\IchiORM\Database;
+namespace App\Models;
 use PDO;
-abstract class Model{
+use JiJiHoHoCoCo\IchiORM\Observer\{ModelObserver,ObserverSubject};
+abstract class Model implements ModelInterface{
 
 	private static $limitOne=" LIMIT 1";
 
@@ -17,6 +18,8 @@ abstract class Model{
 	private static $groupByString=' GROUP BY ';
 	private static $unionQuery;
 	private static $selectQuery;
+	private static $observerSubject;
+	private static $modelObservers;
 
 	protected function connectDatabase(){
 		return connectPDO();
@@ -350,8 +353,18 @@ abstract class Model{
 		$object= mappingModelData([
 			$getID => $pdo->lastInsertId()
 		], $insertedData , $instance );
+		$className=self::$className;
 		self::disableBooting();
+
+		self::makeObserver($className,'create',$object);
+
 		return $object;
+	}
+
+	private static function makeObserver(string $className , string $method , $object){
+		if(self::$observerSubject!==NULL && self::$observerSubject->check($className) ){
+			self::$observerSubject->use($className,$method,$object);
+		}
 	}
 
 	public function update(array $attribute){
@@ -386,6 +399,7 @@ abstract class Model{
 		$object= mappingModelData([
 			$getID => $this->{$getID}
 		], $insertedData , $this );
+		self::makeObserver((string)get_class($this),'update',$object);
 		return $object;
 		
 	}
@@ -432,12 +446,14 @@ abstract class Model{
 			$stmt=$pdo->prepare("DELETE FROM ".$table." WHERE ".$id."=".$this->{$id});
 			$stmt->execute();
 		}
+		self::makeObserver((string)get_class($this),'delete',$this);
 	}
 
 	public function forceDelete(){
 		$id=$this->getID();
 		$table=$this->getTable();
 		$stmt=$this->connectDatabase()->prepare("DELETE FROM ".$table." WHERE ".$id.'='.$this->{$id});
+		self::makeObserver((string)get_class($this),'forceDelete',$this);
 		$stmt->execute();
 	}
 
@@ -449,6 +465,7 @@ abstract class Model{
 			$stmt=$pdo->prepare("UPDATE ".$table." SET deleted_at=NULL WHERE ".$id."=".$this->{$id});
 			$stmt->execute();
 		}
+		self::makeObserver((string)get_class($this),'restore',$this);
 	}
 
 
@@ -1439,5 +1456,13 @@ public function refersMany($class,$field,$referField='id'){
 	}
 	throw new \Exception($referField .' is not available', 1);
 	
+}
+
+public static function observe(ModelObserver $modelObserver){
+	if(self::$observerSubject==NULL){
+		self::$observerSubject=new ObserverSubject;
+	}
+	$className=(string)get_called_class();
+	self::$observerSubject->attach($className , $modelObserver);
 }
 }
