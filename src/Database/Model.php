@@ -3,7 +3,7 @@
 namespace JiJiHoHoCoCo\IchiORM\Database;
 use PDO;
 use JiJiHoHoCoCo\IchiORM\Observer\{ModelObserver,ObserverSubject};
-abstract class Model implements ModelInterface{
+abstract class Model{
 
 	private static $limitOne=" LIMIT 1";
 
