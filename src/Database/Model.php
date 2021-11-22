@@ -360,7 +360,7 @@ abstract class Model{
 		return $object;
 	}
 
-	private static function makeObserver(string $className , string $method , $parameters){
+	protected static function makeObserver(string $className , string $method , $parameters){
 		if(self::$observerSubject!==NULL && self::$observerSubject->check($className) ){
 			self::$observerSubject->use($className,$method,$parameters);
 		}
@@ -1457,7 +1457,7 @@ public function refersMany($class,$field,$referField='id'){
 	
 }
 
-public static function observe(ModelObserver $modelObserver){
+protected static function observe(ModelObserver $modelObserver){
 	if(self::$observerSubject==NULL){
 		self::$observerSubject=new ObserverSubject;
 	}
