@@ -129,7 +129,7 @@ abstract class Model{
 		return self::$instance;
 	}
 
-	public static function having($field,$operator,$value){
+	public static function having(string $field,string $operator,$value){
 		if(self::checkInstance()){
 			throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
 		}
@@ -360,7 +360,7 @@ abstract class Model{
 		return $object;
 	}
 
-	protected static function makeObserver(string $className , string $method , $parameters){
+	public static function makeObserver(string $className , string $method , $parameters){
 		if(self::$observerSubject!==NULL && self::$observerSubject->check($className) ){
 			self::$observerSubject->use($className,$method,$parameters);
 		}
@@ -421,7 +421,7 @@ abstract class Model{
 		return $instance=='' ? (new NullModel)->nullExecute() : $instance;
 	}
 
-	public static function findBy($field,$value){
+	public static function findBy(string $field,$value){
 		self::boot();
 		$pdo=self::$instance->connectDatabase();
 		$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$field." = ? ".self::$limitOne);
@@ -630,7 +630,7 @@ private static function makeSubQueryInSubQuery($whereSelect,$value,$field,$check
 	self::$currentSubQueryNumber=$previousSubQueryNumber;
 }
 
-public static function from($className){
+public static function from(string $className){
 	if(self::checkInstance()){
 		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
 	}
@@ -1071,11 +1071,11 @@ private static function disableForSQL(){
 	self::$toSQL=FALSE;
 }
 
-public static function union($value){
+public static function union(callable $value){
 	return self::makeUnionQuery($value,' UNION ');
 }
 
-public static function unionAll($value){
+public static function unionAll(callable $value){
 	return self::makeUnionQuery($value,' UNION ALL ');
 }
 
@@ -1290,7 +1290,7 @@ public static function addOnlySelect(array $fields){
 return self::$instance;
 }
 
-public static function paginate($per_page=10){
+public static function paginate(int $per_page=10){
 	if(self::checkInstance()){
 		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
 	}
@@ -1399,7 +1399,7 @@ private static function makeJoin($table,$field,$operator,$ownField,$join){
 	self::getJoin($sqlArray,$join);
 }
 
-public static function innerJoin($table,$field,$operator,$ownField){
+public static function innerJoin(string $table,string $field,string $operator,string $ownField){
 	if(self::checkInstance()){
 		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
 	}
@@ -1413,7 +1413,7 @@ public static function innerJoin($table,$field,$operator,$ownField){
 	return self::$instance;
 }
 
-public function leftJoin($table,$field,$operator,$ownField){
+public function leftJoin(string $table,string $field,string $operator,string $ownField){
 	if(self::checkInstance()){
 		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
 	}
@@ -1427,7 +1427,7 @@ public function leftJoin($table,$field,$operator,$ownField){
 	return self::$instance;
 }
 
-public function rightJoin($table,$field,$operator,$ownField){
+public function rightJoin(string $table,string $field,string $operator,string $ownField){
 	if(self::checkInstance()){
 		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
 	}
@@ -1441,14 +1441,14 @@ public function rightJoin($table,$field,$operator,$ownField){
 	return self::$instance;
 }
 
-public function refersTo($class,$field,$referField='id'){
+public function refersTo(string $class,string $field,string $referField='id'){
 	if(isset($this->{$field})){
 		return $class::findBy($referField,$this->{$field});
 	}
 	throw new \Exception($field .' is not available', 1);
 }
 
-public function refersMany($class,$field,$referField='id'){
+public function refersMany(string $class,string $field,string $referField='id'){
 	if(isset($this->{$referField})){
 		$classObject=new $class;
 		return $class::where($classObject->getTable() . '.'.$field,$this->{$referField}); 
@@ -1457,7 +1457,7 @@ public function refersMany($class,$field,$referField='id'){
 	
 }
 
-protected static function observe(ModelObserver $modelObserver){
+public static function observe(ModelObserver $modelObserver){
 	if(self::$observerSubject==NULL){
 		self::$observerSubject=new ObserverSubject;
 	}
