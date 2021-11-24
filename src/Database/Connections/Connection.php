@@ -31,7 +31,7 @@ abstract class Connection{
 		}
 	}
 
-	public function connect(array $config,$option){
+	private function connect(array $config,array $option){
 		$pdo=new PDO(
 			$this->getDSN($config),
 			$config['user_name'],
