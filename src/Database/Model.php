@@ -545,8 +545,12 @@ public static function limit(int $limit){
 	return self::$instance;
 }
 
-private static function setSubQuery($field,$where){
-	self::$numberOfSubQueries++;
+private static function setSubQuery($field,$where,bool $increase=TRUE){
+	if($increase==TRUE){
+		self::$numberOfSubQueries++;
+	}
+	$previousCheck=self::$currentSubQueryNumber!==NULL ? self::showCurrentSubQuery() : NULL;
+	$previousField=$previousCheck!==NULL ? self::${$previousCheck}[self::$currentField.self::$currentSubQueryNumber] : NULL  ;
 	self::$currentSubQueryNumber=self::$numberOfSubQueries;
 	self::$currentField=$field;
 	self::${$where}[self::$currentField.self::$currentSubQueryNumber]=[
@@ -563,8 +567,8 @@ private static function setSubQuery($field,$where){
 		'addSelect'=>FALSE,
 		'withTrashed'=>FALSE,
 		'addTrashed' => FALSE,
-		'table' => self::$table,
-		'select'=> self::$table.'.*',
+		'table' => $previousField!==NULL && isset($previousField['table']) ? $previousField['table'] : self::$table,
+		'select'=>  $previousField!==NULL && isset($previousField['table']) ? $previousField['table'].'.*' :  self::$table.'.*',
 		'className' => NULL,
 		'object' => NULL,
 		'havingNumber' => NULL ,
@@ -1080,12 +1084,26 @@ public static function unionAll(callable $value){
 }
 
 private static function makeUnionQuery($value,$union){
-	$previousQuery=self::$unionQuery==NULL ? self::getSQL() : self::$unionQuery;
-	self::disableForSQL();
-	$newUnionQuery=$value();
-	self::boot();
-	self::$unionQuery=$previousQuery . $union . $newUnionQuery;
-	return self::$instance;
+	if(self::$currentSubQueryNumber==NULL){
+		$previousQuery=self::$unionQuery==NULL ? self::getSQL() : self::$unionQuery;
+		self::disableForSQL();
+		$newUnionQuery=$value();
+		self::boot();
+		self::$unionQuery=$previousQuery . $union . $newUnionQuery;
+		return self::$instance;
+	}else{
+		$currentQuery=self::showCurrentSubQuery();
+		$currentField=self::$currentField;
+		$currentSubQueryNumber=self::$currentSubQueryNumber;
+		self::makeSubQuery( $currentQuery );
+		$previousQuery = self::${$currentQuery}[$currentField];
+		$query=self::$instance;
+		$query->setSubQuery($currentField,$currentQuery,FALSE);
+		self::$subQueries[$currentField.$currentSubQueryNumber]=$currentSubQueryNumber;
+		$value($query);
+		$previousQuery=substr($previousQuery,0,-1) . $union .  self::${$currentQuery}[$currentField] . ')';
+		self::${$currentQuery}[$currentField]=$previousQuery;
+	}
 }
 
 public static function get(){
@@ -1169,7 +1187,11 @@ private static function makeSubQuery($where){
 		self::$subQueries=[];
 		self::makeDefaultSubQueryData();
 	}
-	unset(self::${$where}[$currentField.$currentSubQueryNumber]);
+
+	if(isset(self::${$where}[$currentField.$currentSubQueryNumber])){
+		unset(self::${$where}[$currentField.$currentSubQueryNumber]);
+	}
+
 }
 
 private static function getSQL(){
