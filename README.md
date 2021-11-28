@@ -512,7 +512,10 @@ Author::innerJoin('blogs','authors.id','=','blogs.author_id')->select(['authors.
 Subquery
 ```php
 Blog::where('id',function($query){
-	$query->from('App\Models\Author')->innerJoin('blogs','authors.id','=','blogs.author_id')->select(['blogs.id AS blog_id'])->get();
+	return $query->from('App\Models\Author')
+	->innerJoin('blogs','authors.id','=','blogs.author_id')
+	->select(['blogs.id AS blog_id'])
+	->get();
 })->get();
 ``` 
 
@@ -526,7 +529,10 @@ Author::leftJoin('blogs','authors.id','=','blogs.author_id')->select(['authors.*
 Subquery
 ```php
 Blog::where('id',function($query){
-	$query->from('App\Models\Author')->leftJoin('blogs','authors.id','=','blogs.author_id')->select(['blogs.id AS blog_id'])->get();
+	return $query->from('App\Models\Author')
+	->leftJoin('blogs','authors.id','=','blogs.author_id')
+	->select(['blogs.id AS blog_id'])
+	->get();
 })->get();
 ``` 
 
@@ -540,7 +546,10 @@ Author::rightJoin('blogs','authors.id','=','blogs.author_id')->select(['authors.
 Subquery
 ```php
 Blog::where('id',function($query){
-	$query->from('App\Models\Author')->rightJoin('blogs','authors.id','=','blogs.author_id')->select(['blogs.id AS blog_id'])->get();
+	return $query->from('App\Models\Author')
+	->rightJoin('blogs','authors.id','=','blogs.author_id')
+	->select(['blogs.id AS blog_id'])
+	->get();
 })->get();
 ```
 
@@ -551,7 +560,7 @@ If you want to use subquery within one table you can do as shown as before.
 <i>You can use subqueries as shown as below in "where","orWhere" and "whereIn" functions.</i>
 ```php
 Blog::whereIn('author_id',function($query){
-$query->select(['id'])->where('id',1)->get();
+return $query->select(['id'])->where('id',1)->get();
 })->get();
 ```
 
@@ -559,7 +568,10 @@ If you want to use subquery from different table you can do as shown as before.
 
 ```php
 Blog::whereIn('author_id',function($query){
-	$query->select(['id'])->where('id',1)->from('App\Models\Author')->get();
+	return $query->from('App\Models\Author')
+	->select(['id'])
+	->where('id',1)
+	->get();
 })->get();
 ```
 You can use "from" function in only subqueries. You need to add model class name which is represented the another table in "from" function.
