@@ -1478,6 +1478,7 @@ public function rightJoin(string $table,string $field,string $operator,string $o
 
 protected function refersTo(string $class,string $field,string $referField='id'){
 	self::checkClass($class);
+	self::checkInstance();
 	if(isset($this->{$field})){
 		return $class::findBy($referField,$this->{$field});
 	}
@@ -1486,6 +1487,7 @@ protected function refersTo(string $class,string $field,string $referField='id')
 
 protected function refersMany(string $class,string $field,string $referField='id'){
 	self::checkClass($class);
+	self::checkInstance();
 	if(isset($this->{$referField})){
 		$classObject=new $class;
 		return $class::where($classObject->getTable() . '.'.$field,$this->{$referField}); 
