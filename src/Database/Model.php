@@ -90,6 +90,12 @@ abstract class Model{
 		}
 	}
 
+	private static function checkBoot(){
+		if(self::$instance!==NULL){
+			throw new \Exception("CRUD functions and querying are different", 1);
+		}
+	}
+
 	private static function boot(){
 		$calledClass=get_called_class();
 
@@ -258,7 +264,7 @@ abstract class Model{
 	}
 
 	public static function insert(array $attributes){
-		self::checkInstance();
+		self::checkBoot();
 		if(empty($attributes)){
 			throw new \Exception("You need to put non-empty array data", 1);
 		}
@@ -312,7 +318,7 @@ abstract class Model{
 	}
 
 	public static function create(array $attribute){
-		self::checkInstance();
+		self::checkBoot();
 		if(empty($attribute)){
 			throw new \Exception("You need to put non-empty array data", 1);
 		}
@@ -367,7 +373,7 @@ abstract class Model{
 	}
 
 	public function update(array $attribute){
-		self::checkInstance();
+		self::checkBoot();
 		if(empty($attribute)){
 			throw new \Exception("You need to put non-empty array data", 1);
 		}
@@ -405,7 +411,7 @@ abstract class Model{
 	}
 
 	public static function find($id){
-		self::checkInstance();
+		self::checkBoot();
 		self::boot();
 		$pdo=self::$instance->connectDatabase();
 		$getId=self::$instance->getID();
@@ -424,7 +430,7 @@ abstract class Model{
 	}
 
 	public static function findBy(string $field,$value){
-		self::checkInstance();
+		self::checkBoot();
 		self::boot();
 		$pdo=self::$instance->connectDatabase();
 		$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$field." = ? ".self::$limitOne);
@@ -438,7 +444,7 @@ abstract class Model{
 	}
 
 	public function delete(){
-		self::checkInstance();
+		self::checkBoot();
 		$id=$this->getID();
 		$table=$this->getTable();
 		$pdo=$this->connectDatabase();
@@ -453,7 +459,7 @@ abstract class Model{
 	}
 
 	public function forceDelete(){
-		self::checkInstance();
+		self::checkBoot();
 		$id=$this->getID();
 		$table=$this->getTable();
 		$stmt=$this->connectDatabase()->prepare("DELETE FROM ".$table." WHERE ".$id.'='.$this->{$id});
@@ -462,7 +468,7 @@ abstract class Model{
 	}
 
 	public function restore(){
-		self::checkInstance();
+		self::checkBoot();
 		$id=$this->getID();
 		$pdo=$this->connectDatabase();
 		$table=$this->getTable();
@@ -1478,7 +1484,7 @@ public function rightJoin(string $table,string $field,string $operator,string $o
 
 protected function refersTo(string $class,string $field,string $referField='id'){
 	self::checkClass($class);
-	self::checkInstance();
+	self::checkBoot();
 	if(isset($this->{$field})){
 		return $class::findBy($referField,$this->{$field});
 	}
@@ -1487,7 +1493,7 @@ protected function refersTo(string $class,string $field,string $referField='id')
 
 protected function refersMany(string $class,string $field,string $referField='id'){
 	self::checkClass($class);
-	self::checkInstance();
+	self::checkBoot();
 	if(isset($this->{$referField})){
 		$classObject=new $class;
 		return $class::where($classObject->getTable() . '.'.$field,$this->{$referField}); 
@@ -1497,7 +1503,7 @@ protected function refersMany(string $class,string $field,string $referField='id
 }
 
 public static function observe(ModelObserver $modelObserver){
-	self::checkInstance();
+	self::checkBoot();
 	checkObserverFunctions($modelObserver);
 	if(self::$observerSubject==NULL){
 		self::$observerSubject=new ObserverSubject;
