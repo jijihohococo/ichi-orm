@@ -33,10 +33,13 @@ This package is Open Source According to [MIT license](LICENSE.md)
 		* [Inner Join](#inner-join)
 		* [Left Join](#left-join)
 		* [Right Join](#right-join)
+	* [Union](#union)
 	* [Subqueries](#subqueries)
 * [Using PDO Functions](#using-pdo-functions)
 * [Using Different Databases](#using-different-databases)
 * [JSON Response](#json-response)
+* [Caching](#caching)
+* [Observers](#observers)
 
 ## Installing
 
@@ -115,7 +118,7 @@ $connector->selectConnection('mysql');
 
 In Ichi ORM, one model class which is extended "JiJiHoHoCoCo\IchiORM\Database\Model" abstract class is represented one table.
 
-In default, the table name of the model class will show the format according to below
+In default, the table name of the model class will show according to the format below
 
 | Model     | Table       |
 |-----------|-------------|
@@ -125,8 +128,15 @@ In default, the table name of the model class will show the format according to 
 If the above format is not suitable for the model class, you can customize in your model class
 
 ```php
-protected function getTable(){
-	return "order_item_details";
+namespace App\Models\Blog;
+
+use JiJiHoHoCoCo\IchiORM\Database\Model;
+
+class Blog extends Model{
+	
+	protected function getTable(){
+		return "order_item_details";
+	}
 }
 ```
 
@@ -135,8 +145,15 @@ protected function getTable(){
 In default, the primary key for the table is represented "id". If you want to change that, you can customize in your model class
 
 ```php
-protected function getID(){
-	return "blog_id";
+namespace App\Models\Blog;
+
+use JiJiHoHoCoCo\IchiORM\Database\Model;
+
+class Blog extends Model{
+	
+	protected function getID(){
+		return "blog_id";
+	}
 }
 ```
 
@@ -145,6 +162,7 @@ protected function getID(){
 Firstly, you need to extend Model Class from your class and declare your data fields as attributes in your model as shown as below.
 
 ```php
+namespace App\Models\Blog;
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 class Blog extends Model{
 
@@ -408,6 +426,29 @@ To get your query result you must use "get()" or "toArray()" functions
 Blog::select(['id','name'])->get();
 ```
 
+You can use subqueries in select with two functions "addSelect" and "addOnlySelect".
+
+<i>"addSelect" function is adding subqueries select</i>
+```php
+Blog::select(['id','author_id'])
+->addSelect(['autor_name' => function($query){
+	return $query->from(['App\Models\Author'])
+	->whereColumn('authors.id','blogs.author_id')
+	->limit(1)
+	->get();
+}])->get();
+```
+
+<i>"addOnlySelect" function is selecting only data from that function</i>
+```php
+Blog::addOnlySelect(['autor_name' => function($query){
+	return $query->from(['App\Models\Author'])
+	->whereColumn('authors.id','blogs.author_id')
+	->limit(1)
+	->get();
+}])->get();
+```
+
 "toArray()" function can use in only main query. This function will return the array for thre query as shown as below.
 
 <b>Array ( [0] => Array ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 [deleted_at] => ) )</b>
@@ -553,6 +594,26 @@ Blog::where('id',function($query){
 })->get();
 ```
 
+### Union
+
+You can use "union" function in queries.
+
+```php
+Blog::where('id',1)->union(function(){
+	return Blog::where('id',2)->toSQL()->get();
+})->get();
+```
+
+You can use "union" function in subqueries.
+
+```php
+Blog::whereIn('id', function($query) {
+	return $query->select(['id'])->where('id',1)->union(function($query){
+		return $query->select(['id'])->where('id',2)->get();
+	});
+} )->get();
+```
+
 ### Subqueries
 
 If you want to use subquery within one table you can do as shown as before.
@@ -620,6 +681,13 @@ When you want to do json data of for your API you can simply do as shown as belo
 return jsonResponse([
 	'blogs' => Blog::get()
 ]);
+```
+You can customize http response code for json response. Default http response code is 200.
+
+```php
+return jsonResponse([
+	'blogs' => Blog::get()
+],202);
 ```
 
 If you want to customize your JSON data, firstly you need to create the class.

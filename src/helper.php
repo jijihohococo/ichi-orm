@@ -149,3 +149,14 @@ if(!function_exists('showDuplicateModelMessage')){
 		return "You can't call {$getCalledClass} because you are using {$className}";
 	}
 }
+
+if(!function_exists('checkObserverFunctions')){
+	function checkObserverFunctions($modelObserver){
+		$functions=['create','update','delete','restore','forceDelete'];
+		foreach ($functions as $function) {
+			if(!method_exists($modelObserver, $function)){
+				throw new \Exception("Observer class must have create,update,delete,restore and forceDelete functions", 1);
+			}
+		}
+	}
+}

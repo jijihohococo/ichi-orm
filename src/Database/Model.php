@@ -19,6 +19,7 @@ abstract class Model{
 	private static $unionQuery;
 	private static $selectQuery;
 	private static $observerSubject;
+	private static $subQueryLimitNumber=0;
 
 	protected function connectDatabase(){
 		return connectPDO();
@@ -540,8 +541,14 @@ public static function limit(int $limit){
 	if(self::checkInstance()){
 		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
 	}
-	self::boot();
-	self::$limit=' LIMIT '.$limit;
+	if(self::$currentSubQueryNumber==NULL){
+		self::boot();
+		self::$limit=' LIMIT '.$limit;
+	}else{
+		$check=self::showCurrentSubQuery();
+		self::${$check}[self::$currentField.self::$currentSubQueryNumber]['limit']=$limit;
+		self::$subQueryLimitNumber++;
+	}
 	return self::$instance;
 }
 
@@ -635,6 +642,12 @@ private static function makeSubQueryInSubQuery($whereSelect,$value,$field,$check
 }
 
 public static function from(string $className){
+	if(!class_exists($className)){
+		throw new \Exception($className . " is not exist", 1);
+	}
+	if(!$className instanceof Model){
+		throw new \Exception($className ." must extend JiJiHoHoCoCo\IchiORM\Database\Model", 1);
+	}
 	if(self::checkInstance()){
 		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
 	}
@@ -781,6 +794,17 @@ public static function whereNotIn(string $field,$value){
 }
 
 private static function getLimit(){ return self::$limit; }
+
+private static function getSubQueryLimit($where){
+	if(isset(self::${$where}[self::$currentField.self::$currentSubQueryNumber])){
+		$limit= self::${$where}[self::$currentField.self::$currentSubQueryNumber]['limit'];
+		return $limit==NULL ? $limit : ' LIMIT '.$limit;
+	}
+}
+
+private static function getSubQueryLimitNumber(){
+	return self::$subQueryLimitNumber;
+}
 
 private static function checkTrashed(){ return property_exists(self::$instance, 'deleted_at') && self::$withTrashed==FALSE; }
 
@@ -1067,12 +1091,14 @@ private static function getSubQueryOrder($where){
 private static function disableBooting(){
 	self::$instance=self::$getID=self::$fields=self::$where=self::$whereColumn=self::$orWhere=self::$whereIn=self::$whereNotIn=self::$operators=self::$order=self::$limit=self::$groupBy=self::$joinSQL=self::$addSelect=self::$withTrashed=self::$addTrashed=self::$className=self::$toSQL=self::$numberOfSubQueries=self::$currentSubQueryNumber=self::$currentField=self::$whereSubQuery=self::$subQuery=self::$havingNumber=self::$havingField=self::$havingOperator=self::$havingValue=self::$selectQuery=NULL;
 	self::$subQueries=[];
+	self::$subQueryLimitNumber=0;
 }
 
 private static function disableForSQL(){
 	self::$instance=self::$getID=self::$table=self::$where=self::$whereColumn=self::$orWhere=self::$whereIn=self::$whereNotIn=self::$operators=self::$order=self::$limit=self::$groupBy=self::$joinSQL=self::$select=self::$addSelect=self::$withTrashed=self::$addTrashed=self::$className=self::$numberOfSubQueries=self::$currentSubQueryNumber=self::$currentField=self::$whereSubQuery=self::$subQuery=self::$havingNumber=self::$havingField=self::$havingOperator=self::$havingValue=self::$selectQuery=NULL;
 	self::$subQueries=[];
 	self::$toSQL=FALSE;
+	self::$subQueryLimitNumber=0;
 }
 
 public static function union(callable $value){
@@ -1208,7 +1234,8 @@ private static function getSQL(){
 }
 
 private static function getSubQuery($where){
-	return  self::getSubQuerySelect($where).
+	$limit=self::getSubQueryLimit($where);
+	$result=self::getSubQuerySelect($where).
 	self::getSubQueryWhere($where).
 	self::getSubQueryWhereColumn($where).
 	self::getSubQueryWhereIn($where).
@@ -1217,6 +1244,7 @@ private static function getSubQuery($where){
 	self::getSubQueryOrder($where).
 	self::getSubQueryGroupBy($where).
 	self::getSubQueryHaving($where);
+	return $limit==NULL ? $result : "SELECT * FROM (".$result.$limit.") AS l".self::getSubQueryLimitNumber();
 }
 
 public static function toArray(){
@@ -1241,6 +1269,9 @@ public static function toArray(){
 public static function toSQL(){
 	if(self::checkInstance()){
 		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
+	if(self::$currentSubQueryNumber!==NULL){
+		throw new \Exception("Don't use toSQL() function in sub query", 1);
 	}
 	self::boot();
 	self::$toSQL=TRUE;
@@ -1315,6 +1346,9 @@ return self::$instance;
 public static function paginate(int $per_page=10){
 	if(self::checkInstance()){
 		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+	}
+	if(self::$currentSubQueryNumber!==NULL){
+		throw new \Exception("You can't use paginate() function in sub queries.", 1);
 	}
 	self::boot();
 	$pageCheck=pageCheck();
@@ -1480,6 +1514,7 @@ public function refersMany(string $class,string $field,string $referField='id'){
 }
 
 public static function observe(ModelObserver $modelObserver){
+	checkObserverFunctions($modelObserver);
 	if(self::$observerSubject==NULL){
 		self::$observerSubject=new ObserverSubject;
 	}
