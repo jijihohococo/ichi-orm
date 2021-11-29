@@ -34,9 +34,7 @@ abstract class Model{
 	}
 
 	public static function withTrashed(){
-		if(self::checkInstance()){
-			throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-		}
+		self::checkInstance();
 		if(self::$currentSubQueryNumber==NULL){
 			self::boot();
 			self::$withTrashed=TRUE;
@@ -87,7 +85,9 @@ abstract class Model{
 	}
 
 	private static function checkInstance(){
-		return self::$className!==NULL && self::$className!==get_called_class();
+		if(self::$className!==NULL && self::$className!==get_called_class()){
+			throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
+		}
 	}
 
 	private static function boot(){
@@ -118,9 +118,7 @@ abstract class Model{
 	}
 
 	public static function groupBy(string $groupBy){
-		if(self::checkInstance()){
-			throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-		}
+		self::checkInstance();
 		if(self::$currentSubQueryNumber==NULL){
 			self::boot();
 			self::$groupBy=self::$groupByString . $groupBy;
@@ -131,9 +129,7 @@ abstract class Model{
 	}
 
 	public static function having(string $field,string $operator,$value){
-		if(self::checkInstance()){
-			throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-		}
+		self::checkInstance();
 		if(self::$currentSubQueryNumber==NULL){
 			self::boot();
 			if(self::$havingNumber==NULL){
@@ -199,6 +195,7 @@ abstract class Model{
 	}
 
 	public static function bulkUpdate(array $attributes){
+		self::checkInstance();
 		if(empty($attributes)){
 			throw new \Exception("You need to put non-empty array data", 1);
 		}
@@ -261,6 +258,7 @@ abstract class Model{
 	}
 
 	public static function insert(array $attributes){
+		self::checkInstance();
 		if(empty($attributes)){
 			throw new \Exception("You need to put non-empty array data", 1);
 		}
@@ -314,6 +312,7 @@ abstract class Model{
 	}
 
 	public static function create(array $attribute){
+		self::checkInstance();
 		if(empty($attribute)){
 			throw new \Exception("You need to put non-empty array data", 1);
 		}
@@ -368,6 +367,7 @@ abstract class Model{
 	}
 
 	public function update(array $attribute){
+		self::checkInstance();
 		if(empty($attribute)){
 			throw new \Exception("You need to put non-empty array data", 1);
 		}
@@ -405,6 +405,7 @@ abstract class Model{
 	}
 
 	public static function find($id){
+		self::checkInstance();
 		self::boot();
 		$pdo=self::$instance->connectDatabase();
 		$getId=self::$instance->getID();
@@ -423,6 +424,7 @@ abstract class Model{
 	}
 
 	public static function findBy(string $field,$value){
+		self::checkInstance();
 		self::boot();
 		$pdo=self::$instance->connectDatabase();
 		$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$field." = ? ".self::$limitOne);
@@ -436,6 +438,7 @@ abstract class Model{
 	}
 
 	public function delete(){
+		self::checkInstance();
 		$id=$this->getID();
 		$table=$this->getTable();
 		$pdo=$this->connectDatabase();
@@ -450,6 +453,7 @@ abstract class Model{
 	}
 
 	public function forceDelete(){
+		self::checkInstance();
 		$id=$this->getID();
 		$table=$this->getTable();
 		$stmt=$this->connectDatabase()->prepare("DELETE FROM ".$table." WHERE ".$id.'='.$this->{$id});
@@ -458,6 +462,7 @@ abstract class Model{
 	}
 
 	public function restore(){
+		self::checkInstance();
 		$id=$this->getID();
 		$pdo=$this->connectDatabase();
 		$table=$this->getTable();
@@ -470,9 +475,7 @@ abstract class Model{
 
 
 	public static function select(array  $fields){
-		if(self::checkInstance()){
-			throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-		}
+		self::checkInstance();
 		if(self::$currentSubQueryNumber==NULL){
 
 			// If addSelect was used after using addOnlySelect function
@@ -538,9 +541,7 @@ private static function checkSubQueryAddSelect($where){
 }
 
 public static function limit(int $limit){
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 	if(self::$currentSubQueryNumber==NULL){
 		self::boot();
 		self::$limit=' LIMIT '.$limit;
@@ -641,16 +642,20 @@ private static function makeSubQueryInSubQuery($whereSelect,$value,$field,$check
 	self::$currentSubQueryNumber=$previousSubQueryNumber;
 }
 
-public static function from(string $className){
+private static function checkClass($className){
 	if(!class_exists($className)){
 		throw new \Exception($className . " is not exist", 1);
 	}
 	if(!$className instanceof Model){
 		throw new \Exception($className ." must extend JiJiHoHoCoCo\IchiORM\Database\Model", 1);
 	}
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+}
+
+public static function from(string $className){
+	
+	self::checkClass($className);
+
+	self::checkInstance();
 	if(self::$currentSubQueryNumber!==NULL){
 		self::addTableToSubQuery(self::showCurrentSubQuery(),$className);
 		return self::$instance;
@@ -687,9 +692,7 @@ public static function orWhere(){
 }
 
 private static function makeWhereQuery(array $parameters,$where){
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 	$countParameters=count($parameters);
 	$value=$operator=$field=NULL;
 	if($countParameters==2 || $countParameters==3 ){
@@ -752,9 +755,7 @@ private static function makeWhereQuery(array $parameters,$where){
 
 private static function makeInQuery($whereIn,$field,$value){
 
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 
 	if(!is_array($value) && !is_callable($value) && $value!==NULL ){
 		throw new \Exception("You can add only array values or sub query in {$whereIn} function", 1);
@@ -1044,9 +1045,7 @@ private static function getSubQueryWhereNotIn($where){
 private static function getFields(){ return self::$fields; }
 
 public static function orderBy(string $field,string $sort="ASC"){
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 	if(self::$currentSubQueryNumber==NULL){
 		self::boot();
 		self::$order=" ORDER BY ".$field . " ".  $sort;
@@ -1067,9 +1066,7 @@ private static function makeSubQueryOrderBy($where,$field,$sort){
 }
 
 public static function latest(string $field=null){
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 	if(self::$currentSubQueryNumber==NULL){
 		$field=$field==null ? self::$instance->getID() : $field;
 		self::boot();
@@ -1133,9 +1130,7 @@ private static function makeUnionQuery($value,$union){
 }
 
 public static function get(){
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 	if(self::$currentSubQueryNumber==NULL){
 		self::boot();
 		$mainSQL=self::$unionQuery==NULL ? self::getSQL() : self::$unionQuery ;
@@ -1248,9 +1243,7 @@ private static function getSubQuery($where){
 }
 
 public static function toArray(){
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 	if(self::$currentSubQueryNumber!==NULL){
 		throw new \Exception("Please use get() function in sub query to get sub query", 1);
 	}
@@ -1267,9 +1260,7 @@ public static function toArray(){
 }
 
 public static function toSQL(){
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 	if(self::$currentSubQueryNumber!==NULL){
 		throw new \Exception("Don't use toSQL() function in sub query", 1);
 	}
@@ -1279,9 +1270,7 @@ public static function toSQL(){
 }
 
 public static function addSelect(array $fields){
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 	if(self::$currentSubQueryNumber==NULL){
 			// If addSelect was used after using addOnlySelect function
 		if(self::$instance!==NULL && self::$select==NULL && self::$addSelect==TRUE ){
@@ -1310,9 +1299,7 @@ private static function addingSelect(array $fields){
 }
 
 public static function addOnlySelect(array $fields){
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 	if(self::$currentSubQueryNumber==NULL){
 			// If addOnlySelect function was used after using select or addSelect function //
 		if(self::$instance!==NULL && self::$select!==self::$table.'.*'){
@@ -1344,9 +1331,7 @@ return self::$instance;
 }
 
 public static function paginate(int $per_page=10){
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 	if(self::$currentSubQueryNumber!==NULL){
 		throw new \Exception("You can't use paginate() function in sub queries.", 1);
 	}
@@ -1456,9 +1441,7 @@ private static function makeJoin($table,$field,$operator,$ownField,$join){
 }
 
 public static function innerJoin(string $table,string $field,string $operator,string $ownField){
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 	$join=' INNER JOIN ';
 	if(self::$currentSubQueryNumber==NULL){
 		self::boot();
@@ -1470,9 +1453,7 @@ public static function innerJoin(string $table,string $field,string $operator,st
 }
 
 public function leftJoin(string $table,string $field,string $operator,string $ownField){
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 	$join=' LEFT JOIN ';
 	if(self::$currentSubQueryNumber==NULL){
 		self::boot();
@@ -1484,9 +1465,7 @@ public function leftJoin(string $table,string $field,string $operator,string $ow
 }
 
 public function rightJoin(string $table,string $field,string $operator,string $ownField){
-	if(self::checkInstance()){
-		throw new \Exception(showDuplicateModelMessage(get_called_class(),self::$className), 1);
-	}
+	self::checkInstance();
 	$join=' RIGHT JOIN ';
 	if(self::$currentSubQueryNumber==NULL){
 		self::boot();
@@ -1497,14 +1476,16 @@ public function rightJoin(string $table,string $field,string $operator,string $o
 	return self::$instance;
 }
 
-public function refersTo(string $class,string $field,string $referField='id'){
+protected function refersTo(string $class,string $field,string $referField='id'){
+	self::checkClass($class);
 	if(isset($this->{$field})){
 		return $class::findBy($referField,$this->{$field});
 	}
 	throw new \Exception($field .' is not available', 1);
 }
 
-public function refersMany(string $class,string $field,string $referField='id'){
+protected function refersMany(string $class,string $field,string $referField='id'){
+	self::checkClass($class);
 	if(isset($this->{$referField})){
 		$classObject=new $class;
 		return $class::where($classObject->getTable() . '.'.$field,$this->{$referField}); 
@@ -1514,6 +1495,7 @@ public function refersMany(string $class,string $field,string $referField='id'){
 }
 
 public static function observe(ModelObserver $modelObserver){
+	self::checkInstance();
 	checkObserverFunctions($modelObserver);
 	if(self::$observerSubject==NULL){
 		self::$observerSubject=new ObserverSubject;
