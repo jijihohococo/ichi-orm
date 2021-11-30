@@ -1,6 +1,6 @@
 <?php
 
-use JiJiHoHoCoCo\IchiORM\Database\{Connector,NullModel};
+use JiJiHoHoCoCo\IchiORM\Database\{Connector,NullModel,Model};
 
 if(!function_exists('connectPDO')){
 	function connectPDO(){
@@ -157,6 +157,17 @@ if(!function_exists('checkObserverFunctions')){
 			if(!method_exists($modelObserver, $function)){
 				throw new \Exception("Observer class must have create,update,delete,restore and forceDelete functions", 1);
 			}
+		}
+	}
+}
+
+if(!function_exists('checkClass')){
+	function checkClass($className){
+		if(!class_exists($className)){
+			throw new \Exception($className . " is not exist", 1);
+		}
+		if(!is_subclass_of($className, 'JiJiHoHoCoCo\IchiORM\Database\Model')){
+			throw new \Exception($className ." must extend JiJiHoHoCoCo\IchiORM\Database\Model", 1);
 		}
 	}
 }

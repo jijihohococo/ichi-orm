@@ -648,18 +648,9 @@ private static function makeSubQueryInSubQuery($whereSelect,$value,$field,$check
 	self::$currentSubQueryNumber=$previousSubQueryNumber;
 }
 
-private static function checkClass($className){
-	if(!class_exists($className)){
-		throw new \Exception($className . " is not exist", 1);
-	}
-	if(!$className instanceof Model){
-		throw new \Exception($className ." must extend JiJiHoHoCoCo\IchiORM\Database\Model", 1);
-	}
-}
-
 public static function from(string $className){
 	
-	self::checkClass($className);
+	checkClass($className);
 
 	self::checkInstance();
 	if(self::$currentSubQueryNumber!==NULL){
@@ -1483,7 +1474,7 @@ public function rightJoin(string $table,string $field,string $operator,string $o
 }
 
 protected function refersTo(string $class,string $field,string $referField='id'){
-	self::checkClass($class);
+	checkClass($class);
 	self::checkBoot();
 	if(isset($this->{$field})){
 		return $class::findBy($referField,$this->{$field});
@@ -1492,7 +1483,7 @@ protected function refersTo(string $class,string $field,string $referField='id')
 }
 
 protected function refersMany(string $class,string $field,string $referField='id'){
-	self::checkClass($class);
+	checkClass($class);
 	self::checkBoot();
 	if(isset($this->{$referField})){
 		$classObject=new $class;
