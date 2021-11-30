@@ -16,10 +16,12 @@ abstract class Model{
 	private static $whereZero=' WHERE 0 = 1 ';
 	private static $andZero=' AND 0 = 1 ';
 	private static $groupByString=' GROUP BY ';
-	private static $unionQuery;
 	private static $selectQuery;
 	private static $observerSubject;
 	private static $subQueryLimitNumber=0;
+	private static $useUnionQuery=[ 0 => TRUE ];
+	private static $unionQuery=[ 0 => NULL ];
+	private static $unionNumber , $currentUnionNumber = 0;
 
 	protected function connectDatabase(){
 		return connectPDO();
@@ -77,11 +79,6 @@ abstract class Model{
 			}
 			return "SELECT ".$select." FROM ".$current['table'].self::getSubQueryJoinSQL($where);
 		}
-	}
-
-	private static function countData(){
-		$table=self::$table;
-		return "SELECT COUNT(".$table.".".self::$getID.") FROM ".$table. self::getJoinSQL();
 	}
 
 	private static function checkInstance(){
@@ -1086,6 +1083,10 @@ private static function disableBooting(){
 	self::$instance=self::$getID=self::$fields=self::$where=self::$whereColumn=self::$orWhere=self::$whereIn=self::$whereNotIn=self::$operators=self::$order=self::$limit=self::$groupBy=self::$joinSQL=self::$addSelect=self::$withTrashed=self::$addTrashed=self::$className=self::$toSQL=self::$numberOfSubQueries=self::$currentSubQueryNumber=self::$currentField=self::$whereSubQuery=self::$subQuery=self::$havingNumber=self::$havingField=self::$havingOperator=self::$havingValue=self::$selectQuery=NULL;
 	self::$subQueries=[];
 	self::$subQueryLimitNumber=0;
+
+	self::$useUnionQuery=[ 0 => TRUE ];
+	self::$unionQuery=[ 0 => NULL ];
+	self::$unionNumber = $currentUnionNumber = 0;
 }
 
 private static function disableForSQL(){
@@ -1103,13 +1104,26 @@ public static function unionAll(callable $value){
 	return self::makeUnionQuery($value,' UNION ALL ');
 }
 
+private static function checkUnion(){
+	return self::$unionQuery[self::$currentUnionNumber]!==NULL && self::$useUnionQuery[self::$currentUnionNumber]==TRUE;
+}
+
+private static function getQuery(){
+	return self::checkUnion() ? self::$unionQuery[self::$currentUnionNumber] : self::getSQL();
+}
+
 private static function makeUnionQuery($value,$union){
 	if(self::$currentSubQueryNumber==NULL){
-		$previousQuery=self::$unionQuery==NULL ? self::getSQL() : self::$unionQuery;
+		$previousQuery=self::getQuery();
 		self::disableForSQL();
+		$uNumber=self::$currentUnionNumber;
+		self::$useUnionQuery[$uNumber]=FALSE;
+		self::$unionNumber++;
 		$newUnionQuery=$value();
+		self::$useUnionQuery[$uNumber]=TRUE;
+		self::$currentUnionNumber=$uNumber;
 		self::boot();
-		self::$unionQuery=$previousQuery . $union . $newUnionQuery;
+		self::$unionQuery[$uNumber]=$previousQuery . $union . $newUnionQuery;
 		return self::$instance;
 	}else{
 		$currentQuery=self::showCurrentSubQuery();
@@ -1130,7 +1144,7 @@ public static function get(){
 	self::checkInstance();
 	if(self::$currentSubQueryNumber==NULL){
 		self::boot();
-		$mainSQL=self::$unionQuery==NULL ? self::getSQL() : self::$unionQuery ;
+		$mainSQL=self::getQuery();
 		if(self::$toSQL==TRUE){
 			self::disableForSQL();
 			return $mainSQL;
@@ -1244,8 +1258,11 @@ public static function toArray(){
 	if(self::$currentSubQueryNumber!==NULL){
 		throw new \Exception("Please use get() function in sub query to get sub query", 1);
 	}
+	if(self::$currentUnionNumber!==0){
+		throw new \Exception("Please use toArray function in main query", 1);
+	}
 	self::boot();
-	$mainSQL=self::getSQL();
+	$mainSQL=self::getQuery();
 	$fields=self::getFields();
 	$stmt=self::$instance->connectDatabase()->prepare($mainSQL);
 	bindValues($stmt,$fields);
@@ -1332,6 +1349,9 @@ public static function paginate(int $per_page=10){
 	if(self::$currentSubQueryNumber!==NULL){
 		throw new \Exception("You can't use paginate() function in sub queries.", 1);
 	}
+	if(self::$currentUnionNumber!==0){
+		throw new \Exception("Please use paginate function in main query", 1);
+	}
 	self::boot();
 	$pageCheck=pageCheck();
 	$current_page=$pageCheck ? intval($_GET['page']) : 1;
@@ -1346,10 +1366,10 @@ public static function paginate(int $per_page=10){
 	$getWhereNotIn=self::getWhereNotIn();
 	$getOrWhere=self::getOrWhere();
 	$getOrder=self::getOrder();
-	$countData=self::countData();
 	$getGroupBy=self::getGroupBy();
 
-	$mainSQL=$selectData .
+	$mainSQL=self::checkUnion() ? self::$unionQuery[self::$currentUnionNumber] :
+	$selectData .
 	$getWhere.
 	$getWhereIn.
 	$getWhereNotIn.
@@ -1365,141 +1385,137 @@ public static function paginate(int $per_page=10){
 	bindValues($stmt,$fields);
 	$stmt->execute();
 
-	$countSQL=$countData.
-	$getWhere.
-	$getWhereIn.
-	$getWhereNotIn.
-	$getOrWhere;
+	$countSQL='SELECT COUNT(*) FROM ('.$mainSQL.') AS countData';
 
-	$countStmt=$pdo->prepare($countSQL);
-	$countStmt->execute( $fields );
+		$countStmt=$pdo->prepare($countSQL);
+		$countStmt->execute( $fields );
 
-	$objectArray=$stmt->fetchAll(PDO::FETCH_CLASS,get_called_class());
-	self::$selectedFields=[];
-	self::$select=self::$table=NULL;
+		$objectArray=$stmt->fetchAll(PDO::FETCH_CLASS,get_called_class());
+		self::$selectedFields=[];
+		self::$select=self::$table=NULL;
 
-	$total=intval($countStmt->fetchColumn());
-	$total_pages=ceil($total/$per_page);
-	$next_page=$current_page+1;
-	$previous_page=$pageCheck && $_GET['page']-1>=1 ? $_GET['page']-1 : NULL ;
-	$from=$start+1;
+		$total=intval($countStmt->fetchColumn());
+		$total_pages=ceil($total/$per_page);
+		$next_page=$current_page+1;
+		$previous_page=$pageCheck && $_GET['page']-1>=1 ? $_GET['page']-1 : NULL ;
+		$from=$start+1;
 
-	$domainName=getDomainName();
-	$totalPerPage=count($objectArray);
-	$to=($from+$totalPerPage)-1;
+		$domainName=getDomainName();
+		$totalPerPage=count($objectArray);
+		$to=($from+$totalPerPage)-1;
 
-	self::disableBooting();
-	return [ 
-		'current_page' => $current_page,
-		'data'=> $objectArray,
-		'first_page_url'=> $domainName.'?page=1',
-		'from' => $from > $total_pages ? NULL : $from,
-		'last_page' => $total_pages,
-		'last_page_url' => $domainName . '?page='.$total_pages,
-		'next_page_url' => $next_page<=$total_pages ? $domainName . '?page='.$next_page : NULL,
-		'path' => $domainName,
-		'per_page' => $per_page,
-		'prev_page_url' => $previous_page!==NULL ? $domainName . '?page='.$previous_page : NULL,
-		'to' => $to<=0 || $to>$total ? NULL: $to,
-		'total' => $totalPerPage
-	];
-}
-
-private static function getJoin($sqlArray,$joinSQL){
-	foreach($sqlArray as $table => $related){
-		self::$joinSQL .=$joinSQL . $table . " ON ".$related[1].$related[2].$related[0];
+		self::disableBooting();
+		return [ 
+			'current_page' => $current_page,
+			'data'=> $objectArray,
+			'first_page_url'=> $domainName.'?page=1',
+			'from' => $from > $total_pages ? NULL : $from,
+			'last_page' => $total_pages,
+			'last_page_url' => $domainName . '?page='.$total_pages,
+			'next_page_url' => $next_page<=$total_pages ? $domainName . '?page='.$next_page : NULL,
+			'path' => $domainName,
+			'per_page' => $per_page,
+			'prev_page_url' => $previous_page!==NULL ? $domainName . '?page='.$previous_page : NULL,
+			'to' => $to<=0 || $to>$total ? NULL: $to,
+			'total' => $totalPerPage
+		];
 	}
-}
 
-private static function getSubQueryJoin($where,$sqlArray,$joinSQL){
-	foreach($sqlArray as $table => $related){
-		self::${$where}[self::$currentField.self::$currentSubQueryNumber]['joinSQL'] .=$joinSQL . $table . " ON ".$related[1].$related[2].$related[0];
+	private static function getJoin($sqlArray,$joinSQL){
+		foreach($sqlArray as $table => $related){
+			self::$joinSQL .=$joinSQL . $table . " ON ".$related[1].$related[2].$related[0];
+		}
 	}
-}
 
-private static function getJoinSQL(){
-	return self::$joinSQL;
-}
-
-private static function getSubQueryJoinSQL($where){
-	return self::${$where}[self::$currentField.self::$currentSubQueryNumber]['joinSQL'];
-}
-
-private static function makeSubQueryJoin($table,$field,$operator,$ownField,$join){
-	$sqlArray=[];
-	$sqlArray[$table]=[$ownField,$field,$operator];
-	self::getSubQueryJoin(self::showCurrentSubQuery(),$sqlArray,$join);
-}
-
-private static function makeJoin($table,$field,$operator,$ownField,$join){
-	$sqlArray=[];
-	$sqlArray[$table]=[$ownField,$field,$operator];
-	self::getJoin($sqlArray,$join);
-}
-
-public static function innerJoin(string $table,string $field,string $operator,string $ownField){
-	self::checkInstance();
-	$join=' INNER JOIN ';
-	if(self::$currentSubQueryNumber==NULL){
-		self::boot();
-		self::makeJoin($table,$field,$operator,$ownField,$join);
-	}else{
-		self::makeSubQueryJoin($table,$field,$operator,$ownField,$join);
+	private static function getSubQueryJoin($where,$sqlArray,$joinSQL){
+		foreach($sqlArray as $table => $related){
+			self::${$where}[self::$currentField.self::$currentSubQueryNumber]['joinSQL'] .=$joinSQL . $table . " ON ".$related[1].$related[2].$related[0];
+		}
 	}
-	return self::$instance;
-}
 
-public function leftJoin(string $table,string $field,string $operator,string $ownField){
-	self::checkInstance();
-	$join=' LEFT JOIN ';
-	if(self::$currentSubQueryNumber==NULL){
-		self::boot();
-		self::makeJoin($table,$field,$operator,$ownField,$join);
-	}else{
-		self::makeSubQueryJoin($table,$field,$operator,$ownField,$join);
+	private static function getJoinSQL(){
+		return self::$joinSQL;
 	}
-	return self::$instance;
-}
 
-public function rightJoin(string $table,string $field,string $operator,string $ownField){
-	self::checkInstance();
-	$join=' RIGHT JOIN ';
-	if(self::$currentSubQueryNumber==NULL){
-		self::boot();
-		self::makeJoin($table,$field,$operator,$ownField,$join);
-	}else{
-		self::makeSubQueryJoin($table,$field,$operator,$ownField,$join);
+	private static function getSubQueryJoinSQL($where){
+		return self::${$where}[self::$currentField.self::$currentSubQueryNumber]['joinSQL'];
 	}
-	return self::$instance;
-}
 
-protected function refersTo(string $class,string $field,string $referField='id'){
-	checkClass($class);
-	self::checkBoot();
-	if(isset($this->{$field})){
-		return $class::findBy($referField,$this->{$field});
+	private static function makeSubQueryJoin($table,$field,$operator,$ownField,$join){
+		$sqlArray=[];
+		$sqlArray[$table]=[$ownField,$field,$operator];
+		self::getSubQueryJoin(self::showCurrentSubQuery(),$sqlArray,$join);
 	}
-	throw new \Exception($field .' is not available', 1);
-}
 
-protected function refersMany(string $class,string $field,string $referField='id'){
-	checkClass($class);
-	self::checkBoot();
-	if(isset($this->{$referField})){
-		$classObject=new $class;
-		return $class::where($classObject->getTable() . '.'.$field,$this->{$referField}); 
+	private static function makeJoin($table,$field,$operator,$ownField,$join){
+		$sqlArray=[];
+		$sqlArray[$table]=[$ownField,$field,$operator];
+		self::getJoin($sqlArray,$join);
 	}
-	throw new \Exception($referField .' is not available', 1);
-	
-}
 
-public static function observe(ModelObserver $modelObserver){
-	self::checkBoot();
-	checkObserverFunctions($modelObserver);
-	if(self::$observerSubject==NULL){
-		self::$observerSubject=new ObserverSubject;
+	public static function innerJoin(string $table,string $field,string $operator,string $ownField){
+		self::checkInstance();
+		$join=' INNER JOIN ';
+		if(self::$currentSubQueryNumber==NULL){
+			self::boot();
+			self::makeJoin($table,$field,$operator,$ownField,$join);
+		}else{
+			self::makeSubQueryJoin($table,$field,$operator,$ownField,$join);
+		}
+		return self::$instance;
 	}
-	$className=(string)get_called_class();
-	self::$observerSubject->attach($className , $modelObserver);
-}
+
+	public function leftJoin(string $table,string $field,string $operator,string $ownField){
+		self::checkInstance();
+		$join=' LEFT JOIN ';
+		if(self::$currentSubQueryNumber==NULL){
+			self::boot();
+			self::makeJoin($table,$field,$operator,$ownField,$join);
+		}else{
+			self::makeSubQueryJoin($table,$field,$operator,$ownField,$join);
+		}
+		return self::$instance;
+	}
+
+	public function rightJoin(string $table,string $field,string $operator,string $ownField){
+		self::checkInstance();
+		$join=' RIGHT JOIN ';
+		if(self::$currentSubQueryNumber==NULL){
+			self::boot();
+			self::makeJoin($table,$field,$operator,$ownField,$join);
+		}else{
+			self::makeSubQueryJoin($table,$field,$operator,$ownField,$join);
+		}
+		return self::$instance;
+	}
+
+	protected function refersTo(string $class,string $field,string $referField='id'){
+		checkClass($class);
+		self::checkBoot();
+		if(isset($this->{$field})){
+			return $class::findBy($referField,$this->{$field});
+		}
+		throw new \Exception($field .' is not available', 1);
+	}
+
+	protected function refersMany(string $class,string $field,string $referField='id'){
+		checkClass($class);
+		self::checkBoot();
+		if(isset($this->{$referField})){
+			$classObject=new $class;
+			return $class::where($classObject->getTable() . '.'.$field,$this->{$referField}); 
+		}
+		throw new \Exception($referField .' is not available', 1);
+		
+	}
+
+	public static function observe(ModelObserver $modelObserver){
+		self::checkBoot();
+		checkObserverFunctions($modelObserver);
+		if(self::$observerSubject==NULL){
+			self::$observerSubject=new ObserverSubject;
+		}
+		$className=(string)get_called_class();
+		self::$observerSubject->attach($className , $modelObserver);
+	}
 }
