@@ -1086,7 +1086,7 @@ private static function disableBooting(){
 
 	self::$useUnionQuery=[ 0 => TRUE ];
 	self::$unionQuery=[ 0 => NULL ];
-	self::$unionNumber = $currentUnionNumber = 0;
+	self::$unionNumber = self::$currentUnionNumber = 0;
 }
 
 private static function disableForSQL(){
