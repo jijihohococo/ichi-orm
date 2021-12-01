@@ -1377,7 +1377,7 @@ public static function paginate(int $per_page=10){
 	$getOrder.
 	$getGroupBy;
 
-	$sql=$mainSQL . " LIMIT ".$per_page." OFFSET ".$start;
+	$sql="SELECT * FROM (" . $mainSQL . ") AS paginate_data LIMIT ".$per_page." OFFSET ".$start;
 
 	$fields=self::getFields();
 	$pdo=self::$instance->connectDatabase();
