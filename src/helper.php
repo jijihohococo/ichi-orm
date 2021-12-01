@@ -37,7 +37,14 @@ if(!function_exists('now')){
 if(!function_exists('getDomainName')){
 	function getDomainName(){
 		$http=!empty($_SERVER['HTTPS']) ? 'https://' : 'http://' ;
-		return $http . $_SERVER['HTTP_HOST'] . parse_url( $_SERVER["REQUEST_URI"] , PHP_URL_PATH);
+		$pageLink=isset($_REQUEST['page']) ? str_replace('&page=', NULL,str_replace('?page=', NULL, substr_replace($_SERVER['REQUEST_URI'],NULL,-strlen($_REQUEST['page'])))) : $_SERVER["REQUEST_URI"];
+		return $http . $_SERVER['HTTP_HOST'] . $pageLink;
+	}
+}
+
+if(!function_exists('makePaginateLink')){
+	function makePaginateLink($link,$pageNumber){
+		return count($_REQUEST)== 0 ? $link. '?page='. $pageNumber : $link. '&page='.$pageNumber;
 	}
 }
 
@@ -169,5 +176,11 @@ if(!function_exists('checkClass')){
 		if(!is_subclass_of($className, 'JiJiHoHoCoCo\IchiORM\Database\Model')){
 			throw new \Exception($className ." must extend JiJiHoHoCoCo\IchiORM\Database\Model", 1);
 		}
+	}
+}
+
+if(!function_exists('makeOperator')){
+	function makeOperator($operator){
+		return ' '.$operator.' ';
 	}
 }

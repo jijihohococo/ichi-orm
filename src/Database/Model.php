@@ -592,7 +592,7 @@ private static function setSubQuery($field,$where,bool $increase=TRUE){
 
 private static function setSubWhere($where,$value,$field,$operator,$whereSelect){
 	self::${$where}[self::$currentField.self::$currentSubQueryNumber][$whereSelect][$field]=$value;
-	self::${$where}[self::$currentField.self::$currentSubQueryNumber]['operators'][$field.$whereSelect]=$operator;
+	self::${$where}[self::$currentField.self::$currentSubQueryNumber]['operators'][$field.$whereSelect]=makeOperator($operator);
 }
 
 private static function setSubWhereIn($where,$value,$field,$whereInSelect){
@@ -720,13 +720,13 @@ private static function makeWhereQuery(array $parameters,$where){
 		if(!is_callable($value) && self::$currentSubQueryNumber==NULL){
 			self::boot();
 			self::${$where}[$field]=$value;
-			self::$operators[$field.$where]=$operator;
+			self::$operators[$field.$where]=makeOperator($operator);
 			if($value!==NULL && $where!=='whereColumn' ){
 				self::$fields[]=$value;
 			}
 		}elseif(is_callable($value) && self::$currentSubQueryNumber==NULL ){
 			self::boot();
-			self::$operators[$field.$where]=$operator;
+			self::$operators[$field.$where]=makeOperator($operator);
 			$query=self::$instance;
 			$query->setSubQuery($field,$where);
 			self::$subQueries[$field.self::$currentSubQueryNumber]=self::$currentSubQueryNumber;
@@ -739,7 +739,7 @@ private static function makeWhereQuery(array $parameters,$where){
 			}
 		}elseif(is_callable($value) && self::$currentSubQueryNumber!==NULL ){
 			$check=self::showCurrentSubQuery();
-			self::${$check}[self::$currentField.self::$currentSubQueryNumber]['operators'][$field.$where]=$operator;
+			self::${$check}[self::$currentField.self::$currentSubQueryNumber]['operators'][$field.$where]=makeOperator($operator);
 			self::makeSubQueryInSubQuery($where,$value,$field,$check);
 		}
 	}else{
@@ -1407,17 +1407,17 @@ public static function paginate(int $per_page=10){
 			$to=($from+$totalPerPage)-1;
 
 			self::disableBooting();
-			return [ 
+			return [
 				'current_page' => $current_page,
 				'data'=> $objectArray,
-				'first_page_url'=> $domainName.'?page=1',
+				'first_page_url'=> makePaginateLink($domainName,'1'),
 				'from' => $from > $total_pages ? NULL : $from,
 				'last_page' => $total_pages,
-				'last_page_url' => $domainName . '?page='.$total_pages,
-				'next_page_url' => $next_page<=$total_pages ? $domainName . '?page='.$next_page : NULL,
+				'last_page_url' => makePaginateLink($domainName,$total_pages),
+				'next_page_url' => $next_page<=$total_pages ? makePaginateLink($domainName,$next_page) : NULL,
 				'path' => $domainName,
 				'per_page' => $per_page,
-				'prev_page_url' => $previous_page!==NULL ? $domainName . '?page='.$previous_page : NULL,
+				'prev_page_url' => $previous_page!==NULL ? makePaginateLink($domainName,$previous_page) : NULL,
 				'to' => $to<=0 || $to>$total ? NULL: $to,
 				'total' => $totalPerPage
 			];
