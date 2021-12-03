@@ -610,7 +610,7 @@ You can use "union" function in subqueries.
 Blog::whereIn('id', function($query) {
 	return $query->select(['id'])->where('id',1)->union(function($query){
 		return $query->select(['id'])->where('id',2)->get();
-	});
+	})->get();
 } )->get();
 ```
 
