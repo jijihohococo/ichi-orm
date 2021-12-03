@@ -29,4 +29,14 @@ class CacheModel{
 		}
 		throw new \Exception("You need to set redis or memcached object firstly", 1);
 	}
+
+	public static function remove(string $key){
+		if(self::$redis!==NULL){
+			self::$redis->remove($key);
+		}elseif(self::$memcached!==NULL){
+			self::$memcached->remove($key);
+		}
+		throw new \Exception("You need to set redis or memcached object firstly", 1);
+		
+	}
 }

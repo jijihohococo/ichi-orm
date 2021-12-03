@@ -15,4 +15,8 @@ abstract class CacheAbstract{
 		}
 	}
 
+	public function remove(string $key){
+		$this->cachedObject->delete($key);
+	}
+
 }
