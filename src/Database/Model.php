@@ -1199,16 +1199,14 @@ private static function makeUnionQuery($value,$union){
 		self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unableUnionQuery']=TRUE;
 		$value($query);
 		self::$subQueries[$currentField.$currentSubQueryNumber]=$currentSubQueryNumber;
-		self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unableUnionQuery']=FALSE;
 		$previousQuery=substr($previousQuery,0,-1) . $union .  self::${$currentQuery}[$currentField] . ')';
-		$query->setSubQuery($currentField,$currentQuery,FALSE);
-		self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unionQuery']=$previousUnionQuery!==NULL ?
+		 self::$currentField=$currentField;
+		 self::$currentSubQueryNumber=$currentSubQueryNumber;
+		 self::${$currentQuery}[self::$currentField.$currentSubQueryNumber.'unionQuery']=$previousUnionQuery!==NULL ?
 		substr($previousUnionQuery,0,-1) . $union .  self::${$currentQuery}[$currentField] . ')' : $previousQuery;
-		// self::$currentField=$currentField;
-		// self::$currentSubQueryNumber=$currentSubQueryNumber;
-		// $unionQuery=self::${$currentQuery}[$currentField.$currentSubQueryNumber]['unionQuery'];
-		// self::${$currentQuery}[$currentField.$currentSubQueryNumber]['unionQuery']=$previousQuery;
-		// self::${$currentQuery}[$currentField]=$previousQuery;
+		self::${$currentQuery}[self::$currentField.self::$currentSubQueryNumber.'unableUnionQuery']=FALSE;
+		
+		self::${$currentQuery}[self::$currentField.self::$currentSubQueryNumber]=[];
 	}
 	return self::$instance;
 }
