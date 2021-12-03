@@ -22,6 +22,7 @@ abstract class Model{
 	private static $useUnionQuery=[ 0 => TRUE ];
 	private static $unionQuery=[ 0 => NULL ];
 	private static $unionNumber , $currentUnionNumber = 0;
+	private static $unableUnionQuery=[];
 
 	protected function connectDatabase(){
 		return connectPDO();
@@ -38,10 +39,13 @@ abstract class Model{
 	public static function withTrashed(){
 		self::checkInstance();
 		if(self::$currentSubQueryNumber==NULL){
+			self::checkUnionQuery();
 			self::boot();
 			self::$withTrashed=TRUE;
 		}else{
-			self::makeSubQueryTrashTrue(self::showCurrentSubQuery());
+			$currentQuery=self::showCurrentSubQuery();
+			self::checkSubQueryUnionQuery($currentQuery);
+			self::makeSubQueryTrashTrue($currentQuery);
 		}
 		return self::$instance;
 	}
@@ -87,6 +91,19 @@ abstract class Model{
 		}
 	}
 
+	private static function checkUnionQuery(){
+		if(isset(self::$unableUnionQuery[self::$currentUnionNumber]) && self::$unableUnionQuery[self::$currentUnionNumber]!==NULL ){
+			throw new \Exception("You are not allowed to use", 1);
+		}
+	}
+
+	private static function checkSubQueryUnionQuery($where){
+		if(isset(self::${$where}[self::$currentField.self::$currentSubQueryNumber.'unableUnionQuery']) && 
+		self::${$where}[self::$currentField.self::$currentSubQueryNumber.'unableUnionQuery']==FALSE ){
+			throw new \Exception("You are not allowed to use", 1);
+		}
+	}
+
 	private static function checkBoot(){
 		if(self::$instance!==NULL){
 			throw new \Exception("CRUD functions and querying are different", 1);
@@ -123,10 +140,13 @@ abstract class Model{
 	public static function groupBy(string $groupBy){
 		self::checkInstance();
 		if(self::$currentSubQueryNumber==NULL){
+			self::checkUnionQuery();
 			self::boot();
 			self::$groupBy=self::$groupByString . $groupBy;
 		}else{
-			self::makeSubQueryGroupBy(self::showCurrentSubQuery(),$groupBy);
+			$currentQuery=self::showCurrentSubQuery();
+			self::checkSubQueryUnionQuery($currentQuery);
+			self::makeSubQueryGroupBy($currentQuery,$groupBy);
 		}
 		return self::$instance;
 	}
@@ -134,6 +154,7 @@ abstract class Model{
 	public static function having(string $field,string $operator,$value){
 		self::checkInstance();
 		if(self::$currentSubQueryNumber==NULL){
+			self::checkUnionQuery();
 			self::boot();
 			if(self::$havingNumber==NULL){
 				self::$havingNumber=0;
@@ -143,7 +164,9 @@ abstract class Model{
 			self::$havingValue[self::$havingNumber]=$value;
 			self::$havingNumber++;
 		}else{
-			self::makeSubQueryHaving(self::showCurrentSubQuery(),$field,$operator,$value);
+			$currentQuery=self::showCurrentSubQuery();
+			self::checkSubQueryUnionQuery($currentQuery);
+			self::makeSubQueryHaving($currentQuery,$field,$operator,$value);
 		}
 		return self::$instance;
 	}
@@ -480,7 +503,7 @@ abstract class Model{
 	public static function select(array  $fields){
 		self::checkInstance();
 		if(self::$currentSubQueryNumber==NULL){
-
+			self::checkUnionQuery();
 			// If addSelect was used after using addOnlySelect function
 			if(self::$instance!==NULL && self::$select==NULL && self::$addSelect==TRUE ){
 				throw new \Exception("You must not use addOnlySelect function before", 1);
@@ -511,6 +534,7 @@ abstract class Model{
 		}else{
 
 			$check=self::showCurrentSubQuery();
+			self::checkSubQueryUnionQuery($check);
 			$addSelectCheck=self::checkSubQueryAddSelect($check);
 			if(self::${$check}[self::$currentField.self::$currentSubQueryNumber]['select']==NULL &&
 				$addSelectCheck==TRUE
@@ -546,10 +570,12 @@ private static function checkSubQueryAddSelect($where){
 public static function limit(int $limit){
 	self::checkInstance();
 	if(self::$currentSubQueryNumber==NULL){
+		self::checkUnionQuery();
 		self::boot();
 		self::$limit=' LIMIT '.$limit;
 	}else{
 		$check=self::showCurrentSubQuery();
+		self::checkSubQueryUnionQuery($check);
 		self::${$check}[self::$currentField.self::$currentSubQueryNumber]['limit']=$limit;
 		self::$subQueryLimitNumber++;
 	}
@@ -651,7 +677,9 @@ public static function from(string $className){
 
 	self::checkInstance();
 	if(self::$currentSubQueryNumber!==NULL){
-		self::addTableToSubQuery(self::showCurrentSubQuery(),$className);
+		$currentQuery=self::showCurrentSubQuery();
+		self::checkSubQueryUnionQuery($currentQuery);
+		self::addTableToSubQuery($currentQuery,$className);
 		return self::$instance;
 	}
 	throw new \Exception("You can use 'from' function in only sub queries", 1);
@@ -718,6 +746,7 @@ private static function makeWhereQuery(array $parameters,$where){
 
 
 		if(!is_callable($value) && self::$currentSubQueryNumber==NULL){
+			self::checkUnionQuery();
 			self::boot();
 			self::${$where}[$field]=$value;
 			self::$operators[$field.$where]=makeOperator($operator);
@@ -725,6 +754,7 @@ private static function makeWhereQuery(array $parameters,$where){
 				self::$fields[]=$value;
 			}
 		}elseif(is_callable($value) && self::$currentSubQueryNumber==NULL ){
+			self::checkUnionQuery();
 			self::boot();
 			self::$operators[$field.$where]=makeOperator($operator);
 			$query=self::$instance;
@@ -733,12 +763,15 @@ private static function makeWhereQuery(array $parameters,$where){
 			$value($query);
 			self::makeDefaultSubQueryData();
 		}elseif(!is_callable($value) && self::$currentSubQueryNumber!==NULL ){
-			self::setSubWhere(self::showCurrentSubQuery(),$value,$field,$operator,$where);
+			$currentQuery=self::showCurrentSubQuery();
+			self::checkSubQueryUnionQuery($currentQuery);
+			self::setSubWhere($currentQuery,$value,$field,$operator,$where);
 			if($value!==NULL && $where!=='whereColumn' ){
 				self::$fields[]=$value;
 			}
 		}elseif(is_callable($value) && self::$currentSubQueryNumber!==NULL ){
 			$check=self::showCurrentSubQuery();
+			self::checkSubQueryUnionQuery($check);
 			self::${$check}[self::$currentField.self::$currentSubQueryNumber]['operators'][$field.$where]=makeOperator($operator);
 			self::makeSubQueryInSubQuery($where,$value,$field,$check);
 		}
@@ -756,12 +789,14 @@ private static function makeInQuery($whereIn,$field,$value){
 	}
 
 	if((is_array($value) || $value==NULL) && self::$currentSubQueryNumber==NULL){
+		self::checkUnionQuery();
 		self::boot();
 		self::${$whereIn}[$field]=$value;
 		if($value!==NULL){
 			self::$fields[]=$value;
 		}
 	}elseif(is_callable($value) && self::$currentSubQueryNumber==NULL ){
+		self::checkUnionQuery();
 		self::boot();
 		$query=self::$instance;
 		$query->setSubQuery($field,$whereIn,$field);
@@ -769,12 +804,16 @@ private static function makeInQuery($whereIn,$field,$value){
 		$value($query);
 		self::makeDefaultSubQueryData();
 	}elseif((is_array($value) || $value==NULL) && self::$currentSubQueryNumber!==NULL ){
-		self::setSubWhereIn(self::showCurrentSubQuery(),$value,$field,$whereIn);
+		$currentQuery=self::showCurrentSubQuery();
+		self::checkSubQueryUnionQuery($currentQuery);
+		self::setSubWhereIn($currentQuery,$value,$field,$whereIn);
 		if($value!==NULL){
 			self::$fields[]=$value;
 		}
 	}elseif(is_callable($value) && self::$currentSubQueryNumber!==NULL ){
-		self::makeSubQueryInSubQuery($whereIn,$value,$field,self::showCurrentSubQuery());
+		$currentQuery=self::showCurrentSubQuery();
+		self::checkSubQueryUnionQuery($currentQuery);
+		self::makeSubQueryInSubQuery($whereIn,$value,$field,$currentQuery);
 	}
 }
 
@@ -1041,10 +1080,13 @@ private static function getFields(){ return self::$fields; }
 public static function orderBy(string $field,string $sort="ASC"){
 	self::checkInstance();
 	if(self::$currentSubQueryNumber==NULL){
+		self::checkUnionQuery();
 		self::boot();
 		self::$order=" ORDER BY ".$field . " ".  $sort;
 	}else{
-		self::makeSubQueryOrderBy(self::showCurrentSubQuery(),$field,$sort);
+		$currentQuery=self::showCurrentSubQuery();
+		self::checkSubQueryUnionQuery($currentQuery);
+		self::makeSubQueryOrderBy($currentQuery,$field,$sort);
 	}
 	return self::$instance;
 }
@@ -1062,11 +1104,14 @@ private static function makeSubQueryOrderBy($where,$field,$sort){
 public static function latest(string $field=null){
 	self::checkInstance();
 	if(self::$currentSubQueryNumber==NULL){
-		$field=$field==null ? self::$instance->getID() : $field;
+		self::checkUnionQuery();
 		self::boot();
+		$field=$field==null ? self::$instance->getID() : $field;
 		self::$order=" ORDER BY " . self::$table . '.'  . $field . " DESC";
 	}else{
-		self::makeSubQueryOrderBy(self::showCurrentSubQuery(),$field," DESC");
+		$currentQuery=self::showCurrentSubQuery();
+		self::checkSubQueryUnionQuery($currentQuery);
+		self::makeSubQueryOrderBy($currentQuery,$field," DESC");
 	}
 	return self::$instance;
 }
@@ -1087,6 +1132,7 @@ private static function disableBooting(){
 	self::$useUnionQuery=[ 0 => TRUE ];
 	self::$unionQuery=[ 0 => NULL ];
 	self::$unionNumber = self::$currentUnionNumber = 0;
+	self::$unableUnionQuery=[];
 }
 
 private static function disableForSQL(){
@@ -1094,6 +1140,11 @@ private static function disableForSQL(){
 	self::$subQueries=[];
 	self::$toSQL=FALSE;
 	self::$subQueryLimitNumber=0;
+
+	self::$useUnionQuery=[ 0 => TRUE ];
+	self::$unionQuery=[ 0 => NULL ];
+	self::$unionNumber = self::$currentUnionNumber = 0;
+	self::$unableUnionQuery=[];
 }
 
 public static function union(callable $value){
@@ -1105,7 +1156,7 @@ public static function unionAll(callable $value){
 }
 
 private static function checkUnion(){
-	return self::$unionQuery[self::$currentUnionNumber]!==NULL && self::$useUnionQuery[self::$currentUnionNumber]==TRUE;
+	return  isset(self::$unionQuery[self::$currentUnionNumber]) && self::$unionQuery[self::$currentUnionNumber]!==NULL && self::$useUnionQuery[self::$currentUnionNumber]==TRUE;
 }
 
 private static function getQuery(){
@@ -1122,6 +1173,7 @@ private static function makeUnionQuery($value,$union){
 		$newUnionQuery=$value();
 		self::$useUnionQuery[$uNumber]=TRUE;
 		self::$currentUnionNumber=$uNumber;
+		self::$unableUnionQuery[$uNumber]=TRUE;
 		self::boot();
 		self::$unionQuery[$uNumber]=$previousQuery . $union . $newUnionQuery;
 		return self::$instance;
@@ -1129,15 +1181,36 @@ private static function makeUnionQuery($value,$union){
 		$currentQuery=self::showCurrentSubQuery();
 		$currentField=self::$currentField;
 		$currentSubQueryNumber=self::$currentSubQueryNumber;
-		self::makeSubQuery( $currentQuery );
+		if(isset(self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unableUnionQuery']) &&
+			self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unableUnionQuery']==TRUE
+		 ){
+			throw new \Exception("You are not allowed to use ".$union, 1);
+		}
+
+		$previousUnionQuery=isset(self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unionQuery']) ?
+		self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unionQuery'] : NULL;
+		if($previousUnionQuery==NULL){
+			self::makeSubQuery( $currentQuery );
+		}
 		$previousQuery = self::${$currentQuery}[$currentField];
 		$query=self::$instance;
 		$query->setSubQuery($currentField,$currentQuery,FALSE);
 		self::$subQueries[$currentField.$currentSubQueryNumber]=$currentSubQueryNumber;
+		self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unableUnionQuery']=TRUE;
 		$value($query);
+		self::$subQueries[$currentField.$currentSubQueryNumber]=$currentSubQueryNumber;
+		self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unableUnionQuery']=FALSE;
 		$previousQuery=substr($previousQuery,0,-1) . $union .  self::${$currentQuery}[$currentField] . ')';
-		self::${$currentQuery}[$currentField]=$previousQuery;
+		$query->setSubQuery($currentField,$currentQuery,FALSE);
+		self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unionQuery']=$previousUnionQuery!==NULL ?
+		substr($previousUnionQuery,0,-1) . $union .  self::${$currentQuery}[$currentField] . ')' : $previousQuery;
+		// self::$currentField=$currentField;
+		// self::$currentSubQueryNumber=$currentSubQueryNumber;
+		// $unionQuery=self::${$currentQuery}[$currentField.$currentSubQueryNumber]['unionQuery'];
+		// self::${$currentQuery}[$currentField.$currentSubQueryNumber]['unionQuery']=$previousQuery;
+		// self::${$currentQuery}[$currentField]=$previousQuery;
 	}
+	return self::$instance;
 }
 
 public static function get(){
@@ -1205,13 +1278,11 @@ private static function checkSubQuery($where){
 	return isset(self::${$where}[self::$currentField.self::$currentSubQueryNumber]);
 }
 
-private static function makeSubQuery($where){
-	$mainSQL=self::getSubQuery($where);
+private static function makeMainSubQuery($where,$mainSQL){
 	self::$subQuery=$mainSQL;
 	$currentField=self::$currentField;
 	$currentSubQueryNumber=self::$currentSubQueryNumber;
 	if(self::$currentField . self::$currentSubQueryNumber==array_key_first(self::$subQueries)){
-		$mainSQL='('.$mainSQL.')';
 		self::${$where}[self::$currentField]=$mainSQL;
 		if($where=='where' || $where=='whereColumn' || $where=='orWhere' ){
 			self::$whereSubQuery[self::$currentField.$where]='whereSubQuery';
@@ -1223,6 +1294,23 @@ private static function makeSubQuery($where){
 	if(isset(self::${$where}[$currentField.$currentSubQueryNumber])){
 		unset(self::${$where}[$currentField.$currentSubQueryNumber]);
 	}
+}
+
+private static function makeSubQuery($where){
+	if(isset(self::${$where}[self::$currentField.self::$currentSubQueryNumber.'unionQuery']) &&
+		isset(self::${$where}[self::$currentField.self::$currentSubQueryNumber.'unableUnionQuery']) &&
+		self::${$where}[self::$currentField.self::$currentSubQueryNumber.'unableUnionQuery']==FALSE ){
+		$currentField=self::$currentField;
+	$currentSubQueryNumber=self::$currentSubQueryNumber;
+	self::makeMainSubQuery($where,
+		self::${$where}[$currentField.$currentSubQueryNumber.'unionQuery']
+	);
+	unset(self::${$where}[$currentField.$currentSubQueryNumber.'unionQuery']);
+	unset(self::${$where}[$currentField.$currentSubQueryNumber.'unableUnionQuery']);
+}else{
+	$mainSQL=self::getSubQuery($where);
+	self::makeMainSubQuery($where,'('.$mainSQL.')');
+}
 
 }
 
@@ -1286,6 +1374,7 @@ public static function toSQL(){
 public static function addSelect(array $fields){
 	self::checkInstance();
 	if(self::$currentSubQueryNumber==NULL){
+		self::checkUnionQuery();
 			// If addSelect was used after using addOnlySelect function
 		if(self::$instance!==NULL && self::$select==NULL && self::$addSelect==TRUE ){
 			throw new \Exception("You must not use addOnlySelect function before", 1);
@@ -1315,6 +1404,7 @@ private static function addingSelect(array $fields){
 public static function addOnlySelect(array $fields){
 	self::checkInstance();
 	if(self::$currentSubQueryNumber==NULL){
+		self::checkUnionQuery();
 			// If addOnlySelect function was used after using select or addSelect function //
 		if(self::$instance!==NULL && self::$select!==self::$table.'.*'){
 			throw new \Exception("You need to use only addOnlySelect function to select the data", 1);
@@ -1325,6 +1415,7 @@ public static function addOnlySelect(array $fields){
 		return self::addingSelect($fields);
 	}else{
 		$check=self::showCurrentSubQuery();
+		self::checkSubQueryUnionQuery($check);
 			// If addOnlySelect function was used after using select or addSelect function //
 		if(self::${$check}[self::$currentField.self::$currentSubQueryNumber]['select']!==self::${$check}[self::$currentField.self::$currentSubQueryNumber]['table'] . '.*'
 	){
