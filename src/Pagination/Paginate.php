@@ -11,7 +11,7 @@ class Paginate{
 		return [
 			'current_page' => '',
 			'data' => '',
-			'first_page_url' => $domainName . '?page=1',
+			'first_page_url' => makePaginateLink($domainName,'1'),
 			'from' => '',
 			'last_page' => '',
 			'last_page_url' => '',
