@@ -99,262 +99,220 @@ abstract class Model{
 
 	private static function checkSubQueryUnionQuery($where){
 		if(isset(self::${$where}[self::$currentField.self::$currentSubQueryNumber.'unableUnionQuery']) && 
-		self::${$where}[self::$currentField.self::$currentSubQueryNumber.'unableUnionQuery']==FALSE ){
+			self::${$where}[self::$currentField.self::$currentSubQueryNumber.'unableUnionQuery']==FALSE ){
 			throw new \Exception("You are not allowed to use", 1);
+	}
+}
+
+private static function checkBoot(){
+	if(self::$instance!==NULL){
+		throw new \Exception("CRUD functions and querying are different", 1);
+	}
+}
+
+private static function boot(){
+	$calledClass=get_called_class();
+
+	if(self::$instance==NULL){
+		self::$where=NULL;
+		self::$whereColumn=NULL;
+		self::$orWhere=NULL;
+		self::$whereIn=NULL;
+		self::$whereNotIn=NULL;
+		self::$operators=NULL;
+		self::$order=NULL;
+		self::$limit=NULL;
+		self::$groupBy=NULL;
+		self::$joinSQL=NULL;
+		self::$instance=new static;
+		self::$className=$calledClass;
+		self::$getID=self::$instance->getID();
+		self::$table=self::$instance->getTable();
+		self::$select=self::$table.'.*';
+		self::$addSelect=FALSE;
+		self::$withTrashed=FALSE;
+
+		self::$subQuery=NULL;
+		self::$addTrashed=FALSE;
+	}
+}
+
+public static function groupBy(string $groupBy){
+	self::checkInstance();
+	if(self::$currentSubQueryNumber==NULL){
+		self::checkUnionQuery();
+		self::boot();
+		self::$groupBy=self::$groupByString . $groupBy;
+	}else{
+		$currentQuery=self::showCurrentSubQuery();
+		self::checkSubQueryUnionQuery($currentQuery);
+		self::makeSubQueryGroupBy($currentQuery,$groupBy);
+	}
+	return self::$instance;
+}
+
+public static function having(string $field,string $operator,$value){
+	self::checkInstance();
+	if(self::$currentSubQueryNumber==NULL){
+		self::checkUnionQuery();
+		self::boot();
+		if(self::$havingNumber==NULL){
+			self::$havingNumber=0;
+		}
+		self::$havingField[self::$havingNumber]=$field;
+		self::$havingOperator[self::$havingNumber]=$operator;
+		self::$havingValue[self::$havingNumber]=$value;
+		self::$havingNumber++;
+	}else{
+		$currentQuery=self::showCurrentSubQuery();
+		self::checkSubQueryUnionQuery($currentQuery);
+		self::makeSubQueryHaving($currentQuery,$field,$operator,$value);
+	}
+	return self::$instance;
+}
+
+private static function makeSubQueryHaving($where,$field,$operator,$value){
+	$current=self::${$where}[self::$currentField.self::$currentSubQueryNumber];
+	if($current['havingNumber']==NULL){
+		$current['havingNumber']=0;
+	}
+	$current['havingField'][$current['havingNumber']]=$field;
+	$current['havingOperator'][$current['havingNumber']]=$operator;
+	$current['havingValue'][$current['havingNumber']]=$value;
+	$current['havingNumber']++;
+}
+
+private static function makeSubQueryGroupBy($where,$groupBy){
+	self::${$where}[self::$currentField.self::$currentSubQueryNumber]['groupBy']=self::$groupByString . $groupBy;
+}
+
+private static function getGroupBy(){ return self::$groupBy; }
+
+private static function getHaving(){
+	$string=NULL;
+	if(self::$havingNumber!==NULL){
+
+		foreach (range(0, self::$havingNumber-1) as $key => $value) {
+			$result=self::$havingField[$key].' ' . self::$havingOperator[$key] . ' ' . self::$havingValue[$key];
+			$string .=$key==0 ? ' HAVING ' . $result : ' AND ' . $result;
 		}
 	}
+	return $string;
+}
 
-	private static function checkBoot(){
-		if(self::$instance!==NULL){
-			throw new \Exception("CRUD functions and querying are different", 1);
-		}
-	}
-
-	private static function boot(){
-		$calledClass=get_called_class();
-
-		if(self::$instance==NULL){
-			self::$where=NULL;
-			self::$whereColumn=NULL;
-			self::$orWhere=NULL;
-			self::$whereIn=NULL;
-			self::$whereNotIn=NULL;
-			self::$operators=NULL;
-			self::$order=NULL;
-			self::$limit=NULL;
-			self::$groupBy=NULL;
-			self::$joinSQL=NULL;
-			self::$instance=new static;
-			self::$className=$calledClass;
-			self::$getID=self::$instance->getID();
-			self::$table=self::$instance->getTable();
-			self::$select=self::$table.'.*';
-			self::$addSelect=FALSE;
-			self::$withTrashed=FALSE;
-
-			self::$subQuery=NULL;
-			self::$addTrashed=FALSE;
-		}
-	}
-
-	public static function groupBy(string $groupBy){
-		self::checkInstance();
-		if(self::$currentSubQueryNumber==NULL){
-			self::checkUnionQuery();
-			self::boot();
-			self::$groupBy=self::$groupByString . $groupBy;
-		}else{
-			$currentQuery=self::showCurrentSubQuery();
-			self::checkSubQueryUnionQuery($currentQuery);
-			self::makeSubQueryGroupBy($currentQuery,$groupBy);
-		}
-		return self::$instance;
-	}
-
-	public static function having(string $field,string $operator,$value){
-		self::checkInstance();
-		if(self::$currentSubQueryNumber==NULL){
-			self::checkUnionQuery();
-			self::boot();
-			if(self::$havingNumber==NULL){
-				self::$havingNumber=0;
-			}
-			self::$havingField[self::$havingNumber]=$field;
-			self::$havingOperator[self::$havingNumber]=$operator;
-			self::$havingValue[self::$havingNumber]=$value;
-			self::$havingNumber++;
-		}else{
-			$currentQuery=self::showCurrentSubQuery();
-			self::checkSubQueryUnionQuery($currentQuery);
-			self::makeSubQueryHaving($currentQuery,$field,$operator,$value);
-		}
-		return self::$instance;
-	}
-
-	private static function makeSubQueryHaving($where,$field,$operator,$value){
+private static function getSubQueryHaving($where){
+	$string=NULL;
+	if(isset(self::${$where}[self::$currentField.self::$currentSubQueryNumber])){
 		$current=self::${$where}[self::$currentField.self::$currentSubQueryNumber];
-		if($current['havingNumber']==NULL){
-			$current['havingNumber']=0;
-		}
-		$current['havingField'][$current['havingNumber']]=$field;
-		$current['havingOperator'][$current['havingNumber']]=$operator;
-		$current['havingValue'][$current['havingNumber']]=$value;
-		$current['havingNumber']++;
-	}
-
-	private static function makeSubQueryGroupBy($where,$groupBy){
-		self::${$where}[self::$currentField.self::$currentSubQueryNumber]['groupBy']=self::$groupByString . $groupBy;
-	}
-
-	private static function getGroupBy(){ return self::$groupBy; }
-
-	private static function getHaving(){
-		$string=NULL;
-		if(self::$havingNumber!==NULL){
-
-			foreach (range(0, self::$havingNumber-1) as $key => $value) {
-				$result=self::$havingField[$key].' ' . self::$havingOperator[$key] . ' ' . self::$havingValue[$key];
+		if($current['havingNumber']!==NULL){
+			foreach (range(0, $current['havingNumber']-1) as $key => $value) {
+				$result=$currentField['havingField'][$key] . ' ' . $currentField['havingOperator'][$key] . ' ' . $currentField['havingValue'][$key];
 				$string .=$key==0 ? ' HAVING ' . $result : ' AND ' . $result;
 			}
 		}
-		return $string;
 	}
+	return $string;
+}
 
-	private static function getSubQueryHaving($where){
-		$string=NULL;
-		if(isset(self::${$where}[self::$currentField.self::$currentSubQueryNumber])){
-			$current=self::${$where}[self::$currentField.self::$currentSubQueryNumber];
-			if($current['havingNumber']!==NULL){
-				foreach (range(0, $current['havingNumber']-1) as $key => $value) {
-					$result=$currentField['havingField'][$key] . ' ' . $currentField['havingOperator'][$key] . ' ' . $currentField['havingValue'][$key];
-					$string .=$key==0 ? ' HAVING ' . $result : ' AND ' . $result;
-				}
-			}
-		}
-		return $string;
+private static function getSubQueryGroupBy($where){
+	if(isset(self::${$where}[self::$currentField.self::$currentSubQueryNumber]['groupBy'])){
+		return self::${$where}[self::$currentField.self::$currentSubQueryNumber]['groupBy'];
 	}
+}
 
-	private static function getSubQueryGroupBy($where){
-		if(isset(self::${$where}[self::$currentField.self::$currentSubQueryNumber]['groupBy'])){
-			return self::${$where}[self::$currentField.self::$currentSubQueryNumber]['groupBy'];
-		}
+public static function bulkUpdate(array $attributes){
+	self::checkInstance();
+	if(empty($attributes)){
+		throw new \Exception("You need to put non-empty array data", 1);
 	}
-
-	public static function bulkUpdate(array $attributes){
-		self::checkInstance();
-		if(empty($attributes)){
-			throw new \Exception("You need to put non-empty array data", 1);
-		}
-		static::boot();
-		$instance=self::$instance;
-		$arrayKeys=get_object_vars( $instance );
-		if(empty($arrayKeys)){
-			throw new \Exception("You need to add column data", 1);
-		}
-		$getID=$instance->getID();
-		$updatedFields=[];
-		$updatedIds=[];
-		$updatedBindValues=[];
-		$i=0;
-		foreach ($attributes as $key => $attribute) {
-			if(!is_array($attribute)){
-				throw new \Exception("You need to add the array data", 1);
-
-			}
-			if(empty($attribute)){
-				throw new \Exception("You need to put non-empty array data", 1);
-			}
-			if(!isset($attribute[$getID])){
-				throw new \Exception("You don't have the primary id data to update", 1);
-			}
-			$i++;
-			$j=0;
-			if( property_exists($instance,'updated_at') ){
-				$attribute['updated_at']=now();
-			}
-			foreach ($attribute as $field => $value) {
-				$j++;
-				if(array_key_exists($field,$arrayKeys) && $field!==$getID ){
-					$updatedIds[$i.'0']=$attribute[$getID];
-					$updatedBindValues[$field][$i.'0']=$attribute[$getID];
-					$updatedBindValues[$field][$i.$j]=$value;
-					if(!isset($updatedFields[$field])){
-						$updatedFields[$field]=$field . ' = CASE ';
-					}
-					$updatedFields[$field] .=' WHEN ' . $getID . ' = ? THEN ?';
-					if($key+1==count($attributes)){
-						$updatedFields[$field] .=' END, ';
-					}
-				}elseif(!array_key_exists($field,$arrayKeys) && $field!==$getID ){
-					throw new \Exception("You need to put the available column data to update", 1);
-				}
-			}
-		}
-		$updateString='UPDATE '.self::$table. ' SET '. substr(implode('', $updatedFields),0,-2);
-		$stmt=$instance->connectDatabase()->prepare($updateString);
-		$i=0;
-		foreach($updatedBindValues as $fieldNumber => $fields){
-			foreach($fields as $key => $value){
-				$i++;
-				$stmt->bindValue($i,$value,getPDOBindDataType($value));
-			}
-		}
-		$stmt->execute();
-		self::disableBooting();
+	static::boot();
+	$instance=self::$instance;
+	$arrayKeys=get_object_vars( $instance );
+	if(empty($arrayKeys)){
+		throw new \Exception("You need to add column data", 1);
 	}
+	$getID=$instance->getID();
+	$updatedFields=[];
+	$updatedIds=[];
+	$updatedBindValues=[];
+	$i=0;
+	foreach ($attributes as $key => $attribute) {
+		if(!is_array($attribute)){
+			throw new \Exception("You need to add the array data", 1);
 
-	public static function insert(array $attributes){
-		self::checkBoot();
-		if(empty($attributes)){
-			throw new \Exception("You need to put non-empty array data", 1);
 		}
-		self::boot();
-		$instance=self::$instance;
-		$arrayKeys=get_object_vars( $instance );
-		if(empty($arrayKeys)){
-			throw new \Exception("You need to add column data", 1);
-		}
-		$getID=$instance->getID();
-		unset($arrayKeys[$getID]);
-		unset($arrayKeys['deleted_at']);
-		unset($arrayKeys['updated_at']);
-		$insertedValues='';
-		$insertBindValues=[];
-		$insertedFields=[];
-		foreach($attributes as $attribute){
-			if(!is_array($attribute)){
-				throw new \Exception("You need to add the array data", 1);
-			}
-			if(empty($attribute)){
-				throw new \Exception("You need to put non-empty array data", 1);
-			}
-			$insertedData=[];
-			unset($attribute[$getID]);
-			unset($attribute['created_at']);
-			unset($attribute['deleted_at']);
-			unset($attribute['updated_at']);
-			foreach ($arrayKeys as $key => $value) {
-				if(!isset($insertedFields[$key.','])){
-					$insertedFields[$key.',']=NULL;
-				}
-				if(isset($attribute[$key])){
-					$insertedData[$key]=$attribute[$key];
-				}elseif($key=='created_at'){
-					$insertedData[$key]=now();
-				}else{
-					$insertedData[$key]=$value;
-				}
-			}
-			$insertedArrayValues=array_values($insertedData);
-			$insertedValues .= "(".addArray( $insertedArrayValues )."),";
-			$insertBindValues= array_merge($insertBindValues,$insertedArrayValues);
-		}
-		$insertedValues=substr($insertedValues, 0,-1);
-		$fields='('.substr(implode('',array_keys($insertedFields)), 0, -1).')';
-		$stmt=$instance->connectDatabase()->prepare("INSERT INTO ".self::$table." ".$fields." VALUES ". $insertedValues );
-		bindValues($stmt,$insertBindValues);
-		$stmt->execute();
-		self::disableBooting();
-	}
-
-	public static function create(array $attribute){
-		self::checkBoot();
 		if(empty($attribute)){
 			throw new \Exception("You need to put non-empty array data", 1);
 		}
-		self::boot();
-		$instance=self::$instance;
-		$arrayKeys=get_object_vars($instance);
-		if(empty($arrayKeys)){
-			throw new \Exception("You need to add column data", 1);
+		if(!isset($attribute[$getID])){
+			throw new \Exception("You don't have the primary id data to update", 1);
 		}
-		$getID=$instance->getID();
-		unset($arrayKeys[$getID]);
-		unset($arrayKeys['deleted_at']);
-		unset($arrayKeys['updated_at']);
-		$insertBindValues=[];
-		$insertedFields=[];
+		$i++;
+		$j=0;
+		if( property_exists($instance,'updated_at') ){
+			$attribute['updated_at']=now();
+		}
+		foreach ($attribute as $field => $value) {
+			$j++;
+			if(array_key_exists($field,$arrayKeys) && $field!==$getID ){
+				$updatedIds[$i.'0']=$attribute[$getID];
+				$updatedBindValues[$field][$i.'0']=$attribute[$getID];
+				$updatedBindValues[$field][$i.$j]=$value;
+				if(!isset($updatedFields[$field])){
+					$updatedFields[$field]=$field . ' = CASE ';
+				}
+				$updatedFields[$field] .=' WHEN ' . $getID . ' = ? THEN ?';
+				if($key+1==count($attributes)){
+					$updatedFields[$field] .=' END, ';
+				}
+			}elseif(!array_key_exists($field,$arrayKeys) && $field!==$getID ){
+				throw new \Exception("You need to put the available column data to update", 1);
+			}
+		}
+	}
+	$updateString='UPDATE '.self::$table. ' SET '. substr(implode('', $updatedFields),0,-2);
+	$stmt=$instance->connectDatabase()->prepare($updateString);
+	$i=0;
+	foreach($updatedBindValues as $fieldNumber => $fields){
+		foreach($fields as $key => $value){
+			$i++;
+			$stmt->bindValue($i,$value,getPDOBindDataType($value));
+		}
+	}
+	$stmt->execute();
+	self::disableBooting();
+}
+
+public static function insert(array $attributes){
+	self::checkBoot();
+	if(empty($attributes)){
+		throw new \Exception("You need to put non-empty array data", 1);
+	}
+	self::boot();
+	$instance=self::$instance;
+	$arrayKeys=get_object_vars( $instance );
+	if(empty($arrayKeys)){
+		throw new \Exception("You need to add column data", 1);
+	}
+	$getID=$instance->getID();
+	unset($arrayKeys[$getID]);
+	unset($arrayKeys['deleted_at']);
+	unset($arrayKeys['updated_at']);
+	$insertedValues='';
+	$insertBindValues=[];
+	$insertedFields=[];
+	foreach($attributes as $attribute){
+		if(!is_array($attribute)){
+			throw new \Exception("You need to add the array data", 1);
+		}
+		if(empty($attribute)){
+			throw new \Exception("You need to put non-empty array data", 1);
+		}
 		$insertedData=[];
+		unset($attribute[$getID]);
+		unset($attribute['created_at']);
+		unset($attribute['deleted_at']);
+		unset($attribute['updated_at']);
 		foreach ($arrayKeys as $key => $value) {
 			if(!isset($insertedFields[$key.','])){
 				$insertedFields[$key.',']=NULL;
@@ -368,191 +326,233 @@ abstract class Model{
 			}
 		}
 		$insertedArrayValues=array_values($insertedData);
-		$insertedValues = substr("(".addArray( $insertedArrayValues )."),",0,-1);
+		$insertedValues .= "(".addArray( $insertedArrayValues )."),";
 		$insertBindValues= array_merge($insertBindValues,$insertedArrayValues);
-		$fields='('.substr(implode('',array_keys($insertedFields)), 0, -1).')';
-		$pdo=$instance->connectDatabase();
-		$stmt=$pdo->prepare("INSERT INTO ".self::$table." ".$fields." VALUES ". $insertedValues );
-		bindValues($stmt,$insertBindValues);
-		$stmt->execute();
-		$object= mappingModelData([
-			$getID => $pdo->lastInsertId()
-		], $insertedData , $instance );
-		$className=self::$className;
-		self::disableBooting();
-
-		self::makeObserver($className,'create',$object);
-
-		return $object;
 	}
+	$insertedValues=substr($insertedValues, 0,-1);
+	$fields='('.substr(implode('',array_keys($insertedFields)), 0, -1).')';
+	$stmt=$instance->connectDatabase()->prepare("INSERT INTO ".self::$table." ".$fields." VALUES ". $insertedValues );
+	bindValues($stmt,$insertBindValues);
+	$stmt->execute();
+	self::disableBooting();
+}
 
-	public static function makeObserver(string $className , string $method , $parameters){
-		if(self::$observerSubject!==NULL && self::$observerSubject->check($className) ){
-			self::$observerSubject->use($className,$method,$parameters);
+public static function create(array $attribute){
+	self::checkBoot();
+	if(empty($attribute)){
+		throw new \Exception("You need to put non-empty array data", 1);
+	}
+	self::boot();
+	$instance=self::$instance;
+	$arrayKeys=get_object_vars($instance);
+	if(empty($arrayKeys)){
+		throw new \Exception("You need to add column data", 1);
+	}
+	$getID=$instance->getID();
+	unset($arrayKeys[$getID]);
+	unset($arrayKeys['deleted_at']);
+	unset($arrayKeys['updated_at']);
+	$insertBindValues=[];
+	$insertedFields=[];
+	$insertedData=[];
+	foreach ($arrayKeys as $key => $value) {
+		if(!isset($insertedFields[$key.','])){
+			$insertedFields[$key.',']=NULL;
 		}
-	}
-
-	public function update(array $attribute){
-		self::checkBoot();
-		if(empty($attribute)){
-			throw new \Exception("You need to put non-empty array data", 1);
-		}
-		$getID=$this->getID();
-		$arrayKeys=get_object_vars($this);
-		if(empty($arrayKeys)){
-			throw new \Exception("You need to add column data", 1);
-		}
-		unset($arrayKeys[$getID]);
-		$updatedBindValues=[];
-		$updatedFields=NULL;
-		$insertedData=[];
-		foreach ($arrayKeys as $key => $value) {
-			$updatedFields .= $key . '=?,';
-			if(isset($attribute[$key])){
-				$insertedData[$key]=$attribute[$key];
-			}elseif($key=='updated_at'){
-				$insertedData[$key]=now();
-			}else{
-				$insertedData[$key]=$value;
-			}
-		}
-		$insertedArrayValues=array_values($insertedData);
-		$updatedBindValues= array_merge($updatedBindValues,$insertedArrayValues);
-		$updatedFields=substr($updatedFields, 0,-1);
-		$stmt=$this->connectDatabase()->prepare("UPDATE ".$this->getTable()." SET ".$updatedFields. " WHERE ".$getID."=".$this->{$getID} );
-		bindValues($stmt,$updatedBindValues);
-		$stmt->execute();
-		$object= mappingModelData([
-			$getID => $this->{$getID}
-		], $insertedData , $this );
-		self::makeObserver((string)get_class($this),'update',$object);
-		return $object;
-		
-	}
-
-	public static function find($id){
-		self::checkBoot();
-		self::boot();
-		$pdo=self::$instance->connectDatabase();
-		$getId=self::$instance->getID();
-		$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$getId ." = ? ".self::$limitOne);
-		bindValues($stmt,[
-			0 => $id
-		]);
-		$stmt->execute();
-		$instance=$stmt->fetchObject(self::$className);
-		self::disableBooting();
-		return self::getObject($instance);
-	}
-
-	private static function getObject($instance){
-		return $instance=='' ? (new NullModel)->nullExecute() : $instance;
-	}
-
-	public static function findBy(string $field,$value){
-		self::checkBoot();
-		self::boot();
-		$pdo=self::$instance->connectDatabase();
-		$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$field." = ? ".self::$limitOne);
-		bindValues($stmt,[
-			0 => $value
-		]);
-		$stmt->execute();
-		$instance=$stmt->fetchObject(self::$className);
-		self::disableBooting();
-		return self::getObject($instance);
-	}
-
-	public function delete(){
-		self::checkBoot();
-		$id=$this->getID();
-		$table=$this->getTable();
-		$pdo=$this->connectDatabase();
-		if( property_exists($this, 'deleted_at') ){
-			$stmt=$pdo->prepare("UPDATE ".$table." SET deleted_at='".now()."' WHERE ".$id."=".$this->{$id} );
-			$stmt->execute();
+		if(isset($attribute[$key])){
+			$insertedData[$key]=$attribute[$key];
+		}elseif($key=='created_at'){
+			$insertedData[$key]=now();
 		}else{
-			$stmt=$pdo->prepare("DELETE FROM ".$table." WHERE ".$id."=".$this->{$id});
-			$stmt->execute();
+			$insertedData[$key]=$value;
 		}
-		self::makeObserver((string)get_class($this),'delete',$this);
 	}
+	$insertedArrayValues=array_values($insertedData);
+	$insertedValues = substr("(".addArray( $insertedArrayValues )."),",0,-1);
+	$insertBindValues= array_merge($insertBindValues,$insertedArrayValues);
+	$fields='('.substr(implode('',array_keys($insertedFields)), 0, -1).')';
+	$pdo=$instance->connectDatabase();
+	$stmt=$pdo->prepare("INSERT INTO ".self::$table." ".$fields." VALUES ". $insertedValues );
+	bindValues($stmt,$insertBindValues);
+	$stmt->execute();
+	$object= mappingModelData([
+		$getID => $pdo->lastInsertId()
+	], $insertedData , $instance );
+	$className=self::$className;
+	self::disableBooting();
 
-	public function forceDelete(){
-		self::checkBoot();
-		$id=$this->getID();
-		$table=$this->getTable();
-		$stmt=$this->connectDatabase()->prepare("DELETE FROM ".$table." WHERE ".$id.'='.$this->{$id});
-		self::makeObserver((string)get_class($this),'forceDelete',$this);
+	self::makeObserver($className,'create',$object);
+
+	return $object;
+}
+
+public static function makeObserver(string $className , string $method , $parameters){
+	if(self::$observerSubject!==NULL && self::$observerSubject->check($className) ){
+		self::$observerSubject->use($className,$method,$parameters);
+	}
+}
+
+public function update(array $attribute){
+	self::checkBoot();
+	if(empty($attribute)){
+		throw new \Exception("You need to put non-empty array data", 1);
+	}
+	$getID=$this->getID();
+	$arrayKeys=get_object_vars($this);
+	if(empty($arrayKeys)){
+		throw new \Exception("You need to add column data", 1);
+	}
+	unset($arrayKeys[$getID]);
+	$updatedBindValues=[];
+	$updatedFields=NULL;
+	$insertedData=[];
+	foreach ($arrayKeys as $key => $value) {
+		$updatedFields .= $key . '=?,';
+		if(isset($attribute[$key])){
+			$insertedData[$key]=$attribute[$key];
+		}elseif($key=='updated_at'){
+			$insertedData[$key]=now();
+		}else{
+			$insertedData[$key]=$value;
+		}
+	}
+	$insertedArrayValues=array_values($insertedData);
+	$updatedBindValues= array_merge($updatedBindValues,$insertedArrayValues);
+	$updatedFields=substr($updatedFields, 0,-1);
+	$stmt=$this->connectDatabase()->prepare("UPDATE ".$this->getTable()." SET ".$updatedFields. " WHERE ".$getID."=".$this->{$getID} );
+	bindValues($stmt,$updatedBindValues);
+	$stmt->execute();
+	$object= mappingModelData([
+		$getID => $this->{$getID}
+	], $insertedData , $this );
+	self::makeObserver((string)get_class($this),'update',$object);
+	return $object;
+
+}
+
+public static function find($id){
+	self::checkBoot();
+	self::boot();
+	$pdo=self::$instance->connectDatabase();
+	$getId=self::$instance->getID();
+	$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$getId ." = ? ".self::$limitOne);
+	bindValues($stmt,[
+		0 => $id
+	]);
+	$stmt->execute();
+	$instance=$stmt->fetchObject(self::$className);
+	self::disableBooting();
+	return self::getObject($instance);
+}
+
+private static function getObject($instance){
+	return $instance=='' ? (new NullModel)->nullExecute() : $instance;
+}
+
+public static function findBy(string $field,$value){
+	self::checkBoot();
+	self::boot();
+	$pdo=self::$instance->connectDatabase();
+	$stmt=$pdo->prepare(self::getSelect() . " WHERE ".$field." = ? ".self::$limitOne);
+	bindValues($stmt,[
+		0 => $value
+	]);
+	$stmt->execute();
+	$instance=$stmt->fetchObject(self::$className);
+	self::disableBooting();
+	return self::getObject($instance);
+}
+
+public function delete(){
+	self::checkBoot();
+	$id=$this->getID();
+	$table=$this->getTable();
+	$pdo=$this->connectDatabase();
+	if( property_exists($this, 'deleted_at') ){
+		$stmt=$pdo->prepare("UPDATE ".$table." SET deleted_at='".now()."' WHERE ".$id."=".$this->{$id} );
+		$stmt->execute();
+	}else{
+		$stmt=$pdo->prepare("DELETE FROM ".$table." WHERE ".$id."=".$this->{$id});
 		$stmt->execute();
 	}
+	self::makeObserver((string)get_class($this),'delete',$this);
+}
 
-	public function restore(){
-		self::checkBoot();
-		$id=$this->getID();
-		$pdo=$this->connectDatabase();
-		$table=$this->getTable();
-		if(property_exists($this, 'deleted_at')){
-			$stmt=$pdo->prepare("UPDATE ".$table." SET deleted_at=NULL WHERE ".$id."=".$this->{$id});
-			$stmt->execute();
-		}
-		self::makeObserver((string)get_class($this),'restore',$this);
+public function forceDelete(){
+	self::checkBoot();
+	$id=$this->getID();
+	$table=$this->getTable();
+	$stmt=$this->connectDatabase()->prepare("DELETE FROM ".$table." WHERE ".$id.'='.$this->{$id});
+	self::makeObserver((string)get_class($this),'forceDelete',$this);
+	$stmt->execute();
+}
+
+public function restore(){
+	self::checkBoot();
+	$id=$this->getID();
+	$pdo=$this->connectDatabase();
+	$table=$this->getTable();
+	if(property_exists($this, 'deleted_at')){
+		$stmt=$pdo->prepare("UPDATE ".$table." SET deleted_at=NULL WHERE ".$id."=".$this->{$id});
+		$stmt->execute();
 	}
+	self::makeObserver((string)get_class($this),'restore',$this);
+}
 
 
-	public static function select(array  $fields){
-		self::checkInstance();
-		if(self::$currentSubQueryNumber==NULL){
-			self::checkUnionQuery();
+public static function select(array  $fields){
+	self::checkInstance();
+	if(self::$currentSubQueryNumber==NULL){
+		self::checkUnionQuery();
 			// If addSelect was used after using addOnlySelect function
-			if(self::$instance!==NULL && self::$select==NULL && self::$addSelect==TRUE ){
-				throw new \Exception("You must not use addOnlySelect function before", 1);
-			}
-
-			self::boot();
-			if(self::$addSelect==FALSE){
-				self::$select=NULL;
-			}else{
-				self::$select.=',';
-			}
-			
-			foreach($fields as $key => $field){
-				if( strpos($field,'(')==FALSE && strpos($field,')')==FALSE && !isset(self::$selectedFields[self::$className][$field]) ){
-					$selectedField=function() use ($field){
-						if(strpos($field, '.')!==FALSE){
-							$getField=explode('.', $field);
-							return $getField[1];
-						}else{
-							return $field;
-						}
-					};
-					$newSelectedField=$selectedField();
-					self::$selectedFields[self::$className][$newSelectedField]=$newSelectedField;
-				}
-				self::$select  .= $key+1==count($fields) ? $field : $field . ',';
-			}
-		}else{
-
-			$check=self::showCurrentSubQuery();
-			self::checkSubQueryUnionQuery($check);
-			$addSelectCheck=self::checkSubQueryAddSelect($check);
-			if(self::${$check}[self::$currentField.self::$currentSubQueryNumber]['select']==NULL &&
-				$addSelectCheck==TRUE
-			){
-				throw new \Exception("You must not use addOnlySelect function before", 1);
+		if(self::$instance!==NULL && self::$select==NULL && self::$addSelect==TRUE ){
+			throw new \Exception("You must not use addOnlySelect function before", 1);
 		}
 
-		if($addSelectCheck==TRUE){
-			self::addCommaToSubQuerySelect($check);
+		self::boot();
+		if(self::$addSelect==FALSE){
+			self::$select=NULL;
 		}else{
-			self::makeNullToSubQuerySelect($check);
+			self::$select.=',';
 		}
 
 		foreach($fields as $key => $field){
-			self::${$check}[self::$currentField.self::$currentSubQueryNumber]['select'] .= $key+1==count($fields) ? $field : $field . ',';
+			if( strpos($field,'(')==FALSE && strpos($field,')')==FALSE && !isset(self::$selectedFields[self::$className][$field]) ){
+				$selectedField=function() use ($field){
+					if(strpos($field, '.')!==FALSE){
+						$getField=explode('.', $field);
+						return $getField[1];
+					}else{
+						return $field;
+					}
+				};
+				$newSelectedField=$selectedField();
+				self::$selectedFields[self::$className][$newSelectedField]=$newSelectedField;
+			}
+			self::$select  .= $key+1==count($fields) ? $field : $field . ',';
 		}
+	}else{
+
+		$check=self::showCurrentSubQuery();
+		self::checkSubQueryUnionQuery($check);
+		$addSelectCheck=self::checkSubQueryAddSelect($check);
+		if(self::${$check}[self::$currentField.self::$currentSubQueryNumber]['select']==NULL &&
+			$addSelectCheck==TRUE
+		){
+			throw new \Exception("You must not use addOnlySelect function before", 1);
 	}
-	return self::$instance;
+
+	if($addSelectCheck==TRUE){
+		self::addCommaToSubQuerySelect($check);
+	}else{
+		self::makeNullToSubQuerySelect($check);
+	}
+
+	foreach($fields as $key => $field){
+		self::${$check}[self::$currentField.self::$currentSubQueryNumber]['select'] .= $key+1==count($fields) ? $field : $field . ',';
+	}
+}
+return self::$instance;
 }
 
 private static function makeNullToSubQuerySelect($where){
@@ -582,15 +582,8 @@ public static function limit(int $limit){
 	return self::$instance;
 }
 
-private static function setSubQuery($field,$where,bool $increase=TRUE){
-	if($increase==TRUE){
-		self::$numberOfSubQueries++;
-	}
-	$previousCheck=self::$currentSubQueryNumber!==NULL ? self::showCurrentSubQuery() : NULL;
-	$previousField=$previousCheck!==NULL ? self::${$previousCheck}[self::$currentField.self::$currentSubQueryNumber] : NULL  ;
-	self::$currentSubQueryNumber=self::$numberOfSubQueries;
-	self::$currentField=$field;
-	self::${$where}[self::$currentField.self::$currentSubQueryNumber]=[
+private static function makeSubQueryAttributes($previousField=NULL){
+	return [
 		'where'=>NULL,
 		'whereColumn'=>NULL,
 		'orWhere'=>NULL,
@@ -614,6 +607,17 @@ private static function setSubQuery($field,$where,bool $increase=TRUE){
 		'havingValue' => NULL ,
 		'selectQuery' => NULL
 	];
+}
+
+private static function setSubQuery($field,$where,bool $increase=TRUE){
+	if($increase==TRUE){
+		self::$numberOfSubQueries++;
+	}
+	$previousCheck=self::$currentSubQueryNumber!==NULL ? self::showCurrentSubQuery() : NULL;
+	$previousField=$previousCheck!==NULL ? self::${$previousCheck}[self::$currentField.self::$currentSubQueryNumber] : NULL  ;
+	self::$currentSubQueryNumber=self::$numberOfSubQueries;
+	self::$currentField=$field;
+	self::${$where}[self::$currentField.self::$currentSubQueryNumber]=self::makeSubQueryAttributes($previousField);
 }
 
 private static function setSubWhere($where,$value,$field,$operator,$whereSelect){
@@ -1183,32 +1187,41 @@ private static function makeUnionQuery($value,$union){
 		$currentSubQueryNumber=self::$currentSubQueryNumber;
 		if(isset(self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unableUnionQuery']) &&
 			self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unableUnionQuery']==TRUE
-		 ){
+		){
 			throw new \Exception("You are not allowed to use ".$union, 1);
-		}
+	}
 
-		$previousUnionQuery=isset(self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unionQuery']) ?
-		self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unionQuery'] : NULL;
-		if($previousUnionQuery==NULL){
-			self::makeSubQuery( $currentQuery );
-		}
+	$previousUnionQuery=isset(self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unionQuery']) ?
+	self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unionQuery'] : NULL;
+	$previousField=self::${$currentQuery}[$currentField.$currentSubQueryNumber];
+	if($previousUnionQuery==NULL){
+		self::makeSubQuery( $currentQuery );
 		$previousQuery = self::${$currentQuery}[$currentField];
 		$query=self::$instance;
 		$query->setSubQuery($currentField,$currentQuery,FALSE);
 		self::$subQueries[$currentField.$currentSubQueryNumber]=$currentSubQueryNumber;
 		self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unableUnionQuery']=TRUE;
 		$value($query);
+		self::$currentField=$currentField;
+		self::$currentSubQueryNumber=$currentSubQueryNumber;
+		self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unionQuery']=substr($previousQuery,0,-1) . $union .  self::${$currentQuery}[$currentField] . ')';
+		self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unableUnionQuery']=FALSE;
+		self::${$currentQuery}[$currentField.$currentSubQueryNumber]=self::makeSubQueryAttributes($previousField);
+
+	}else{
+		self::${$currentQuery}[self::$currentField.self::$currentSubQueryNumber.'unableUnionQuery']=TRUE;
+		unset(self::${$currentQuery}[self::$currentField]);
 		self::$subQueries[$currentField.$currentSubQueryNumber]=$currentSubQueryNumber;
-		$previousQuery=substr($previousQuery,0,-1) . $union .  self::${$currentQuery}[$currentField] . ')';
-		 self::$currentField=$currentField;
-		 self::$currentSubQueryNumber=$currentSubQueryNumber;
-		 self::${$currentQuery}[self::$currentField.$currentSubQueryNumber.'unionQuery']=$previousUnionQuery!==NULL ?
-		substr($previousUnionQuery,0,-1) . $union .  self::${$currentQuery}[$currentField] . ')' : $previousQuery;
-		self::${$currentQuery}[self::$currentField.self::$currentSubQueryNumber.'unableUnionQuery']=FALSE;
-		
-		self::${$currentQuery}[self::$currentField.self::$currentSubQueryNumber]=[];
+		$query=self::$instance;
+		$value($query);
+		self::$currentField=$currentField;
+		self::$currentSubQueryNumber=$currentSubQueryNumber;
+		self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unionQuery']=substr($previousUnionQuery,0,-1) . $union .  self::${$currentQuery}[$currentField] . ')';
+		self::${$currentQuery}[$currentField.$currentSubQueryNumber.'unableUnionQuery']=FALSE;
+		self::${$currentQuery}[$currentField.$currentSubQueryNumber]=self::makeSubQueryAttributes($previousField);
 	}
-	return self::$instance;
+}
+return self::$instance;
 }
 
 public static function get(){
@@ -1300,11 +1313,17 @@ private static function makeSubQuery($where){
 		self::${$where}[self::$currentField.self::$currentSubQueryNumber.'unableUnionQuery']==FALSE ){
 		$currentField=self::$currentField;
 	$currentSubQueryNumber=self::$currentSubQueryNumber;
-	self::makeMainSubQuery($where,
-		self::${$where}[$currentField.$currentSubQueryNumber.'unionQuery']
-	);
+	self::${$where}[self::$currentField]=self::${$where}[self::$currentField.self::$currentSubQueryNumber.'unionQuery'];
+	if($where=='where' || $where=='whereColumn' || $where=='orWhere' ){
+		self::$whereSubQuery[self::$currentField.$where]='whereSubQuery';
+	}
+	self::$subQueries=[];
+	self::makeDefaultSubQueryData();
 	unset(self::${$where}[$currentField.$currentSubQueryNumber.'unionQuery']);
 	unset(self::${$where}[$currentField.$currentSubQueryNumber.'unableUnionQuery']);
+	if(isset(self::${$where}[$currentField.$currentSubQueryNumber])){
+		unset(self::${$where}[$currentField.$currentSubQueryNumber]);
+	}
 }else{
 	$mainSQL=self::getSubQuery($where);
 	self::makeMainSubQuery($where,'('.$mainSQL.')');
