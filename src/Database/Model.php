@@ -3,6 +3,7 @@
 namespace JiJiHoHoCoCo\IchiORM\Database;
 use PDO;
 use JiJiHoHoCoCo\IchiORM\Observer\{ModelObserver,ObserverSubject};
+use JiJiHoHoCoCo\IchiORM\Pagination\Paginate;
 abstract class Model{
 
 	private static $limitOne=" LIMIT 1";
@@ -1461,9 +1462,8 @@ public static function paginate(int $per_page=10){
 		throw new \Exception("Please use paginate function in main query", 1);
 	}
 	self::boot();
-	$pageCheck=pageCheck();
-	$current_page=$pageCheck ? intval($_GET['page']) : 1;
-	$start=($current_page>1) ? ($per_page*($current_page-1)) : 0 ;
+	$paginate=new Paginate;
+	$paginate->setPaginateData($per_page);
 
 
 
@@ -1487,7 +1487,7 @@ public static function paginate(int $per_page=10){
 	$getGroupBy.
 	$getHaving;
 
-	$sql="SELECT * FROM (" . $mainSQL . ") AS paginate_data LIMIT ".$per_page." OFFSET ".$start;
+	$sql="SELECT * FROM (" . $mainSQL . ") AS paginate_data LIMIT ".$per_page." OFFSET ".$paginate->getStart();
 
 		$fields=self::getFields();
 		$pdo=self::$instance->connectDatabase();
@@ -1503,32 +1503,12 @@ public static function paginate(int $per_page=10){
 			$objectArray=$stmt->fetchAll(PDO::FETCH_CLASS,get_called_class());
 			self::$selectedFields=[];
 			self::$select=self::$table=NULL;
-
-			$total=intval($countStmt->fetchColumn());
-			$total_pages=ceil($total/$per_page);
-			$next_page=$current_page+1;
-			$previous_page=$pageCheck && $_GET['page']-1>=1 ? $_GET['page']-1 : NULL ;
-			$from=$start+1;
-
-			$domainName=getDomainName();
-			$totalPerPage=count($objectArray);
-			$to=($from+$totalPerPage)-1;
-
 			self::disableBooting();
-			return [
-				'current_page' => $current_page,
-				'data'=> $objectArray,
-				'first_page_url'=> makePaginateLink($domainName,'1'),
-				'from' => $from > $total_pages ? NULL : $from,
-				'last_page' => $total_pages,
-				'last_page_url' => makePaginateLink($domainName,$total_pages),
-				'next_page_url' => $next_page<=$total_pages ? makePaginateLink($domainName,$next_page) : NULL,
-				'path' => $domainName,
-				'per_page' => $per_page,
-				'prev_page_url' => $previous_page!==NULL ? makePaginateLink($domainName,$previous_page) : NULL,
-				'to' => $to<=0 || $to>$total ? NULL: $to,
-				'total' => $totalPerPage
-			];
+
+			return $paginate->paginate(
+				intval($countStmt->fetchColumn()),
+				$objectArray
+			);
 		}
 
 		private static function getJoin($sqlArray,$joinSQL){
