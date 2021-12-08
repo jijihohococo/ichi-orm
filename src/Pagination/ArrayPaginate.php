@@ -10,6 +10,7 @@ class ArrayPaginate{
 		$start=$paginate->getStart();
 		$total=0;
 		$objectArray=[];
+		$dataArray=array_values($dataArray);
 
 		foreach (range($start+1,$start+$per_page) as $key => $value) {
 			// code...
