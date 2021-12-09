@@ -8,7 +8,7 @@ This package is Open Source According to [MIT license](LICENSE.md)
 
 ## Table of Content
 
-* [Installing](#installing)
+* [Installion](#installion)
 * [Set up Database Connection](#set-up-database-connection)
 * [Available Database Setting](#available-database-setting)
 * [Configuration Table Name](#configuration-table-name)
@@ -34,6 +34,9 @@ This package is Open Source According to [MIT license](LICENSE.md)
 		* [Left Join](#left-join)
 		* [Right Join](#right-join)
 	* [Union](#union)
+	* [Pagination](#pagination)
+		* [Database Pagination](#database-pagination)
+		* [Array Pagination](#array-pagination)
 	* [Subqueries](#subqueries)
 * [Using PDO Functions](#using-pdo-functions)
 * [Using Different Databases](#using-different-databases)
@@ -41,7 +44,7 @@ This package is Open Source According to [MIT license](LICENSE.md)
 * [Caching](#caching)
 * [Observers](#observers)
 
-## Installing
+## Installion
 
 ## Set up Database Connection
 
@@ -533,7 +536,7 @@ Blog::whereIn('id',[1,2])->get();
 
 ### WHERE NOT IN
 
-To make "WHERE NOT IN" sql query, you can user "whereNotIn" function as shown as below
+To make "WHERE NOT IN" sql query, you can use "whereNotIn" function as shown as below
 
 ```php
 Blog::whereNotIn('id',[1,2])->get();
@@ -547,7 +550,9 @@ The rules and flows are same as SQL Join.
 
 Single SQL Query
 ```php
-Author::innerJoin('blogs','authors.id','=','blogs.author_id')->select(['authors.*','blogs.id AS blog_id'])->get();
+Author::innerJoin('blogs','authors.id','=','blogs.author_id')
+->select(['authors.*','blogs.id AS blog_id'])
+->get();
 ```
 
 Subquery
@@ -564,7 +569,9 @@ Blog::where('id',function($query){
 
 Single SQL Query
 ```php
-Author::leftJoin('blogs','authors.id','=','blogs.author_id')->select(['authors.*','blogs.id AS blog_id'])->get();
+Author::leftJoin('blogs','authors.id','=','blogs.author_id')
+->select(['authors.*','blogs.id AS blog_id'])
+->get();
 ```
 
 Subquery
@@ -581,7 +588,9 @@ Blog::where('id',function($query){
 
 Single SQL Query
 ```php
-Author::rightJoin('blogs','authors.id','=','blogs.author_id')->select(['authors.*','blogs.id AS blog_id'])->get();
+Author::rightJoin('blogs','authors.id','=','blogs.author_id')
+->select(['authors.*','blogs.id AS blog_id'])
+->get();
 ```
 
 Subquery
@@ -613,6 +622,29 @@ Blog::whereIn('id', function($query) {
 	})->get();
 } )->get();
 ```
+
+### Pagination
+
+In this library, you can use two types of pagination.
+
+1. Database Pagination
+2. Array Pagination
+
+#### Database Pagination
+
+You can paginate your query result like that
+
+```php
+$paginatedBlogs=Blog::whereIn('id',[1,2,3,4,5])->paginate();
+```
+It will return the data with that array. The default paginate data is 10. You can add the number into that "paginate" function.
+
+```php
+
+```
+
+
+#### Array Pagination
 
 ### Subqueries
 
@@ -658,7 +690,7 @@ $pdo=Connector::getInstance()->executeConnect('new_mysql_connection');
 
 ## Using Different Databases
 
-If you have the model which is from different database you can like that
+If you have the model which is from different database you can connect like that
 
 ```php
 namespace App\Models;
@@ -789,3 +821,6 @@ class AuthorResourceCollection extends ResourceCollection{
 
 }
 ```
+## Caching
+
+## Observers

@@ -44,7 +44,7 @@ if(!function_exists('getDomainName')){
 
 if(!function_exists('makePaginateLink')){
 	function makePaginateLink($link,$pageNumber){
-		return count($_REQUEST)== 0 ? $link. '?page='. $pageNumber : $link. '&page='.$pageNumber;
+		return count($_REQUEST)== 0 || (count($_REQUEST)==1 && isset($_REQUEST['page']) ) ? $link. '?page='. $pageNumber : $link. '&page='.$pageNumber;
 	}
 }
 
