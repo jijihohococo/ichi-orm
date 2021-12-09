@@ -8,7 +8,6 @@ class ArrayPaginate{
 		$paginate=new Paginate;
 		$paginate->setPaginateData($per_page);
 		$start=$paginate->getStart();
-		$total=0;
 		$objectArray=[];
 		$dataArray=array_values($dataArray);
 

@@ -2,7 +2,7 @@
 	"name" : "jijihohococo/ichi-orm",
 	"type": "library",
 	"description": "ORM for PHP",
-	"keywords": ["php orm","orm","orm for php","php"],
+	"keywords": ["php orm","orm","orm for php","php","database"],
 	"license": "MIT",
 	"authors": [
 		{
