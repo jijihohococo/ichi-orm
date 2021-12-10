@@ -37,14 +37,14 @@ if(!function_exists('now')){
 if(!function_exists('getDomainName')){
 	function getDomainName(){
 		$http=!empty($_SERVER['HTTPS']) ? 'https://' : 'http://' ;
-		$pageLink=isset($_REQUEST['page']) ? str_replace('&page=', NULL,str_replace('?page=', NULL, substr_replace($_SERVER['REQUEST_URI'],NULL,-strlen($_REQUEST['page'])))) : $_SERVER["REQUEST_URI"];
+		$pageLink=isset($_GET['page']) ? str_replace('&page=', NULL,str_replace('?page=', NULL, substr_replace($_SERVER['REQUEST_URI'],NULL,-strlen($_GET['page'])))) : $_SERVER["REQUEST_URI"];
 		return $http . $_SERVER['HTTP_HOST'] . $pageLink;
 	}
 }
 
 if(!function_exists('makePaginateLink')){
 	function makePaginateLink($link,$pageNumber){
-		return count($_REQUEST)== 0 || (count($_REQUEST)==1 && isset($_REQUEST['page']) ) ? $link. '?page='. $pageNumber : $link. '&page='.$pageNumber;
+		return count($_GET)== 0 || (count($_GET)==1 && isset($_GET['page']) ) ? $link. '?page='. $pageNumber : $link. '&page='.$pageNumber;
 	}
 }
 
