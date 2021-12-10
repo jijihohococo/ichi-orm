@@ -24,6 +24,9 @@ This package is Open Source According to [MIT license](LICENSE.md)
 	* [Delete](#delete)
 * [Querying](#querying)
 	* [SELECT](#select)
+	* [Getting Query Data](#getting-query-data)
+		* [Get](#get)
+		* [To Array](#to-array)
 	* [LIMIT](#limit)
 	* [WHERE](#where)
 	* [OR WHERE](#or-where)
@@ -233,7 +236,7 @@ Blog::findBy('content','Content');
 
 If you have one to one relationship in your database (with foreign keys or without foreign keys), you can use "refersTo" function in child model class as shown as below
 
-<i>You must add parent model name, the field that represent parent id into "refersTo" function if parent model's primary key is "id".</i>
+<b>You must add parent model name, the field that represent parent id into "refersTo" function if parent model's primary key is "id".</b>
 
 ```php
 namespace App\Models\Blog;
@@ -250,7 +253,7 @@ class Blog extends Model{
 }
 ```
 
-<i>You must add parent model name, the field name that represent parent id and parent primary key field into "refersTo" function if parent model's primary key is not "id".</i>
+<b>You must add parent model name, the field name that represent parent id and parent primary key field into "refersTo" function if parent model's primary key is not "id".</b>
 
 ```php
 namespace App\Models\Blog;
@@ -283,7 +286,7 @@ $authorId=$authorObject->id;
 
 If you have one to many relationship in your database (with foreign keys or without foreign keys), you can use "refersMany" function in parent model class as shown as below
 
-<i>You must add child model name and the field name that represent parent id in child model into "refersMany" function if parent model's primary key is "id".</i>
+<b>You must add child model name and the field name that represent parent id in child model into "refersMany" function if parent model's primary key is "id".</b>
 
 ```php
 namespace App\Models\Author;
@@ -301,7 +304,7 @@ class Author extends Model{
 }
 ```
 
-<i>You must add child model name, the field name that represent parent id in child model and parent primary key field into "refersMany" function if parent model's primary key is not "id".</i>
+<b>You must add child model name, the field name that represent parent id in child model and parent primary key field into "refersMany" function if parent model's primary key is not "id".</b>
 
 ```php
 namespace App\Models\Author;
@@ -319,7 +322,7 @@ class Author extends Model{
 }
 ```
 
-<i>You can customize the child query</i>
+You can customize the child query
 
 ```php
 return $this->refersMany('App\Models\Blog','author_id','authorID')->latest()->get();
@@ -418,14 +421,18 @@ Blog::select(['id','name'])
 Blog::select(['blogs.id','blogs.name'])
 ```
 
-To get your query result you must use "get()" or "toArray()" functions.
+### Getting Query Data
+
+You can get your query data with "get()" and "toArray()" functions.
+
+#### GET
 
 "get()" function can use in main query and subquery. This function will return the object array of related model when it is used in main query as shown as below.
 
 
 <b>Array ( [0] => App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 [deleted_at] => ) )</b>
 
-<b>You can call relationship functions directly with the object in the loop because "get()" function outputs the object array in main query.</b>
+<b>You can call relationship functions directly with the object in the loop because "get()" function outputs the object array</b>
 
 ```php
 $blogs=Blog::select(['id','name'])->get();
@@ -436,31 +443,7 @@ foreach($blogs as $blog){
 }
 ```
 
-You can use subqueries in select with two functions "addSelect" and "addOnlySelect".
-
-<b>"addSelect" function is adding subqueries select</b>
-```php
-Blog::select(['id','author_id'])
-->addSelect(['autor_name' => function($query){
-	return $query->from(['App\Models\Author'])
-	->whereColumn('authors.id','blogs.author_id')
-	->limit(1)
-	->get();
-}])->get();
-```
-<b>You can't use "addSelect" function in subqueries</b>
-
-<b>"addOnlySelect" function is selecting only data from that function</b>
-```php
-Blog::addOnlySelect(['autor_name' => function($query){
-	return $query->from(['App\Models\Author'])
-	->whereColumn('authors.id','blogs.author_id')
-	->limit(1)
-	->get();
-}])->get();
-```
-
-<b>You can use "addOnlySelect" function in subqueries</b>
+#### TO ARRAY
 
 "toArray()" function can use in only main query. This function will return the array for thre query as shown as below.
 
@@ -731,6 +714,38 @@ Blog::whereIn('author_id',function($query){
 })->get();
 ```
 You can use "from" function in only subqueries. You need to add model class name which is represented the another table in "from" function.
+
+If you want to use subquery in select, you can use "addSelect" and "addOnlySelect" functions.
+
+"addSelect" function is making subquery in select query.
+It will select the data within its function with the data from "select" function.
+If you don't use "select" function, it will select the data within its function with the data of all fields' values of selected table.
+
+```php
+Blog::select(['id','author_id'])
+->addSelect(['autor_name' => function($query){
+	return $query->from(['App\Models\Author'])
+	->whereColumn('authors.id','blogs.author_id')
+	->limit(1)
+	->get();
+}])->get();
+```
+<b>You can't use "addSelect" function in subqueries</b>
+
+
+"addOnlySelect" function is making subquery in select query.
+It will select only the data within its function.
+You can't use other select functions("select" and "addSelect") if you want to use "addOnlySelect" function. 
+
+```php
+Blog::addOnlySelect(['autor_name' => function($query){
+	return $query->from(['App\Models\Author'])
+	->whereColumn('authors.id','blogs.author_id')
+	->limit(1)
+	->get();
+}])->get();
+```
+<b>You can use "addOnlySelect" function in subqueries</b>
 
 ## Using PDO Functions
 
