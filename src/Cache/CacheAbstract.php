@@ -24,6 +24,7 @@ abstract class CacheAbstract{
 
 	private function getData($data){
 		$data=is_callable($data) ? $data() : $data;
+		$this->getData=TRUE;
 		return $data;
 	}
 
