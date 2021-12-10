@@ -27,7 +27,7 @@ This package is Open Source According to [MIT license](LICENSE.md)
 	* [Getting Query Data](#getting-query-data)
 		* [Get](#get)
 		* [To Array](#to-array)
-		* [Get Soft Deleted Data](#get-soft-deleted-data)
+		* [Get With Soft Deleted Data](#get-with-soft-deleted-data)
 	* [LIMIT](#limit)
 	* [WHERE](#where)
 	* [OR WHERE](#or-where)
@@ -461,7 +461,7 @@ foreach($blogs as $blog){
 	echo $blog['id'] . '<br>';
 }
 ```
-#### Get Soft Deleted Data
+#### Get With Soft Deleted Data
 
 If you have soft deleted data rows, you can't seee those in your array or data object array. If you want to see the array or data object array with soft deleted data rows, you must use "withTrashed()" function as shown as before.
 
