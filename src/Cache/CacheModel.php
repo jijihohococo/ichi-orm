@@ -39,7 +39,12 @@ class CacheModel{
 		throw new \Exception("You need to set redis or memcached object firstly", 1);
 	}
 
-	public static function makeAction(string $method,string $key){
-		
+	public static function save(string $key,$data,int $expiredTime=NULL){
+		if(self::$redis!==NULL){
+			self::$redis->set($key,$data,$expiredTime);
+		}elseif(self::$memcached!==NULL){
+			self::$memcached->set($key,$data,$expiredTime==NULL ? 0 : $expiredTime);
+		}
+		throw new \Exception("You need to set redis or memcached object firstly", 1);
 	}
 }
