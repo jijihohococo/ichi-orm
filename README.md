@@ -444,6 +444,12 @@ foreach($blogs as $blog){
 }
 ```
 
+If you don't use select function, you will get all data fields of related model.
+
+```php
+Blog::get();
+```
+
 #### To Array
 
 "toArray()" function can use in only main query. This function will return the array for thre query as shown as below.
@@ -461,9 +467,14 @@ foreach($blogs as $blog){
 	echo $blog['id'] . '<br>';
 }
 ```
+If you don't use select function, you will get all data fields of related model.
+
+```php
+Blog::toArray();
+```
 #### Get Query Data With Soft Deleted Data
 
-If you have soft deleted data rows, you can't seee those in your array or data object array. If you want to see the array or data object array with soft deleted data rows, you must use "withTrashed()" function as shown as before.
+If you have soft deleted data rows, you can't seee those in your array or data object array. If you want to see the array or data object array with soft deleted data rows, you must use "withTrashed()" function as shown as below.
 
 ```php
 Blog::withTrashed()->select(['id','name'])->get();
@@ -471,13 +482,9 @@ Blog::withTrashed()->select(['id','name'])->get();
 Blog::withTrashed()->select(['id','name'])->toArray();
 ```
 
-If you don't use select function, you will get all data fields of related model.(If you use "withTrashed()" function you will also get soft deleted data rows)
+If you don't use select function, you will get all data fields of related model. You will also get soft deleted data rows if you use "withTrashed()" function.
 
 ```php
-Blog::get();
-
-Blog::toArray();
-
 Blog::withTrashed()->get();
 
 Blog::withTrashed()->toArray();
