@@ -425,7 +425,7 @@ To get your query result you must use "get()" or "toArray()" functions.
 
 <b>Array ( [0] => App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 [deleted_at] => ) )</b>
 
-<i>You can call relationship functions directly with the object in the loop because "get()" function outputs the object array.</i>
+<b>You can call relationship functions directly with the object in the loop because "get()" function outputs the object array in main query.</b>
 
 ```php
 $blogs=Blog::select(['id','name'])->get();
@@ -438,7 +438,7 @@ foreach($blogs as $blog){
 
 You can use subqueries in select with two functions "addSelect" and "addOnlySelect".
 
-<i>"addSelect" function is adding subqueries select</i>
+<b>"addSelect" function is adding subqueries select</b>
 ```php
 Blog::select(['id','author_id'])
 ->addSelect(['autor_name' => function($query){
@@ -450,7 +450,7 @@ Blog::select(['id','author_id'])
 ```
 <b>You can't use "addSelect" function in subqueries</b>
 
-<i>"addOnlySelect" function is selecting only data from that function</i>
+<b>"addOnlySelect" function is selecting only data from that function</b>
 ```php
 Blog::addOnlySelect(['autor_name' => function($query){
 	return $query->from(['App\Models\Author'])
@@ -460,11 +460,15 @@ Blog::addOnlySelect(['autor_name' => function($query){
 }])->get();
 ```
 
+<b>You can use "addOnlySelect" function in subqueries</b>
+
 "toArray()" function can use in only main query. This function will return the array for thre query as shown as below.
 
 <b>Array ( [0] => Array ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 [deleted_at] => ) )</b>
 
-<i>You can't call relationship functions directly with the object in the loop because "toArray()" function outputs the array.</i>
+<b>You can't call relationship functions directly with the object in the loop because "toArray()" function outputs the array.</b>
+
+<b>You can't use "toArray" function in subquery.</b>
 
 ```php
 $blogs=Blog::select(['id','name'])->toArray();
@@ -498,10 +502,22 @@ Blog::withTrashed()->toArray();
 
 To make limit sql query, you can use "limit" function and put the integer into this function as shown as below
 
+In main query
 ```php
 Blog::limit(1)->get();
 
 Blog::limit(1)->toArray();
+```
+
+In subquery
+```php
+Blog::whereIn('id',function($query){
+	return $query->select(['id'])->limit(1)->get();
+})->get();
+
+Blog::whereIn('id',function($query){
+	return $query->select(['id'])->limit(1)->get();
+})->toArray();
 ```
 
 ### WHERE
