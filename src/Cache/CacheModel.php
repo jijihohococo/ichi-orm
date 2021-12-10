@@ -37,6 +37,9 @@ class CacheModel{
 			self::$memcached->remove($key);
 		}
 		throw new \Exception("You need to set redis or memcached object firstly", 1);
+	}
+
+	public static function makeAction(string $method,string $key){
 		
 	}
 }

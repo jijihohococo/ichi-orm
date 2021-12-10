@@ -967,4 +967,54 @@ class AuthorResourceCollection extends ResourceCollection{
 ```
 ## Caching
 
+You can cache your query data with <a href="https://github.com/phpredis/phpredis">redis</a> or <a href="https://pecl.php.net/package/memcached">memcached</a> extensions in this library.
+
+Firstly, you need to pass the object of redis or memcached into the "JiJiHoHoCoCo\Cache\CacheModel" static function "setCacheObject" like below.
+
+
+<i>With Redis</i>
+```php
+use JiJiHoHoCoCo\Cache\CacheModel;
+use Redis;
+
+$redis = new Redis();
+$redis->connect('127.0.0.1', 6379);
+CacheModel::setCacheObject($redis);
+```
+
+<i>With Memcached</i>
+```php
+use JiJiHoHoCoCo\Cache\CacheModel;
+use Memcached;
+$memcached = new Memcached();
+$memcached->addServer('127.0.0.1',11211);
+CacheModel::setCacheObject($memcached);
+```
+
+<b>It might be different of connecting the way of redis or memcached to each other according to the security and ports' availabilities. The important thing is you must pass the redis or memcached object into the "setCacheObject" static function of "JiJiHoHoCoCo\Cache\CacheModel".</b>
+
+And then, you can call the cache functions to store and get.
+
+```php
+use JiJiHoHoCoCo\Cache\CacheModel;
+use App\Models\Blog;
+
+$blogs=CacheModel::remember('blogs',function(){
+		 	return  Blog::whereIn('author_id',[1,2,3])->get();
+		 },100);
+```
+
+In "remember" function you must declare the cached key name,and the stored query or data and expired time in seconds. Without adding expired time is also ok but it will save the data into the unlimited time. This function will store the data if the declared cached key is not in the cached server and get the cached data if the declared cached key is in the cached server.
+
+<b>The default stored time is unlimited. So you must declare the stored time for your cached server</b>
+
+
+If you want to delete your cached key, you can do
+
+```php
+use JiJiHoHoCoCo\Cache\CacheModel;
+
+CacheModel::remove('blogs');
+```
+
 ## Observers
