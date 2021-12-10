@@ -235,7 +235,7 @@ Blog::findBy('content','Content');
 
 #### Refers To
 
-If you have one to one relationship in your database (with foreign keys or without foreign keys), you can use "refersTo" function in child model class as shown as below
+If you have one to one relationship in your database (with foreign keys or without foreign keys), you can use "refersTo" function in child model class as shown as below. The function will output the single object.
 
 <b>You must add parent model name, the field that represent parent id into "refersTo" function if parent model's primary key is "id".</b>
 
@@ -285,7 +285,7 @@ $authorId=$authorObject->id;
 
 #### Refers Many
 
-If you have one to many relationship in your database (with foreign keys or without foreign keys), you can use "refersMany" function in parent model class as shown as below
+If you have one to many relationship in your database (with foreign keys or without foreign keys), you can use "refersMany" function in parent model class as shown as below. The function will output the object array.
 
 <b>You must add child model name and the field name that represent parent id in child model into "refersMany" function if parent model's primary key is "id".</b>
 
