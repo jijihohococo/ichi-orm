@@ -27,6 +27,7 @@ This package is Open Source According to [MIT license](LICENSE.md)
 	* [Getting Query Data](#getting-query-data)
 		* [Get](#get)
 		* [To Array](#to-array)
+		* [Get Soft Deleted Data](#get-soft-deleted-data)
 	* [LIMIT](#limit)
 	* [WHERE](#where)
 	* [OR WHERE](#or-where)
@@ -425,7 +426,7 @@ Blog::select(['blogs.id','blogs.name'])
 
 You can get your query data with "get()" and "toArray()" functions.
 
-#### GET
+#### Get
 
 "get()" function can use in main query and subquery. This function will return the object array of related model when it is used in main query as shown as below.
 
@@ -443,7 +444,7 @@ foreach($blogs as $blog){
 }
 ```
 
-#### TO ARRAY
+#### To Array
 
 "toArray()" function can use in only main query. This function will return the array for thre query as shown as below.
 
@@ -460,6 +461,7 @@ foreach($blogs as $blog){
 	echo $blog['id'] . '<br>';
 }
 ```
+#### Get Soft Deleted Data
 
 If you have soft deleted data rows, you can't seee those in your array or data object array. If you want to see the array or data object array with soft deleted data rows, you must use "withTrashed()" function as shown as before.
 
@@ -676,21 +678,78 @@ You can customize the number of paginated data by
 ```php
 $paginatedBlogs=Blog::whereIn('id',[1,2,3,4,5])->paginate(12);
 ```
-You can get paginated data like
+You can get paginated data like below. The data in "data" array key is object array.
 
 ```php
 foreach($paginatedBlogs['data'] as $blog){
 	echo $blog->id.'<br>';
+	echo $blog->author()->name . '<br>';
 }
+```
+<b>You can call relationship functions directly with the object in the loop.</b>
+
+You can use pagination user interface in your frontend php file like
+
+```php
+(new  JiJiHoHoCoCo\IchiORM\UI\Pagination)->paginate($paginatedBlogs);
+```
+
+#### Array Pagination
+
+You can paginate your array like below.
+
+```php
+use JiJiHoHoCoCo\IchiORM\Pagination\ArrayPagination;
+
+$blogs=['Blog One','Blog Two','Blog Three','Blog Four','Blog Five'];
+
+$paginatedBlogs=(new ArrayPagination)->paginate($blogs);
+
+```
+
+You can also use multidimensional array
+
+```php
+use JiJiHoHoCoCo\IchiORM\Pagination\ArrayPagination;
+
+$blogs=[
+			[
+				'name' => 'Blog One',
+				'author_name' => 'John Doe'
+			],
+			[
+				'name' => 'Blog Two',
+				'author_name' => 'Joe Blow'
+			],
+			[
+				'name' => 'Blog Three',
+				'author_name' => 'Everyman'
+			],
+			[
+				'name' => 'Blog Four',
+				'author_name' => 'John Doe'
+			],
+			[
+				'name' => 'Blog Five',
+				'author_name' => 'John Doe'
+			]
+];
+
+$paginatedBlogs=(new ArrayPagination)->paginate($blogs);
+
+```
+
+You can customize the number of paginated data by
+
+```php
+$paginatedBlogs=(new ArrayPagination)->paginate($blogs,2);
 ```
 
 You can use pagination user interface in your frontend php file like
 
 ```php
-$paginatedBlogs
+(new  JiJiHoHoCoCo\IchiORM\UI\Pagination)->paginate($paginatedBlogs);
 ```
-
-#### Array Pagination
 
 ### Subqueries
 
