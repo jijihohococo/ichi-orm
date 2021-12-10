@@ -418,15 +418,22 @@ Blog::select(['id','name'])
 Blog::select(['blogs.id','blogs.name'])
 ```
 
-To get your query result you must use "get()" or "toArray()" functions
+To get your query result you must use "get()" or "toArray()" functions.
 
 "get()" function can use in main query and subquery. This function will return the object array of related model when it is used in main query as shown as below.
 
 
 <b>Array ( [0] => App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 [deleted_at] => ) )</b>
 
+<i>You can call relationship functions directly with the object in the loop because "get()" function outputs the object array.</i>
+
 ```php
-Blog::select(['id','name'])->get();
+$blogs=Blog::select(['id','name'])->get();
+
+foreach($blogs as $blog){
+	echo $blog->id . '<br>';
+	echo $blog->author()->name . '<br>';
+}
 ```
 
 You can use subqueries in select with two functions "addSelect" and "addOnlySelect".
@@ -441,6 +448,7 @@ Blog::select(['id','author_id'])
 	->get();
 }])->get();
 ```
+<b>You can't use "addSelect" function in subqueries</b>
 
 <i>"addOnlySelect" function is selecting only data from that function</i>
 ```php
@@ -456,8 +464,14 @@ Blog::addOnlySelect(['autor_name' => function($query){
 
 <b>Array ( [0] => Array ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 [deleted_at] => ) )</b>
 
+<i>You can't call relationship functions directly with the object in the loop because "toArray()" function outputs the array.</i>
+
 ```php
-Blog::select(['id','name'])->toArray();
+$blogs=Blog::select(['id','name'])->toArray();
+
+foreach($blogs as $blog){
+	echo $blog['id'] . '<br>';
+}
 ```
 
 If you have soft deleted data rows, you can't seee those in your array or data object array. If you want to see the array or data object array with soft deleted data rows, you must use "withTrashed()" function as shown as before.
@@ -630,6 +644,27 @@ In this library, you can use two types of pagination.
 1. Database Pagination
 2. Array Pagination
 
+The default paginated data per page is 10. You can customize that number.
+Pagination functions will output the array according to the below format.
+So, you can use server pagination into your frontend (like Vue and React) with that array data.
+
+```php
+[
+	'current_page' => 'current page number',
+	'data' => 'paginated data',
+	'first_page_url' => 'first page url',
+	'from' => 'The number of paginated data which starts to show in current page',
+	'last_page' => 'The last page number',
+	'last_page_url' => 'The last page url',
+	'next_page_url' => 'The next page url',
+	'path' => '',
+	'per_page' => 'The number of how many data will be shown per page',
+	'prev_page_url' => 'The previous page url',
+	'to' => 'The number of paginated data which is last data to show in current page',
+	'total' => 'The total number of paginated data in current page'
+]
+```
+
 #### Database Pagination
 
 You can paginate your query result like that
@@ -637,12 +672,24 @@ You can paginate your query result like that
 ```php
 $paginatedBlogs=Blog::whereIn('id',[1,2,3,4,5])->paginate();
 ```
-It will return the data with that array. The default paginate data is 10. You can add the number into that "paginate" function.
+You can customize the number of paginated data by
 
 ```php
+$paginatedBlogs=Blog::whereIn('id',[1,2,3,4,5])->paginate(12);
+```
+You can get paginated data like
 
+```php
+foreach($paginatedBlogs['data'] as $blog){
+	echo $blog->id.'<br>';
+}
 ```
 
+You can use pagination user interface in your frontend php file like
+
+```php
+$paginatedBlogs
+```
 
 #### Array Pagination
 
