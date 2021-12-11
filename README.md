@@ -1017,4 +1017,177 @@ use JiJiHoHoCoCo\Cache\CacheModel;
 CacheModel::remove('blogs');
 ```
 
+You can just save your data in your cache
+
+```php
+use JiJiHoHoCoCo\Cache\CacheModel;
+
+$blogs=CacheModel::save('blogs',function(){
+		 	return  Blog::whereIn('author_id',[1,2,3])->get();
+		 },100);
+```
+
+To get your cached data
+
+```php
+use JiJiHoHoCoCo\Cache\CacheModel;
+
+$cachedBlogs=CacheModel::get('blogs');
+
+```
+
+You can get back your redis object to implement the functions of redis extension.
+
+```php
+use JiJiHoHoCoCo\Cache\CacheModel;
+
+$redisObject=CacheModel::getRedis();
+```
+
+You can also get back your memcached object to implement the functions of memcached.
+
+```php
+use JiJiHoHoCoCo\Cache\CacheModel;
+
+$memcachedObject=CacheModel::getMemcached();
+```
+
 ## Observers
+
+To make observers firstly you need to create the observer class which implements <b>"JiJiHoHoCoCo\IchiORM\Observer\ModelObserver"</b> interface.
+
+In this created class, you must declare the functions as shown as below.
+
+```php
+namespace App\Observers;
+
+use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
+use App\Models\Blog;
+class BlogObserver implements ModelObserver{
+
+	public function create(Blog $blog){
+		
+	}
+
+	public function update(Blog $blog){
+		
+	}
+
+	public function delete(Blog $blog){
+
+	}
+
+	public function restore(Blog $blog){
+
+	}
+
+	public function forceDelete(Blog $blog){
+
+	}
+
+}
+
+```
+
+1. "create" function will load after creating the data of blog model.
+2. "update" function will load after updating the data of blog model.
+3. "delete" function will load after deleting the data of blog model.
+4. "restore" function will load after restoring the soft deleted data of blog model.
+5. "forceDelete" function will load after force deleting the data of blog model.
+
+
+and then you must do
+
+```php
+use App\Models\Blog;
+use App\Observers\BlogObserver;
+
+Blog::observe(new BlogObserver);
+```
+
+You can add many observers for one model
+
+```php
+use App\Models\Blog;
+use App\Observers\{BlogObserver,BlogDataObserver};
+
+Blog::observe(new BlogObserver);
+Blog::observe(new BlogDataObserver);
+```
+The observers' functions will load sequetly.
+
+If you want to observe your custom function
+
+<i>In model</i>
+```php
+namespace App\Models;
+use JiJiHoHoCoCo\IchiORM\Database\Model;
+class Blog extends Model{
+
+	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
+
+	public function customFunction(){
+		/*----- your business logic -----*/
+		
+		//--- Example to pass one parameter into observer function ...//
+		$currentObject=$this;
+		self::$observerSubject->use(get_class($this),'customFunction',$currentObject);
+	}
+
+}
+
+```
+
+<i>In observer</i>
+```php
+namespace App\Observers;
+
+use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
+use App\Models\Blog;
+class BlogObserver implements ModelObserver{
+
+	public function customFunction(Blog $blog){
+
+	}
+}
+```
+
+If you need to pass multiple parameters in observer function.
+
+<i>In model</i>
+```php
+namespace App\Models;
+use JiJiHoHoCoCo\IchiORM\Database\Model;
+class Blog extends Model{
+
+	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
+
+	public function author(){
+		return $this->refersTo('App\Models\Author','author_id');
+	}
+
+	public function customFunction(){
+		/*----- your business logic -----*/
+		
+		//--- Example to pass multiple parameter into observer function ...//
+		$currentObject=$this;
+		$author=$this->author();
+		self::$observerSubject->use(get_class($this),'customFunction',[$currentObject,$author]);
+	}
+
+}
+
+```
+<i>In observer</i>
+```php
+namespace App\Observers;
+
+use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
+use App\Models\{Blog,Author};
+class BlogObserver implements ModelObserver{
+
+	public function customFunction(Blog $blog,Author $author){
+	
+	}
+}
+```

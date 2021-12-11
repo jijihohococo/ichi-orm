@@ -9,7 +9,9 @@ class ObserverSubject{
 	private $observers=[];
 
 	public function attach(string $className,ModelObserver $modelObserver){
-
+		if($this->check($className)){
+			throw new \Exception("Duplicate ".$class." in observers", 1);
+		}
 		$this->observers[$className][]=$modelObserver;
 	}
 
