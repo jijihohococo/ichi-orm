@@ -2,7 +2,7 @@
 
 namespace JiJiHoHoCoCo\IchiORM\Database;
 
-use JiJiHoHoCoCo\IchiORM\Database\Connections\{MySQLConnection,PostgresSQLConnection};
+use JiJiHoHoCoCo\IchiORM\Database\Connections\{MySQLConnection,PostgresSQLConnection,SQLServerConnection};
 use PDO;
 class Connector{
 
@@ -22,6 +22,10 @@ class Connector{
 
 			case 'pgsql':
 			$connection=new PostgresSQLConnection;
+			break;
+
+			case 'sqlsrv':
+			$connection=new SQLServerConnection;
 			break;
 
 			default:
