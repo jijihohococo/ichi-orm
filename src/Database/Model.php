@@ -18,7 +18,7 @@ abstract class Model{
 	private static $andZero=' AND 0 = 1 ';
 	private static $groupByString=' GROUP BY ';
 	private static $selectQuery;
-	private static $observerSubject;
+	protected static $observerSubject;
 	private static $subQueryLimitNumber=0;
 	private static $useUnionQuery=[ 0 => TRUE ];
 	private static $unionQuery=[ 0 => NULL ];
