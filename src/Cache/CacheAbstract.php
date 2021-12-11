@@ -36,4 +36,8 @@ abstract class CacheAbstract{
 		$this->cachedObject->delete($key);
 	}
 
+	public function getCacheObject(){
+		return $this->cachedObject;
+	}
+
 }
