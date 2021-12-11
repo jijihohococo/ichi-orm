@@ -14,17 +14,22 @@ class Connector{
 			throw new \Exception("You need to add database driver", 1);
 		}
 		$connection=NULL;
+		$availableDrivers=PDO::getAvailableDrivers();
+
 		switch ($config['driver']) {
 
 			case 'mysql':
+			$this->checkDriver('mysql',$availableDrivers);
 			$connection=new MySQLConnection;
 			break;
 
 			case 'pgsql':
+			$this->checkDriver('pgsql',$availableDrivers);
 			$connection=new PostgresSQLConnection;
 			break;
 
 			case 'sqlsrv':
+			$this->checkDriver('sqlsrv',$availableDrivers);
 			$connection=new SQLServerConnection;
 			break;
 
@@ -88,5 +93,11 @@ class Connector{
 			return $this->pdos[$connection];
 		}
 		throw new \Exception("Your database connection is unavailable", 1);
+	}
+
+	private function checkDriver($driver,$availableDrivers){
+		if(!in_array($driver, $availableDrivers)){
+			throw new \Exception("You need to install ".$driver." driver", 1);
+		}
 	}
 }
