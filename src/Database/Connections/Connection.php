@@ -32,6 +32,9 @@ abstract class Connection{
 	}
 
 	private function connect(array $config,array $option){
+		if(!isset($config['user_name']) || !isset($config['user_password']) ){
+			throw new \Exception("You need to set your database user name and password", 1);
+		}
 		$pdo=new PDO(
 			$this->getDSN($config),
 			$config['user_name'],
