@@ -47,4 +47,27 @@ class CacheModel{
 		}
 		throw new \Exception("You need to set redis or memcached object firstly", 1);
 	}
+
+	public static function get(string $key){
+		if(self::$redis!==NULL){
+			return self::$redis->get($key);
+		}elseif(self::$memcached!==NULL){
+			return self::$memcached->get($key);
+		}
+		throw new \Exception("You need to set redis or memcached object firstly", 1);
+	}
+
+	public static function getRedis(){
+		if(self::$redis!==NULL){
+			return self::$redis;
+		}
+		throw new \Exception("You need to set redis object firstly", 1);
+	}
+
+	public static function getMemcached(){
+		if(self::$memcached!==NULL){
+			return self::$memcached;
+		}
+		throw new \Exception("You need to set memcached object firstly", 1);
+	}
 }

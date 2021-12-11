@@ -13,13 +13,17 @@ abstract class CacheAbstract{
 			$this->set($key,$data,$expiredTime);
 			return $data;
 		}else{
-			$resultData=$this->cachedObject->get($key);
-			return unserialize($resultData);
+			return $this->get($key);
 		}
 	}
 
 	public function set(string $key,$data,int $expiredTime=NULL){
 		$this->cachedObject->set($key,serialize( $this->getData==FALSE ? $this->getData($data) : $data ),$expiredTime);
+	}
+
+	public function get(string $key){
+		$resultData=$this->cachedObject->get($key);
+		return unserialize($resultData);
 	}
 
 	private function getData($data){
