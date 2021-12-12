@@ -52,6 +52,9 @@ class Connector{
 			$this->connections['pgsql']=[
 				'driver' => 'pgsql'
 			];
+			$this->connections['sqlsrv']=[
+				'driver' => 'sqlsrv'
+			];
 		}
 	}
 

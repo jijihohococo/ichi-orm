@@ -21,12 +21,72 @@ class SQLServerConnection extends Connection{
 	}
 
 	protected function getExtraOptions(array $config){
-
+		return null;
 	}
 
 	private function getSqlSrvDsn(array $config){
 
-		$dsn=$config['driver'] . ':';
+		$dsn=$config['driver'] . ':Server='.$config['host'];
+
+		if(isset($config['port'])){
+			$dsn .=','.$config['port'];
+		}
+
+		$dsn.=';Database='.$config['dbname'];
+
+		if(isset($config['readOnly']) && $config['readOnly']==TRUE ){
+			$dsn .=';ApplicationIntent=ReadOnly';
+		}
+
+		if(isset($config['pooling']) && $config['pooling']==FALSE ){
+			$dsn .=';ConnectionPooling=0';
+		}
+
+		if(isset($config['app_name'])){
+			$dsn .=';APP='.$config['app_name'];
+		}
+
+		if(isset($config['encrypt'])){
+			$dsn .=';Encrypt='.$config['encrypt'];
+		}
+
+		if(isset($config['trust_server_certificate'])){
+			$dsn .=';TrustServerCertificate='.$config['trust_server_certificate'];
+		}
+
+		if(isset($config['multiple_active_result_sets']) && $config['multiple_active_result_sets']==FALSE ){
+			$dsn .=';MultipleActiveResultSets=false';
+		}
+
+		if(isset($config['transaction_isolation'])){
+			$dsn .=';TransactionIsolation='.$config['transaction_isolation'];
+		}
+
+		if(isset($config['multi_subnet_failover'])){
+			$dsn .=';MultiSubnetFailover='.$config['multi_subnet_failover'];
+		}
+
+		if (isset($config['column_encryption'])) {
+			$dsn .=';ColumnEncryption='.$config['column_encryption'];
+        }
+
+        if (isset($config['key_store_authentication'])) {
+        	$dsn .=';KeyStoreAuthentication='.$config['key_store_authentication'];
+        }
+
+        if (isset($config['key_store_principal_id'])) {
+        	$dsn .=';KeyStorePrincipalId='.$config['key_store_principal_id'];
+        }
+
+        if (isset($config['key_store_secret'])) {
+        	$dsn .=';KeyStoreSecret='.$config['key_store_secret'];
+        }
+
+        if (isset($config['login_timeout'])) {
+        	$dsn .=';LoginTimeout='.$config['login_timeout'];
+        }
+
+        return $dsn;
 
 	}
 
