@@ -52,6 +52,8 @@ This package is Open Source According to [MIT license](LICENSE.md)
 
 ## Set up Database Connection
 
+This library can connect MySQL, Postgres and MS SQL Server.
+
 Firstly, you need to declare your database driver like below.
 
 ```php
@@ -85,9 +87,9 @@ $connector->addConnection('new_mysql_connection')->connect('new_mysql_connection
 	'user_password' => 'user_password'
 ]);
 ```
-Default database connections are 'mysql' and 'pgsql'.
+Default database connections are 'mysql' , 'pgsql' and 'sqlsrv'.
 
-Supported database drivers are 'mysql' and 'pgsql'.
+Supported database drivers are 'mysql' , 'pgsql' and 'sqlsrv'.
 
 After declaring database connection, you can select default database connection
 
@@ -109,7 +111,7 @@ $connector->selectConnection('mysql');
 | unix_socket                  | Unix Socket For MySQL                                          |
 | port                         | Databse Port Number                                            |
 | strict (bool)                | Strict Mode In MySQL                                           |
-| time_zone                    | Database Time Zone                                             |
+| time_zone                    | Database Time Zone in MySQL and Postgres SQL                   |
 | isolation_level              | To set Isolation Level in MySQL                                |
 | modes (array)                | To set sql_mode in MySQL                                       |
 | synchronous_commit           | To set Synchronous Commit in Postgres SQL                      |
@@ -135,7 +137,7 @@ $connector->selectConnection('mysql');
 
 ## Configuration Table Name
 
-In Ichi ORM, one model class which is extended "JiJiHoHoCoCo\IchiORM\Database\Model" abstract class is represented one table.
+In Ichi ORM, one model class which is extended <b>"JiJiHoHoCoCo\IchiORM\Database\Model"</b> abstract class is represented one table.
 
 In default, the table name of the model class will show according to the format below
 
