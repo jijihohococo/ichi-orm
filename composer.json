@@ -18,7 +18,7 @@
 			"JiJiHoHoCoCo\\IchiORM\\": "src/"
 		},
 		"files": [
-			"src/helpers.php"
+			"src/helper.php"
 		]
 	},
 	"minimum-stability": "dev"
