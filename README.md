@@ -987,12 +987,12 @@ class AuthorResourceCollection extends ResourceCollection{
 
 You can cache your query data with <a href="https://github.com/phpredis/phpredis">redis</a> or <a href="https://pecl.php.net/package/memcached">memcached</a> extensions in this library.
 
-Firstly, you need to pass the object of redis or memcached into the "JiJiHoHoCoCo\Cache\CacheModel" static function "setCacheObject" like below.
+Firstly, you need to pass the object of redis or memcached into the "JiJiHoHoCoCo\IchiORM\Cache\CacheModel" static function "setCacheObject" like below.
 
 
 <i>With Redis</i>
 ```php
-use JiJiHoHoCoCo\Cache\CacheModel;
+use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 use Redis;
 
 $redis = new Redis();
@@ -1002,7 +1002,7 @@ CacheModel::setCacheObject($redis);
 
 <i>With Memcached</i>
 ```php
-use JiJiHoHoCoCo\Cache\CacheModel;
+use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 use Memcached;
 $memcached = new Memcached();
 $memcached->addServer('127.0.0.1',11211);
@@ -1014,7 +1014,7 @@ CacheModel::setCacheObject($memcached);
 And then, you can call the cache functions to store and get.
 
 ```php
-use JiJiHoHoCoCo\Cache\CacheModel;
+use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 use App\Models\Blog;
 
 $blogs=CacheModel::remember('blogs',function(){
@@ -1030,7 +1030,7 @@ In "remember" function you must declare the cached key name,and the stored query
 If you want to delete your cached key, you can do
 
 ```php
-use JiJiHoHoCoCo\Cache\CacheModel;
+use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 
 CacheModel::remove('blogs');
 ```
@@ -1038,7 +1038,7 @@ CacheModel::remove('blogs');
 You can just save your data in your cache
 
 ```php
-use JiJiHoHoCoCo\Cache\CacheModel;
+use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 
 $blogs=CacheModel::save('blogs',function(){
 		 	return  Blog::whereIn('author_id',[1,2,3])->get();
@@ -1048,7 +1048,7 @@ $blogs=CacheModel::save('blogs',function(){
 To get your cached data
 
 ```php
-use JiJiHoHoCoCo\Cache\CacheModel;
+use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 
 $cachedBlogs=CacheModel::get('blogs');
 
@@ -1057,7 +1057,7 @@ $cachedBlogs=CacheModel::get('blogs');
 You can get back your redis object to implement the functions of redis extension.
 
 ```php
-use JiJiHoHoCoCo\Cache\CacheModel;
+use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 
 $redisObject=CacheModel::getRedis();
 ```
@@ -1065,7 +1065,7 @@ $redisObject=CacheModel::getRedis();
 You can also get back your memcached object to implement the functions of memcached.
 
 ```php
-use JiJiHoHoCoCo\Cache\CacheModel;
+use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 
 $memcachedObject=CacheModel::getMemcached();
 ```
