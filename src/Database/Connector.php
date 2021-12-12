@@ -16,20 +16,19 @@ class Connector{
 		$connection=NULL;
 		$availableDrivers=PDO::getAvailableDrivers();
 
+		$this->checkDriver($config['driver'],$availableDrivers);
+
 		switch ($config['driver']) {
 
 			case 'mysql':
-			$this->checkDriver('mysql',$availableDrivers);
 			$connection=new MySQLConnection;
 			break;
 
 			case 'pgsql':
-			$this->checkDriver('pgsql',$availableDrivers);
 			$connection=new PostgresSQLConnection;
 			break;
 
 			case 'sqlsrv':
-			$this->checkDriver('sqlsrv',$availableDrivers);
 			$connection=new SQLServerConnection;
 			break;
 
