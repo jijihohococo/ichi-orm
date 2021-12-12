@@ -21,6 +21,9 @@ abstract class Connection{
 	abstract protected function getExtraOptions(array $config);
 
 	public function getConnection(array $config){
+		if(strpos(get_class($this),'SQLServerConnection')!==FALSE ){
+			unset($this->defaultOptions[PDO::ATTR_EMULATE_PREPARES]);
+		}
 		try{
 			return $this->connect($config,$this->defaultOptions);
 		}catch(Exception $e){
