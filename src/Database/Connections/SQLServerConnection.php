@@ -42,8 +42,8 @@ class SQLServerConnection extends Connection{
 			$dsn .=';ConnectionPooling=0';
 		}
 
-		if(isset($config['app_name'])){
-			$dsn .=';APP='.$config['app_name'];
+		if(isset($config['application_name'])){
+			$dsn .=';APP='.$config['application_name'];
 		}
 
 		if(isset($config['encrypt'])){

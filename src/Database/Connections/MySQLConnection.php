@@ -64,6 +64,6 @@ class MySQLConnection extends Connection{
 	}
 
 	private function getCollation(){
-		return isset($config['collate']) && $config['collate']!==NULL ? ' collate '. $config['collate'] : NULL;
+		return isset($config['collation']) && $config['collation']!==NULL ? ' collate '. $config['collation'] : NULL;
 	}
 }

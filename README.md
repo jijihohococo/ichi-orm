@@ -97,27 +97,39 @@ $connector->selectConnection('mysql');
 
 ### Available Database Setting
 
-| Name               | Description                                |
-|--------------------|--------------------------------------------|
-| driver        (R)  | Database driver name                       |
-| dbname        (R)  | Database name                              |
-| charset            | Charset Font                               |
-| collation          | Collation Font                             |
-| host          (R)  | Database Host Address                      |
-| user_name     (R)  | Database User Name                         |
-| user_password (R)  | Database User Password                     |
-| unix_socket        | Unix Socket For MySQL                      |
-| port               | Databse Port Number                        |
-| strict             | Strict Mode (True or False)                |
-| time_zone          | Database Time Zone                         |
-| isolation_level    | To set Isolation Level in MySQL            |
-| modes              | To set sql_mode in MySQL (Array)           |
-| application_name   | To set Application Name in Postgres SQL    |
-| synchronous_commit | To set Synchronous Commit in Postgres SQL  |
-| sslmode            | To set SSL Mode in Postgres SQL            |
-| sslcert            | To set SSL Certificate in Postgres SQL     |
-| sslkey             | To set SSL Key in Postgres SQL             |
-| sslrootcert        | To set SSL Root Certificate in Postgres SQL|
+| Name                         | Description                                                    |
+|------------------------------|----------------------------------------------------------------|
+| driver        (R)            | Database driver name                                           |
+| dbname        (R)            | Database name                                                  |
+| charset                      | Charset Font                                                   |
+| collation                    | Collation Font                                                 |
+| host          (R)            | Database Host Address                                          |
+| user_name     (R)            | Database User Name                                             |
+| user_password (R)            | Database User Password                                         |
+| unix_socket                  | Unix Socket For MySQL                                          |
+| port                         | Databse Port Number                                            |
+| strict (bool)                | Strict Mode In MySQL                                           |
+| time_zone                    | Database Time Zone                                             |
+| isolation_level              | To set Isolation Level in MySQL                                |
+| modes (array)                | To set sql_mode in MySQL                                       |
+| synchronous_commit           | To set Synchronous Commit in Postgres SQL                      |
+| sslmode                      | To set SSL Mode in Postgres SQL                                |
+| sslcert                      | To set SSL Certificate in Postgres SQL                         |
+| sslkey                       | To set SSL Key in Postgres SQL                                 |
+| sslrootcert                  | To set SSL Root Certificate in Postgres SQL                    |
+| readOnly (bool)              | True To set ApplicationIntent to ReadOnly in MS SQL Server     |
+| pooling (bool)               | True To set ConnectionPooling to true in MS SQL Server         |
+| application_name             | To set APP in MS SQL Server OR application name in Postgres SQL|
+| encrypt                      | To set ENCRYPT in MS SQL Server                                |
+| trust_server_certificate     | To set TrustServerCertificate in MS SQL Server                 |
+| multiple_active_result_sets  | To set MultipleActiveResultSets in MS SQL Server               |
+| transaction_isolation        | To set TransactionIsolation in MS SQL Server                   |
+| multi_subnet_failover        | To set MultiSubnetFailover in MS SQL Server                    |
+| column_encryption            | To set ColumnEncryption in MS SQL Server                       |
+| key_store_authentication     | To set KeyStoreAuthentication in MS SQL Server                 |
+| key_store_principal_id       | TO set KeyStorePrincipalId in MS SQL Server                    |
+| key_store_secret             | To set KeyStoreSecret in MS SQL Server                         |
+| login_timeout                | To set LoginTimeout in MS SQL Server                           |
 
 <i>R means required</i>
 
