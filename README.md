@@ -104,7 +104,7 @@ $connector->selectConnection('mysql');
 | driver        (R)            | Database driver name                                           |
 | dbname        (R)            | Database name                                                  |
 | charset                      | Charset Font                                                   |
-| collation                    | Collation Font                                                 |
+| collation                    | Collation Font Setting for MySQL and Postgres SQL              |
 | host          (R)            | Database Host Address                                          |
 | user_name     (R)            | Database User Name                                             |
 | user_password (R)            | Database User Password                                         |

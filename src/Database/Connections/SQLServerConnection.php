@@ -34,6 +34,10 @@ class SQLServerConnection extends Connection{
 
 		$dsn.=';Database='.$config['dbname'];
 
+		if(isset($config['charset'])){
+			$dsn .=';CharacterSet='.$config['charset'];
+		}
+
 		if(isset($config['readOnly']) && $config['readOnly']==TRUE ){
 			$dsn .=';ApplicationIntent=ReadOnly';
 		}
