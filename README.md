@@ -1143,7 +1143,7 @@ class Blog extends Model{
 	public function customFunction(){
 		/*----- your business logic -----*/
 		
-		//--- Example to pass one parameter into observer function ...//
+		//--- Example to pass one parameter into observer function ---//
 		$currentObject=$this;
 		self::$observerSubject->use(get_class($this),'customFunction',$currentObject);
 	}
@@ -1183,7 +1183,7 @@ class Blog extends Model{
 	public function customFunction(){
 		/*----- your business logic -----*/
 		
-		//--- Example to pass multiple parameter into observer function ...//
+		//--- Example to pass multiple parameter into observer function ---//
 		$currentObject=$this;
 		$author=$this->author();
 		self::$observerSubject->use(get_class($this),'customFunction',[$currentObject,$author]);
