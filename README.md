@@ -50,6 +50,10 @@ This package is Open Source According to [MIT license](LICENSE.md)
 
 ## Installion
 
+```php
+composer require jijihohococo/ichi-orm
+```
+
 ## Set up Database Connection
 
 This library can connect MySQL, Postgres and MS SQL Server.
