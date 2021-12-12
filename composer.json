@@ -15,7 +15,7 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"JiJiHoHoCoCo\\IchiORM\\": "src/",
+			"JiJiHoHoCoCo\\IchiORM\\": "src/"
 		},
 		"files": [
 			"src/helpers.php"
