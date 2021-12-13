@@ -683,7 +683,7 @@ So, you can use server pagination into your frontend (like Vue and React) with t
 	'last_page' => 'The last page number',
 	'last_page_url' => 'The last page url',
 	'next_page_url' => 'The next page url',
-	'path' => '',
+	'path' => 'the current page url',
 	'per_page' => 'The number of how many data will be shown per page',
 	'prev_page_url' => 'The previous page url',
 	'to' => 'The number of paginated data which is last data to show in current page',
