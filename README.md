@@ -719,6 +719,12 @@ You can use pagination user interface in your frontend php file like
 (new  JiJiHoHoCoCo\IchiORM\UI\Pagination)->paginate($paginatedBlogs);
 ```
 
+You can customize the pagination user interface color
+
+```php
+(new JiJiHoHoCoCo\IchiORM\UI\Pagination)->paginate($paginatedBlogs,'#000000');
+```
+
 #### Array Pagination
 
 You can paginate your array like below.
@@ -775,6 +781,13 @@ You can use pagination user interface in your frontend php file like
 ```php
 (new  JiJiHoHoCoCo\IchiORM\UI\Pagination)->paginate($paginatedBlogs);
 ```
+
+You can customize the pagination user interface color
+
+```php
+(new JiJiHoHoCoCo\IchiORM\UI\Pagination)->paginate($paginatedBlogs,'#000000');
+```
+
 
 ### Subqueries
 
