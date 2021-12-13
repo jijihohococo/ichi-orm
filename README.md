@@ -492,7 +492,7 @@ Blog::toArray();
 ```
 #### Get Query Data With Soft Deleted Data
 
-If you have soft deleted data rows, you can't seee those in your array or data object array. If you want to see the array or data object array with soft deleted data rows, you must use "withTrashed()" function as shown as below.
+If you have soft deleted data rows, you can't see those in your array or data object array. If you want to see the array or data object array with soft deleted data rows, you must use "withTrashed()" function as shown as below.
 
 ```php
 Blog::withTrashed()->select(['id','name'])->get();
