@@ -1022,7 +1022,7 @@ $memcached->addServer('127.0.0.1',11211);
 CacheModel::setCacheObject($memcached);
 ```
 
-<b>It might be different of connecting the way of redis or memcached to each other according to the security and ports' availabilities. The important thing is you must pass the redis or memcached object into the "setCacheObject" static function of "JiJiHoHoCoCo\Cache\CacheModel".</b>
+<b>It might be different of connecting the way of redis or memcached to each other according to the security and ports' availabilities. The important thing is you must pass the redis or memcached object into the "setCacheObject" static function of "JiJiHoHoCoCo\IchiORM\Cache\CacheModel".</b>
 
 And then, you can call the cache functions to store and get.
 
