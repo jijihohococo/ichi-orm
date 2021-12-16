@@ -226,7 +226,7 @@ $contents=$_REQUEST['content'];
 $insertBlogs=[];
 foreach ($contents as $key => $content) {
 	$insertBlogs[]=[
-		'name' => $content,
+		'content' => $content,
 		'author_id' => $_REQUEST['author_id'][$key]
 	];
 }
@@ -433,11 +433,11 @@ Blog::select(['blogs.id'])
 ```
 
 ```php
-Blog::select(['id','name'])
+Blog::select(['id','content'])
 ```
 
 ```php
-Blog::select(['blogs.id','blogs.name'])
+Blog::select(['blogs.id','blogs.content'])
 ```
 
 ### Getting Query Data
@@ -454,7 +454,7 @@ You can get your query data with "get()" and "toArray()" functions.
 <b>You can call relationship functions directly with the object in the loop because "get()" function outputs the object array</b>
 
 ```php
-$blogs=Blog::select(['id','name'])->get();
+$blogs=Blog::select(['id','content'])->get();
 
 foreach($blogs as $blog){
 	echo $blog->id . '<br>';
@@ -479,7 +479,7 @@ Blog::get();
 <b>You can't use "toArray" function in subquery.</b>
 
 ```php
-$blogs=Blog::select(['id','name'])->toArray();
+$blogs=Blog::select(['id','content'])->toArray();
 
 foreach($blogs as $blog){
 	echo $blog['id'] . '<br>';
@@ -495,9 +495,9 @@ Blog::toArray();
 If you have soft deleted data rows, you can't see those in your array or data object array. If you want to see the array or data object array with soft deleted data rows, you must use "withTrashed()" function as shown as below.
 
 ```php
-Blog::withTrashed()->select(['id','name'])->get();
+Blog::withTrashed()->select(['id','content'])->get();
 
-Blog::withTrashed()->select(['id','name'])->toArray();
+Blog::withTrashed()->select(['id','content'])->toArray();
 ```
 
 If you don't use select function, you will get all data fields of related model. You will also get soft deleted data rows if you use "withTrashed()" function.
@@ -745,23 +745,23 @@ use JiJiHoHoCoCo\IchiORM\Pagination\ArrayPagination;
 
 $blogs=[
 			[
-				'name' => 'Blog One',
+				'content' => 'Blog One',
 				'author_name' => 'John Doe'
 			],
 			[
-				'name' => 'Blog Two',
+				'content' => 'Blog Two',
 				'author_name' => 'Joe Blow'
 			],
 			[
-				'name' => 'Blog Three',
+				'content' => 'Blog Three',
 				'author_name' => 'Everyman'
 			],
 			[
-				'name' => 'Blog Four',
+				'content' => 'Blog Four',
 				'author_name' => 'John Doe'
 			],
 			[
-				'name' => 'Blog Five',
+				'content' => 'Blog Five',
 				'author_name' => 'John Doe'
 			]
 ];
