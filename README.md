@@ -1233,7 +1233,7 @@ use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 use App\Models\Blog;
 class BlogObserver implements ModelObserver{
 
-	public function customFunction(Blog $blog){
+	public function customFunction($blog){
 
 	}
 }
@@ -1273,7 +1273,7 @@ use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 use App\Models\{Blog,Author};
 class BlogObserver implements ModelObserver{
 
-	public function customFunction(Blog $blog,Author $author){
+	public function customFunction($blog,$author){
 	
 	}
 }
