@@ -11,6 +11,7 @@ This package is Open Source According to [MIT license](LICENSE.md)
 * [Installion](#installion)
 * [Set up Database Connection](#set-up-database-connection)
 * [Available Database Setting](#available-database-setting)
+* [Create Model From Commandline](#create-model-from-commandline)
 * [Configuration Table Name](#configuration-table-name)
 * [Configuration Primary Key](#configuration-primary-key)
 * [CRUD](#crud)
@@ -138,6 +139,43 @@ $connector->selectConnection('mysql');
 | login_timeout                | To set LoginTimeout in MS SQL Server                           |
 
 <i>R means required</i>
+
+## Create Model From Commandline
+
+Firstly you need to created the file named "ichi" under your project folder and use the below code in this file
+
+```php
+#!/usr/bin/env php
+<?php
+
+require __DIR__.'/vendor/autoload.php';
+
+use JiJiHoHoCoCo\IchiORM\Command\ModelCommand;
+
+
+$modelCommand=new ModelCommand;
+$modelCommand->run($argv);
+
+```
+
+And then you can create the model in your commandline
+
+```php
+
+php ichi make:model Blog
+
+```
+
+The default folder is "app/Models". If you want to change the default folder path, you can change it in your "ichi" file.
+
+
+```php
+
+$modelCommand=new ModelCommand;
+$modelCommand->setPath('new_app/Models');
+$modelCommand->run($argv);
+
+```
 
 ## Configuration Table Name
 
