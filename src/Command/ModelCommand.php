@@ -93,6 +93,7 @@ class ".$createdFile." implements Observer{
 	}
 
 	private function makeResourceContent(string $defaulFolder,string $createdFile){
+		$variable='$data';
 		return "<?php
 
 namespace ".$this->getNamespace($defaulFolder).";
@@ -100,7 +101,7 @@ use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
 
 class ".$createdFile." extends ResourceCollection{
 
-	public function getSelectedResource($data){
+	public function getSelectedResource(".$variable."){
 
 
 	}
