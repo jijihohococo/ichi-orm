@@ -46,7 +46,7 @@ class ".$createdFile." extends Model{
 namespace ".str_replace('/', '\\', ucfirst($defaulFolder)).";
 use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 
-class ".$createdFile." extends Observer{
+class ".$createdFile." implements Observer{
 
 
 	public function create(".$variable."){
