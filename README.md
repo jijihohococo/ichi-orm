@@ -939,7 +939,7 @@ If you want to customize your JSON data, firstly you need to create the class.
 
 <i>You must extend "JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection" abstract class and declare "getSelectedResource()" function for your all resource collection classes.</i>
 ```php
-namespace App\Resource;
+namespace App\Resources;
 
 use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
 
@@ -976,7 +976,7 @@ return jsonResponse([
 You can declare your relationship in your resource collection class (For refers to and refers many).
 
 ```php
-namespace App\Resource;
+namespace App\Resources;
 
 use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
 
@@ -998,10 +998,10 @@ You can declare another resource collection (according to the data is single obj
 
 
 ```php
-namespace App\Resource;
+namespace App\Resources;
 
 use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
-use App\Resource\AuthorResourceCollection;
+use App\Resources\AuthorResourceCollection;
 
 class BlogResourceCollection extends ResourceCollection{
 	
@@ -1019,7 +1019,7 @@ class BlogResourceCollection extends ResourceCollection{
 ```
 
 ```php
-namespace App\Resource\AuthorResourceCollection;
+namespace App\Resources\AuthorResourceCollection;
 
 use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
 
