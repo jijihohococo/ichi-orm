@@ -173,7 +173,7 @@ The default folder is "app/Models". If you want to change the default folder pat
 
 $modelCommand=new ModelCommand;
 $modelCommand->setPath('new_app/Models');
-$modelCommand->run($argv);
+$modelCommand->run(__DIR__,$argv);
 
 ```
 
@@ -1134,23 +1134,23 @@ use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 use App\Models\Blog;
 class BlogObserver implements ModelObserver{
 
-	public function create(Blog $blog){
+	public function create($blog){
 		
 	}
 
-	public function update(Blog $blog){
+	public function update($blog){
 		
 	}
 
-	public function delete(Blog $blog){
+	public function delete($blog){
 
 	}
 
-	public function restore(Blog $blog){
+	public function restore($blog){
 
 	}
 
-	public function forceDelete(Blog $blog){
+	public function forceDelete($blog){
 
 	}
 
@@ -1164,8 +1164,26 @@ class BlogObserver implements ModelObserver{
 4. "restore" function will load after restoring the soft deleted data of blog model.
 5. "forceDelete" function will load after force deleting the data of blog model.
 
+You can create the observer via terminal after creating "ichi" file as we mentioned in [Create Model From Commandline](#create-model-from-commandline)
 
-and then you must do
+```php
+
+php ichi make:observe BlogObserver
+
+```
+
+The default path for observer is "app/Observers". You can also change this in "ichi" file.
+
+```php
+
+$modelCommand=new ModelCommand;
+$modelCommand->setPath('new_app/Observers');
+$modelCommand->run(__DIR__,$argv);
+
+```
+
+
+After creating observer, you must do
 
 ```php
 use App\Models\Blog;
@@ -1174,7 +1192,7 @@ use App\Observers\BlogObserver;
 Blog::observe(new BlogObserver);
 ```
 
-You can add many observers for one model
+You can also add many observers for one model
 
 ```php
 use App\Models\Blog;

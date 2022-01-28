@@ -5,6 +5,7 @@ namespace JiJiHoHoCoCo\IchiORM\Command;
 class ModelCommand{
 
 	private $path='app/Models';
+	private $observerPath='app/Observers';
 
 	public function setPath(string $path){
 		$this->path=$path;
@@ -14,7 +15,15 @@ class ModelCommand{
 		return $this->path;
 	}
 
-	private function makeContent(string $defaulFolder,string $createdFile){
+	public function setObserverPath(string $observerPath){
+		$this->observerPath=$observerPath;
+	}
+
+	public function getObserverPath(){
+		return $this->observerPath;
+	}
+
+	private function makeModelContent(string $defaulFolder,string $createdFile){
 		return "<?php
 
 namespace ". str_replace('/', '\\', ucfirst($defaulFolder)).";
@@ -28,10 +37,50 @@ class ".$createdFile." extends Model{
 ";
 	}
 
+	private function makeObserverContent(string $defaulFolder,string $createdFile){
+		
+		$variable='$'.strtolower( str_replace('Observer', '', $createdFile) );
+
+		return "<?php
+
+namespace ".str_replace('/', '\\', ucfirst($defaulFolder)).";
+use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
+
+class ".$createdFile." extends Observer{
+
+
+	public function create(".$variable."){
+
+	}
+
+
+	public function update(".$variable."){
+
+	}
+
+	public function delete(".$variable."){
+
+	}
+
+	public function restore(".$variable."){
+
+	}
+
+	public function forceDelete(".$variable."){
+
+	}
+
+
+}
+";
+	}
+
 	public function run(string $dir,array $argv){
 		try{
-			if(count($argv)==3 && $argv[1]=='make:model' ){
-				$defaulFolder=$this->getPath();
+			if(count($argv)==3 && ($argv[1]=='make:model' || $argv[1]=='make:observer'  ) ){
+				$command=$argv[1];
+				$createdOption=$command=='make:model' ? 'Model' : 'Observer';
+				$defaulFolder=$command=='make:model' ? $this->getPath() : $this->getObserverPath();
 				$baseDir=$dir.'/'.$defaulFolder;
 				if(!is_dir($baseDir)){
 					$createdFolder=NULL;
@@ -49,11 +98,11 @@ class ".$createdFile." extends Model{
 					$createdFile=$inputFile[0];
 					if(!file_exists($baseDir.'/'.$createdFile.'.php')){
 						fopen($baseDir.'/'.$createdFile.'.php', 'w') or die('Unable to create model');
-						$createdFileContent=$this->makeContent($defaulFolder,$createdFile);
+						$createdFileContent=$command=='make:model'? $this->makeModelContent($defaulFolder,$createdFile) : $this->makeObserverContent($defaulFolder,$createdFile);
 						file_put_contents($baseDir.'/'.$createdFile.'.php', $createdFileContent);
-						echo $createdFile . " Model is created successfully".PHP_EOL;
+						echo $createdFile . " ".$createdOption." is created successfully".PHP_EOL;
 					}elseif(file_exists($baseDir . '/'.$createdFile.'.php')){
-						echo $createdFile . " Model is already created".PHP_EOL;
+						echo $createdFile . " ".$createdOption." is already created".PHP_EOL;
 					}
 				}else{
 					$createdFile=$inputFile[$count-1];
@@ -69,11 +118,11 @@ class ".$createdFile." extends Model{
 					}
 					if($currentFolder!==NULL && !file_exists($currentFolder.'/'.$createdFile.'.php') ){
 						fopen($currentFolder.'/'.$createdFile.'.php', 'w') or die('Unable to create model');
-						$createdFileContent=$this->makeContent($newCreatedFolder,$createdFile);
+						$createdFileContent= $command=='make:model' ?  $this->makeModelContent($newCreatedFolder,$createdFile) : $this->makeObserverContent($newCreatedFolder,$createdFile) ;
 						file_put_contents($currentFolder.'/'.$createdFile.'.php', $createdFileContent);
-						echo $createdFile ." Model is created successfully".PHP_EOL;
+						echo $createdFile ." ".$createdOption." is created successfully".PHP_EOL;
 					}elseif(file_exists($currentFolder.'/'.$createdFile.'.php')){
-						echo $createdFile . " Model is already created".PHP_EOL;
+						echo $createdFile . " ".$createdOption." is already created".PHP_EOL;
 					}
 				}
 			}
