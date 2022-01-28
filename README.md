@@ -191,7 +191,7 @@ In default, the table name of the model class will show according to the format 
 If the above format is not suitable for the model class, you can customize in your model class
 
 ```php
-namespace App\Models\Blog;
+namespace App\Models;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
@@ -208,7 +208,7 @@ class Blog extends Model{
 In default, the primary key for the table is represented "id". If you want to change that, you can customize in your model class
 
 ```php
-namespace App\Models\Blog;
+namespace App\Models;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
@@ -225,7 +225,7 @@ class Blog extends Model{
 Firstly, you need to extend Model Class from your class and declare your data fields as attributes in your model as shown as below.
 
 ```php
-namespace App\Models\Blog;
+namespace App\Models;
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 class Blog extends Model{
 
@@ -296,7 +296,7 @@ If you have one to one relationship in your database (with foreign keys or witho
 <b>You must add parent model name, the field that represent parent id into "refersTo" function if parent model's primary key is "id".</b>
 
 ```php
-namespace App\Models\Blog;
+namespace App\Models;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
@@ -313,7 +313,7 @@ class Blog extends Model{
 <b>You must add parent model name, the field name that represent parent id and parent primary key field into "refersTo" function if parent model's primary key is not "id".</b>
 
 ```php
-namespace App\Models\Blog;
+namespace App\Models;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
@@ -346,7 +346,7 @@ If you have one to many relationship in your database (with foreign keys or with
 <b>You must add child model name and the field name that represent parent id in child model into "refersMany" function if parent model's primary key is "id".</b>
 
 ```php
-namespace App\Models\Author;
+namespace App\Models;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
@@ -364,7 +364,7 @@ class Author extends Model{
 <b>You must add child model name, the field name that represent parent id in child model and parent primary key field into "refersMany" function if parent model's primary key is not "id".</b>
 
 ```php
-namespace App\Models\Author;
+namespace App\Models;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
