@@ -154,7 +154,7 @@ use JiJiHoHoCoCo\IchiORM\Command\ModelCommand;
 
 
 $modelCommand=new ModelCommand;
-$modelCommand->run($argv);
+$modelCommand->run(__DIR__,$argv);
 
 ```
 

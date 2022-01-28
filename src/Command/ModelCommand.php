@@ -28,16 +28,16 @@ class ".$createdFile." extends Model{
 ";
 	}
 
-	public function run(array $argv){
+	public function run(string $dir,array $argv){
 		try{
 			if(count($argv)==3 && $argv[1]=='make:model' ){
 				$defaulFolder=$this->getPath();
-				$baseDir=__DIR__.'/'.$defaulFolder;
+				$baseDir=$dir.'/'.$defaulFolder;
 				if(!is_dir($baseDir)){
 					$createdFolder=NULL;
 					$basefolder=explode('/', $defaulFolder);
 					foreach($basefolder as $key => $folder){
-						$createdFolder .= $key == 0 ? __DIR__ . '/' . $folder : '/' . $folder;
+						$createdFolder .= $key == 0 ? $dir . '/' . $folder : '/' . $folder;
 						if(!is_dir($createdFolder)){
 							mkdir($createdFolder);
 						}
