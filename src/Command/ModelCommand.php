@@ -172,6 +172,11 @@ class ".$createdFile." extends ResourceCollection{
 		exit();
 	}
 
+	private function createError(string $createdFile,string $createdOption){
+		echo "You can't create ". $createdFile . " " . $createdOption.PHP_EOL;
+		exit();
+	}
+
 	public function run(string $dir,array $argv){
 
 		if(count($argv)==3 && ($argv[1]==$this->modelCommandLine || $argv[1]==$this->observerCommandLine || $argv[1]==$this->resourceCommandLine  ) ){
@@ -231,7 +236,9 @@ class ".$createdFile." extends ResourceCollection{
 						return $this->success($createdFile,$createdOption);
 				}
 			} catch (Exception $e) {
-				echo "You can't create ". $createdFile . " " . $createdOption.PHP_EOL;
+
+				return $this->createError($createdFile,$createdOption);
+				
 			}
 
 		}
