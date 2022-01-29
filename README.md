@@ -957,6 +957,28 @@ class BlogResourceCollection extends ResourceCollection{
 } 
 ```
 
+You can create the resource class via terminal after creating "ichi" file as we mentioned in [Create Model From Commandline].
+
+
+```php
+
+php ichi make:resource BlogResourceCollection
+
+```
+
+The default path for observer is "app/Resources". You can also change this in "ichi" file.
+
+```php
+
+$modelCommand=new ModelCommand;
+$modelCommand->setResourcePath('new_app/Resources');
+$modelCommand->run(__DIR__,$argv);
+
+```
+
+
+
+
 And then, you can do to show to your custom JSON Resource as shown as below.
 
 <b>For Object Array- </b>
