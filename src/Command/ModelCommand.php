@@ -159,14 +159,17 @@ class ".$createdFile." extends ResourceCollection{
 
 	private function alreadyHave(string $createdFile,string $createdOption){
 		echo $createdFile . " ".$createdOption." is already created".PHP_EOL;
+		exit();
 	}
 
 	private function success(string $createdFile,string $createdOption){
 		echo $createdFile . " ".$createdOption." is created successfully".PHP_EOL;
+		exit();
 	}
 
 	private function wrongCommand(){
 		echo "You type wrong command".PHP_EOL;
+		exit();
 	}
 
 	public function run(string $dir,array $argv){
@@ -231,8 +234,6 @@ class ".$createdFile." extends ResourceCollection{
 				echo "You can't create ". $createdFile . " " . $createdOption.PHP_EOL;
 			}
 
-		}else{
-			return $this->wrongCommand();
 		}
 	}
 
