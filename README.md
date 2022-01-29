@@ -957,7 +957,7 @@ class BlogResourceCollection extends ResourceCollection{
 } 
 ```
 
-You can create the resource class via terminal after creating "ichi" file as we mentioned in [Create Model From Commandline].
+You can create the resource class via terminal after creating "ichi" file as we mentioned in [Create Model From Commandline]
 
 
 ```php
