@@ -166,7 +166,7 @@ php ichi make:model Blog
 
 ```
 
-The default folder is "app/Models". If you want to change the default folder path, you can change it in your "ichi" file.
+The default file folder is "app/Models". So after making command, the model you created will be in the this default file folder. If you want to change the default folder path, you can change it in your "ichi" file.
 
 
 ```php
@@ -957,7 +957,7 @@ class BlogResourceCollection extends ResourceCollection{
 } 
 ```
 
-You can create the resource class via terminal after creating "ichi" file as we mentioned in [Create Model From Commandline]
+You can create the resource class via terminal after creating "ichi" file as we mentioned in [Create Model From Commandline](#create-model-from-commandline)
 
 
 ```php
