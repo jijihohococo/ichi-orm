@@ -205,7 +205,7 @@ class ".$createdFile." extends ResourceCollection{
 					$createdFile=$inputFile[0];
 					fopen($baseDir.'/'.$createdFile.'.php', 'w') or die('Unable to create '.$createdOption);
 						$createdFileContent=$this->checkContent($command,$defaulFolder,$createdFile);
-						file_put_contents($baseDir.'/'.$createdFile.'.php', $createdFileContent);
+						file_put_contents($baseDir.'/'.$createdFile.'.php', $createdFileContent,LOCK_EX);
 						return $this->success($createdFile,$createdOption);
 				
 				}elseif($count==1 && $inputFile[0]!==NULL && file_exists($baseDir . '/'.$inputFile[0].'.php') ){
@@ -232,7 +232,7 @@ class ".$createdFile." extends ResourceCollection{
 
 					fopen($currentFolder.'/'.$createdFile.'.php', 'w') or die('Unable to create '.$createdOption);
 						$createdFileContent=$this->checkContent($command,$newCreatedFolder,$createdFile);
-						file_put_contents($currentFolder.'/'.$createdFile.'.php', $createdFileContent);
+						file_put_contents($currentFolder.'/'.$createdFile.'.php', $createdFileContent,LOCK_EX);
 						return $this->success($createdFile,$createdOption);
 				}
 			} catch (Exception $e) {
