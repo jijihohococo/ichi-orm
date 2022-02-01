@@ -2,6 +2,8 @@
 
 namespace JiJiHoHoCoCo\IchiORM\Command;
 
+use Exception;
+
 class ModelCommand{
 
 	private $path='app/Models';
