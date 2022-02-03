@@ -68,26 +68,26 @@ use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 class ".$createdFile." implements Observer{
 
 
-			public function create(".$variable."){
+	public function create(".$variable."){
 
-			}
+	}
 
 
-			public function update(".$variable."){
+	public function update(".$variable."){
 
-			}
+	}
 
-			public function delete(".$variable."){
+	public function delete(".$variable."){
 
-			}
+	}
 
-			public function restore(".$variable."){
+	public function restore(".$variable."){
 
-			}
+	}
 
-			public function forceDelete(".$variable."){
+	public function forceDelete(".$variable."){
 
-			}
+	}
 
 
 }
