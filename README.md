@@ -8,7 +8,7 @@ This package is Open Source According to [MIT license](LICENSE.md)
 
 ## Table of Content
 
-* [Installion](#installion)
+* [Installation](#installation)
 * [Set up Database Connection](#set-up-database-connection)
 * [Available Database Setting](#available-database-setting)
 * [Create Model From Commandline](#create-model-from-commandline)
@@ -49,7 +49,7 @@ This package is Open Source According to [MIT license](LICENSE.md)
 * [Caching](#caching)
 * [Observers](#observers)
 
-## Installion
+## Installation
 
 ```php
 composer require jijihohococo/ichi-orm
