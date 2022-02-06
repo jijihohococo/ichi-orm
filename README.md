@@ -1190,7 +1190,7 @@ You can create the observer via terminal after creating "ichi" file as we mentio
 
 ```php
 
-php ichi make:observe BlogObserver
+php ichi make:observer BlogObserver
 
 ```
 
