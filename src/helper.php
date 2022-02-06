@@ -12,7 +12,7 @@ if(!function_exists('jsonResponse')){
 	function jsonResponse(array $data,int $code=200){
 		header('Content-type:application/json');
 		http_response_code($code);
-		echo json_encode($data);
+		return json_encode($data);
 	}
 }
 
