@@ -6,7 +6,7 @@
 
 This package is Open Source According to [MIT license](LICENSE.md)
 
-## Table of Content
+## Table of Contents
 
 * [Installation](#installation)
 * [Set up Database Connection](#set-up-database-connection)
