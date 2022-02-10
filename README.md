@@ -16,6 +16,7 @@ This package is Open Source According to [MIT license](LICENSE.md)
 * [Configuration Primary Key](#configuration-primary-key)
 * [CRUD](#crud)
 	* [Create](#create)
+		* [Disable Auto increment Id](#disable-auto-increment-id)
 	* [Insert Multiple Rows In One Query](#insert-multiple-rows-in-one-query)
 	* [Retrieve](#retrieve)
 		* [Refers To](#refers-to)
@@ -239,10 +240,12 @@ class Blog extends Model{
 You can create the data as shown as below.
 
 ```php
+
 Blog::create([
 	'author_id' => 1,
 	'content' => 'Content'
 ]);
+
 ```
 
 <b>It is your choice to add or not to add the nullable field data into array in "create" function.</b>
@@ -252,6 +255,31 @@ Blog::create([
 You can get the new model object after creating.
 
 <b> App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => [deleted_at] => )</b>
+
+#### Disable Auto increment Id
+
+If you don't use auto increment id in your table you must write this function in your model class
+
+```php
+
+
+protected function autoIncrementId(){
+		return FALSE;
+}
+
+```
+
+And you must add your ID Values from your side manually like this
+
+```php
+
+Blog::create([
+	'id' => 1 ,
+	'author_id' => 1,
+	'content' => 'Content'
+]);
+
+```
 
 ### Insert Multiple Rows In One Query
 

@@ -37,6 +37,10 @@ abstract class Model{
 		return "id";
 	}
 
+	protected function autoIncrementId(){
+		return TRUE;
+	}
+
 	public static function withTrashed(){
 		self::checkInstance();
 		if(self::$currentSubQueryNumber==NULL){
@@ -350,7 +354,9 @@ public static function create(array $attribute){
 		throw new \Exception("You need to add column data", 1);
 	}
 	$getID=$instance->getID();
-	unset($arrayKeys[$getID]);
+	if($instance->autoIncrementId()==TRUE){
+		unset($arrayKeys[$getID]);
+	}
 	unset($arrayKeys['deleted_at']);
 	unset($arrayKeys['updated_at']);
 	$insertBindValues=[];
