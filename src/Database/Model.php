@@ -300,7 +300,9 @@ public static function insert(array $attributes){
 		throw new \Exception("You need to add column data", 1);
 	}
 	$getID=$instance->getID();
-	unset($arrayKeys[$getID]);
+	if($instance->autoIncrementId()==TRUE){
+		unset($arrayKeys[$getID]);
+	}
 	unset($arrayKeys['deleted_at']);
 	unset($arrayKeys['updated_at']);
 	$insertedValues='';
