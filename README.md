@@ -1227,7 +1227,7 @@ The default path for observer is "app/Observers". You can also change this in "i
 ```php
 
 $modelCommand=new ModelCommand;
-$modelCommand->setPath('new_app/Observers');
+$modelCommand->setObserverPath('new_app/Observers');
 $modelCommand->run(__DIR__,$argv);
 
 ```
