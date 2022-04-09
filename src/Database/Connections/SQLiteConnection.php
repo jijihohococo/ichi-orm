@@ -12,12 +12,7 @@ class SQLiteConnection extends Connection{
 			throw new \Exception("You must add database name and host for SQL Lite Database Connection", 1);
 		}
 
-		$dsn=$config['driver'];
-
-		if(isset($config['dbname'])){
-			$dsn .= ':' . $config['dbname'];
-		}
-
+		$dsn=$config['driver'] . ':' . $config['dbname'];
 
 		return $dsn;
 	}
