@@ -1265,23 +1265,28 @@ public function __construct(){
 	$selectedValues=[];
 	if(!empty(self::$selectedFields) && isset(self::$selectedFields[$class]) && self::$select!==self::$table . '.*' && self::$select!==NULL ){
 			// FOR ADD SELECT WITH OR WITHOUT SELECT
-		foreach (get_object_vars($this) as $key => $value) {
-			if(isset(self::$selectedFields[$class][$key])){
-				$selectedValues[$key]=$value;
-			}
-			unset($this->{$key});
-		}
-		$id=$this->getID();
-		if($id=='id'){
-			unset($this->{$id});
-		}
-		foreach(self::$selectedFields[$class] as $key => $value){
-			if(isset($selectedValues[$key])){
-				$this->{$key}=$selectedValues[$key];
-			}else{
-				$this->{$key}=$value;
+		foreach(get_object_vars($this) as $key => $value){
+			if(!isset(self::$selectedFields[$class][$key])){
+				unset($this->{$key});
 			}
 		}
+		// foreach (get_object_vars($this) as $key => $value) {
+		// 	if(isset(self::$selectedFields[$class][$key])){
+		// 		$selectedValues[$key]=$value;
+		// 	}
+		// 	unset($this->{$key});
+		// }
+		// $id=$this->getID();
+		// if($id=='id'){
+		// 	unset($this->{$id});
+		// }
+		// foreach(self::$selectedFields[$class] as $key => $value){
+		// 	if(isset($selectedValues[$key])){
+		// 		$this->{$key}=$selectedValues[$key];
+		// 	}else{
+		// 		$this->{$key}=$value;
+		// 	}
+		// }
 	}elseif(self::$select==NULL && !empty(self::$selectedFields) && isset(self::$selectedFields[$class]) ){
 			// FOR ADD ONLY SELECT 
 		foreach(get_object_vars($this) as $key => $value){
