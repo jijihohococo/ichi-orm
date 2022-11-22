@@ -15,7 +15,7 @@ class ModelCommand{
 	private $resourceCommandLine='make:resource';
 
 	private $green="\033[0;32m";
-	private $red="\033[0;31m";
+	private $red="\033[01;31m";
 	private $end=" \033[0m";
 
 	public function setPath(string $path){
