@@ -14,6 +14,10 @@ class ModelCommand{
 	private $observerCommandLine='make:observer';
 	private $resourceCommandLine='make:resource';
 
+	private $green="\033[0;32m";
+	private $red="\033[0;31m";
+	private $end=" \033[0m";
+
 	public function setPath(string $path){
 		$this->path=$path;
 	}
@@ -160,22 +164,22 @@ class ".$createdFile." extends ResourceCollection{
 	}
 
 	private function alreadyHave(string $createdFile,string $createdOption){
-		echo $createdFile . " ".$createdOption." is already created".PHP_EOL;
+		echo $this->red.$createdFile . " ".$createdOption." is already created".$this->end.PHP_EOL;
 		exit();
 	}
 
 	private function success(string $createdFile,string $createdOption){
-		echo $createdFile . " ".$createdOption." is created successfully".PHP_EOL;
+		echo $this->green. $createdFile . " ".$createdOption." is created successfully".$this->end.PHP_EOL;
 		exit();
 	}
 
 	private function wrongCommand(){
-		echo "You type wrong command".PHP_EOL;
+		echo $this->red."You type wrong command".$this->end.PHP_EOL;
 		exit();
 	}
 
 	private function createError(string $createdFile,string $createdOption){
-		echo "You can't create ". $createdFile . " " . $createdOption.PHP_EOL;
+		echo $this->red."You can't create ". $createdFile . " " . $createdOption.$this->end.PHP_EOL;
 		exit();
 	}
 
