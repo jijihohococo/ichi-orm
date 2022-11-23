@@ -172,7 +172,7 @@ class ".$createdFile." extends ResourceCollection{
 	}
 
 	private function alreadyHave(string $createdFile,string $createdOption){
-		echo $this->errorMessage($createdFile . " ".$createdOption." is already created").PHP_EOL;
+		echo $this->errorMessage($createdFile . " ".$createdOption." is already created");
 		exit();
 	}
 
