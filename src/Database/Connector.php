@@ -9,30 +9,6 @@ class Connector{
 	private $connections,$pdos=[];
 	private static $pdo,$instance=NULL;
 
-	private function checkConnection($driver){
-		switch($driver){
-			case 'mysql':
-			return new MySQLConnection;
-			break;
-
-			case 'pgsql':
-			return new PostgresSQLConnection;
-			break;
-
-			case 'sqlsrv':
-			return new SQLServerConnection;
-			break;
-
-			case 'sqlite':
-			return new SQLiteConnection;
-			break;
-
-			default:
-			throw new \Exception("Your database driver is not supported", 1);
-			break;
-		}
-	}
-
 	private function getPDO(array $config){
 		if(!isset($config['driver'])){
 			throw new \Exception("You need to add database driver", 1);
@@ -42,7 +18,29 @@ class Connector{
 
 		$this->checkDriver($config['driver'],$availableDrivers);
 
-		$connection=$this->checkConnection($config['driver']);
+		switch ($config['driver']) {
+
+			case 'mysql':
+			$connection=new MySQLConnection;
+			break;
+
+			case 'pgsql':
+			$connection=new PostgresSQLConnection;
+			break;
+
+			case 'sqlsrv':
+			$connection=new SQLServerConnection;
+			break;
+
+			case 'sqlite':
+			$connection=new SQLiteConnection;
+			break;
+
+			default:
+			throw new \Exception("Your database driver is not supported", 1);
+			break;
+
+		}
 
 		return $connection->getConnection($config);
 
