@@ -67,7 +67,7 @@ Firstly, you need to declare your database driver like below.
 use JiJiHoHoCoCo\IchiORM\Database\Connector;
 
 $connector=new Connector;
-$connector->connect('mysql',[
+$connector->createConnection('mysql',[
 	'dbname' => 'database_name',
 	'charset' => 'utf8mb4',
 	'collation' => 'utf8mb4_unicode_ci',
@@ -83,7 +83,7 @@ You must add dbname,host,user_name and user_password in your database connection
 <i>In defalt database connections, you don't need to add driver parameters but in your custom database connection you have to add driver parameters.</i>
 
 ```php
-$connector->addConnection('new_mysql_connection')->connect('new_mysql_connection',[
+$connector->addConnection('new_mysql_connection')->createConnection('new_mysql_connection',[
 	'driver' => 'mysql',
 	'dbname' => 'database_name',
 	'charset' => 'utf8mb4',
