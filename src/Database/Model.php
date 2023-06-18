@@ -1557,32 +1557,19 @@ public static function paginate(int $per_page=10){
 		}
 
 		public static function innerJoin(string $table,string $field,string $operator,string $ownField){
-			self::checkInstance();
-			$join=' INNER JOIN ';
-			if(self::$currentSubQueryNumber==NULL){
-				self::boot();
-				self::makeJoin($table,$field,$operator,$ownField,$join);
-			}else{
-				self::makeSubQueryJoin($table,$field,$operator,$ownField,$join);
-			}
-			return self::$instance;
+			return sqlJoin($table,$field,$operator,$ownField,' INNER JOIN ');
 		}
 
 		public function leftJoin(string $table,string $field,string $operator,string $ownField){
-			self::checkInstance();
-			$join=' LEFT JOIN ';
-			if(self::$currentSubQueryNumber==NULL){
-				self::boot();
-				self::makeJoin($table,$field,$operator,$ownField,$join);
-			}else{
-				self::makeSubQueryJoin($table,$field,$operator,$ownField,$join);
-			}
-			return self::$instance;
+			return sqlJoin($table,$field,$operator,$ownField,' LEFT JOIN ');
 		}
 
 		public function rightJoin(string $table,string $field,string $operator,string $ownField){
+			return sqlJoin($table,$field,$operator,$ownField,' RIGHT JOIN ');
+		}
+
+		public function sqlJoin(string $table,string $field,string $operator,string $ownField,string $join){
 			self::checkInstance();
-			$join=' RIGHT JOIN ';
 			if(self::$currentSubQueryNumber==NULL){
 				self::boot();
 				self::makeJoin($table,$field,$operator,$ownField,$join);
