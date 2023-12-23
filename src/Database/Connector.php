@@ -6,8 +6,8 @@ use JiJiHoHoCoCo\IchiORM\Database\Connections\{MySQLConnection,PostgresSQLConnec
 use PDO;
 class Connector{
 
-	private $connections,$pdos=[];
-	private static $pdo,$instance=NULL;
+	private $connections, $pdos = [];
+	private static $pdo, $instance = NULL;
 
 	private function checkConnection($driver){
 		switch($driver){
@@ -37,12 +37,12 @@ class Connector{
 		if(!isset($config['driver'])){
 			throw new \Exception("You need to add database driver", 1);
 		}
-		$connection=NULL;
-		$availableDrivers=PDO::getAvailableDrivers();
+		$connection = NULL;
+		$availableDrivers = PDO::getAvailableDrivers();
 
 		$this->checkDriver($config['driver'],$availableDrivers);
 
-		$connection=$this->checkConnection($config['driver']);
+		$connection = $this->checkConnection($config['driver']);
 
 		return $connection->getConnection($config);
 	}
@@ -64,7 +64,7 @@ class Connector{
 	public function addConnection(string $connection){
 		$this->boot();
 		if(!isset($this->connections[$connection])){
-			$this->connections[$connection]=NULL;
+			$this->connections[$connection] = NULL;
 		}
 		return $this;
 	}
@@ -72,9 +72,9 @@ class Connector{
 	public function createConnection(string $connection,array $config){
 		$this->boot();
 		if(array_key_exists($connection, $this->connections)){
-			$resultConnection=isset($this->connections[$connection]['driver']) ? $this->connections[$connection]+$config : $config;
-			$this->pdos[$connection]=$this->getPDO($resultConnection);
-			self::$instance=$this;
+			$resultConnection = isset($this->connections[$connection]['driver']) ? $this->connections[$connection]+$config : $config;
+			$this->pdos[$connection] = $this->getPDO($resultConnection);
+			self::$instance = $this;
 		}else{
 			throw new \Exception("You are connecting to unavialble database connection", 1);
 		}
@@ -83,7 +83,7 @@ class Connector{
 
 	public function selectConnection(string $connection){
 		if(isset($this->pdos[$connection])){
-			self::$pdo=$this->pdos[$connection];
+			self::$pdo = $this->pdos[$connection];
 		}else{
 			throw new \Exception("Your database connection is unavailable", 1);
 		}

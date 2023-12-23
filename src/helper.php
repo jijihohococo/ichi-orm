@@ -1,6 +1,6 @@
 <?php
 
-use JiJiHoHoCoCo\IchiORM\Database\{Connector,NullModel,Model};
+use JiJiHoHoCoCo\IchiORM\Database\{Connector,NullModel};
 
 if(!function_exists('connectPDO')){
 	function connectPDO(){

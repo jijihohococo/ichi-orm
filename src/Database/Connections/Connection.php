@@ -8,7 +8,7 @@ abstract class Connection{
 
 	use DetectableDatabaseError;
 
-	private $defaultOptions=[
+	private $defaultOptions = [
 		PDO::ATTR_CASE => PDO::CASE_NATURAL,
 		PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 		PDO::ATTR_ORACLE_NULLS => PDO::NULL_NATURAL,
@@ -21,7 +21,7 @@ abstract class Connection{
 	abstract protected function getExtraOptions(array $config);
 
 	public function getConnection(array $config){
-		if(strpos(get_class($this),'SQLServerConnection')!==FALSE ){
+		if(strpos(get_class($this),'SQLServerConnection') !== FALSE ){
 			unset($this->defaultOptions[PDO::ATTR_EMULATE_PREPARES]);
 		}
 		try{
@@ -36,19 +36,19 @@ abstract class Connection{
 
 	private function connect(array $config,array $option){
 		if(!isset($config['user_name']) || !isset($config['user_password']) ){
-			throw new \Exception("You need to set your database user name and password", 1);
+			throw new Exception("You need to set your database user name and password", 1);
 		}
 		if(isset($config['options'])){
 			$option = $config['options']+$option;
 		}
-		$pdo=new PDO(
+		$pdo = new PDO(
 			$this->getDSN($config),
 			$config['user_name'],
 			$config['user_password'],
 			$option
 		);
-		$extraOptions=$this->getExtraOptions($config);
-		if($extraOptions!==NULL){
+		$extraOptions = $this->getExtraOptions($config);
+		if($extraOptions !== NULL){
 			$pdo->prepare($extraOptions)->execute();
 		}
 		return $pdo;

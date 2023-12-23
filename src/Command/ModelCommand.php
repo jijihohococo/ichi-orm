@@ -6,20 +6,22 @@ use Exception;
 
 class ModelCommand{
 
-	private $path='app/Models';
-	private $observerPath='app/Observers';
-	private $resourcePath='app/Resources';
+	private $path = 'app/Models';
+	private $observerPath = 'app/Observers';
+	private $resourcePath = 'app/Resources';
 
-	private $modelCommandLine='make:model';
-	private $observerCommandLine='make:observer';
-	private $resourceCommandLine='make:resource';
+	private $modelCommandLine = 'make:model';
+	private $observerCommandLine = 'make:observer';
+	private $resourceCommandLine = 'make:resource';
 
-	private $green="\033[0;32m";
-	private $red="\033[01;31m";
-	private $end=" \033[0m";
+	private $green = "\033[0;32m";
+	private $red = "\033[01;31m";
+	private $end = " \033[0m";
+
+	private $createdFile;
 
 	public function setPath(string $path){
-		$this->path=$path;
+		$this->path = $path;
 	}
 
 	public function getPath(){
@@ -27,7 +29,7 @@ class ModelCommand{
 	}
 
 	public function setObserverPath(string $observerPath){
-		$this->observerPath=$observerPath;
+		$this->observerPath = $observerPath;
 	}
 
 	public function getObserverPath(){
@@ -35,7 +37,7 @@ class ModelCommand{
 	}
 
 	public function setResourcePath(string $resourcePath){
-		$this->resourcePath=$resourcePath;
+		$this->resourcePath = $resourcePath;
 	}
 
 	public function getResourcePath(){
@@ -46,7 +48,7 @@ class ModelCommand{
 		return str_replace('/', '\\', ucfirst($defaulFolder));
 	}
 
-	private function makeModelContent(string $defaulFolder,string $createdFile){
+	private function makeModelContent(string $defaulFolder, string $createdFile){
 		return "<?php
 
 namespace ". $this->getNamespace( $defaulFolder ).";
@@ -60,7 +62,7 @@ class ".$createdFile." extends Model{
 ";
 	}
 
-	private function makeObserverContent(string $defaulFolder,string $createdFile){
+	private function makeObserverContent(string $defaulFolder, string $createdFile){
 		
 		$variable='$'.strtolower( str_replace('Observer', '', $createdFile) );
 
@@ -98,8 +100,8 @@ class ".$createdFile." implements Observer{
 ";
 	}
 
-	private function makeResourceContent(string $defaulFolder,string $createdFile){
-		$variable='$data';
+	private function makeResourceContent(string $defaulFolder, string $createdFile){
+		$variable = '$data';
 		return "<?php
 
 namespace ".$this->getNamespace($defaulFolder).";
@@ -147,18 +149,18 @@ class ".$createdFile." extends ResourceCollection{
 		}
 	}
 
-	private function checkContent(string $command,string $defaulFolder,string $createdFile){
+	private function checkContent(string $command, string $defaulFolder, string $createdFile){
 		switch ($command) {
 			case $this->modelCommandLine:
-			return $this->makeModelContent($defaulFolder,$createdFile);
+			return $this->makeModelContent($defaulFolder, $createdFile);
 			break;
 			
 			case $this->observerCommandLine:
-			return $this->makeObserverContent($defaulFolder,$createdFile);
+			return $this->makeObserverContent($defaulFolder, $createdFile);
 			break;
 
 			case $this->resourceCommandLine:
-			return $this->makeResourceContent($defaulFolder,$createdFile);
+			return $this->makeResourceContent($defaulFolder, $createdFile);
 			break;
 		}
 	}
@@ -171,12 +173,12 @@ class ".$createdFile." extends ResourceCollection{
 		return $this->red.$message.$this->end.PHP_EOL;
 	}
 
-	private function alreadyHave(string $createdFile,string $createdOption){
+	private function alreadyHave(string $createdFile, string $createdOption){
 		echo $this->errorMessage($createdFile . " ".$createdOption." is already created");
 		exit();
 	}
 
-	private function success(string $createdFile,string $createdOption){
+	private function success(string $createdFile, string $createdOption){
 		echo $this->successMessage($createdFile . " ".$createdOption." is created successfully");
 		exit();
 	}
@@ -186,25 +188,25 @@ class ".$createdFile." extends ResourceCollection{
 		exit();
 	}
 
-	private function createError(string $createdFile,string $createdOption){
-		echo $this->errorMessage("You can't create ". $createdFile . " " . $createdOption);
+	private function createError(string $createdFile, string $createdOption){
+		echo $this->errorMessage("You can't create ". $createdFile . " file " . $createdOption);
 		exit();
 	}
 
 	public function run(string $dir,array $argv){
 
-		if(count($argv)==3 && ($argv[1]==$this->modelCommandLine || $argv[1]==$this->observerCommandLine || $argv[1]==$this->resourceCommandLine  ) ){
+		if(count($argv) == 3 && ($argv[1] == $this->modelCommandLine || $argv[1] == $this->observerCommandLine || $argv[1] == $this->resourceCommandLine  ) ){
 			$command=$argv[1];
-			$createdOption=$this->checkOption($command);
-			$defaulFolder=$this->checkPath($command);
-			$baseDir=$dir.'/'.$defaulFolder;
-			if(substr($argv[2], -1)=='/'){
+			$createdOption = $this->checkOption($command);
+			$defaulFolder = $this->checkPath($command);
+			$baseDir = $dir.'/'.$defaulFolder;
+			if(substr($argv[2], -1) == '/'){
 				return $this->wrongCommand();
 			}
 			try {
 				if(!is_dir($baseDir)){
-					$createdFolder=NULL;
-					$basefolder=explode('/', $defaulFolder);
+					$createdFolder = NULL;
+					$basefolder = explode('/', $defaulFolder);
 					foreach($basefolder as $key => $folder){
 						$createdFolder .= $key == 0 ? $dir . '/' . $folder : '/' . $folder;
 						if(!is_dir($createdFolder)){
@@ -212,46 +214,46 @@ class ".$createdFile." extends ResourceCollection{
 						}
 					}
 				}
-				$inputFile=explode('/',$argv[2]);
-				$count=count($inputFile);
+				$inputFile = explode('/',$argv[2]);
+				$count = count($inputFile);
 
-				if($count==1 && $inputFile[0]!==NULL && !file_exists($baseDir.'/'.$inputFile[0].'.php') ){
-					$createdFile=$inputFile[0];
-					fopen($baseDir.'/'.$createdFile.'.php', 'w') or die('Unable to create '.$createdOption);
-						$createdFileContent=$this->checkContent($command,$defaulFolder,$createdFile);
-						file_put_contents($baseDir.'/'.$createdFile.'.php', $createdFileContent,LOCK_EX);
-						return $this->success($createdFile,$createdOption);
+				if($count == 1 && $inputFile[0] !== NULL && !file_exists($baseDir.'/'.$inputFile[0].'.php') ){
+					$this->createdFile = $inputFile[0];
+					fopen($baseDir.'/'.$this->createdFile.'.php', 'w') or die('Unable to create '.$createdOption);
+						$createdFileContent = $this->checkContent($command, $defaulFolder, $this->createdFile);
+						file_put_contents($baseDir.'/'.$this->createdFile.'.php', $createdFileContent,LOCK_EX);
+						return $this->success($this->createdFile, $createdOption);
 				
-				}elseif($count==1 && $inputFile[0]!==NULL && file_exists($baseDir . '/'.$inputFile[0].'.php') ){
-					$createdFile=$inputFile[0];
+				}elseif($count == 1 && $inputFile[0] !== NULL && file_exists($baseDir . '/'.$inputFile[0].'.php') ){
+					$this->createdFile = $inputFile[0];
 				
-					return $this->alreadyHave($createdFile,$createdOption);
+					return $this->alreadyHave($this->createdFile, $createdOption);
 				
 				}elseif($count>1 && file_exists($baseDir.'/'. implode('/', $inputFile) . '.php' ) ){
-					$createdFile=implode('/',$inputFile);
-					return $this->alreadyHave($createdFile,$createdOption);
+					$this->createdFile = implode('/', $inputFile);
+					return $this->alreadyHave($this->createdFile, $createdOption);
 				
 				}elseif($count>1 && !file_exists($baseDir .'/'. implode('/', $inputFile) . '.php' ) ){
-					$createdFile=$inputFile[$count-1];
+					$this->createdFile = $inputFile[$count-1];
 					unset($inputFile[$count-1]);
-					$currentFolder=NULL;
-					$newCreatedFolder=NULL;
+					$currentFolder = NULL;
+					$newCreatedFolder = NULL;
 					foreach($inputFile as $key => $folder){
 						$currentFolder .= $key == 0 ? $baseDir . '/' . $folder : '/' . $folder;
-						$newCreatedFolder .= $key ==0 ? $defaulFolder . '/' . $folder : '/' . $folder;
+						$newCreatedFolder .= $key == 0 ? $defaulFolder . '/' . $folder : '/' . $folder;
 						if(!is_dir($currentFolder)){
 							mkdir($currentFolder);
 						}
 					}
 
-					fopen($currentFolder.'/'.$createdFile.'.php', 'w') or die('Unable to create '.$createdOption);
-						$createdFileContent=$this->checkContent($command,$newCreatedFolder,$createdFile);
-						file_put_contents($currentFolder.'/'.$createdFile.'.php', $createdFileContent,LOCK_EX);
-						return $this->success($createdFile,$createdOption);
+					fopen($currentFolder.'/'.$this->createdFile.'.php', 'w') or die('Unable to create '.$createdOption);
+						$createdFileContent = $this->checkContent($command, $newCreatedFolder, $this->createdFile);
+						file_put_contents($currentFolder.'/'.$this->createdFile.'.php', $createdFileContent, LOCK_EX);
+						return $this->success($this->createdFile,$createdOption);
 				}
 			} catch (Exception $e) {
 
-				return $this->createError($createdFile,$createdOption);
+				return $this->createError($this->createdFile, $createdOption);
 				
 			}
 
