@@ -216,10 +216,9 @@ if (!function_exists('makeOperator')) {
 }
 
 if (!function_exists('showErrorPage')) {
-	function showErrorPage(string $message)
+	function showErrorPage(string $message, int $code = 500)
 	{
-		$errorCode = 500;
-		http_response_code($errorCode);
+		http_response_code($code);
 		echo ErrorPage::show($message, $errorCode);
 	}
 }
