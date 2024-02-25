@@ -2,7 +2,6 @@
 
 use JiJiHoHoCoCo\IchiORM\Database\{Connector, NullModel};
 use JiJiHoHoCoCo\IchiORM\UI\ErrorPage;
-use PDO, Exception;
 
 if (!function_exists('connectPDO')) {
 	function connectPDO()
@@ -120,22 +119,22 @@ if (!function_exists('getPDOBindDataType')) {
 
 		switch ($type) {
 			case 'integer':
-				return PDO::PARAM_INT;
+				return \PDO::PARAM_INT;
 				break;
 
 			case 'boolean':
-				return PDO::PARAM_BOOL;
+				return \PDO::PARAM_BOOL;
 				break;
 
 			case 'NULL':
-				return PDO::PARAM_NULL;
+				return \PDO::PARAM_NULL;
 
 			case 'resource':
 			case 'resource (closed)':
-				return PDO::PARAM_LOB;
+				return \PDO::PARAM_LOB;
 
 			default:
-				return PDO::PARAM_STR;
+				return \PDO::PARAM_STR;
 				break;
 		}
 	}
@@ -200,7 +199,7 @@ if (!function_exists('checkClass')) {
 				throw new Exception($className . " is not exist", 1);
 			}
 			if (!is_subclass_of($className, 'JiJiHoHoCoCo\IchiORM\Database\Model')) {
-				throw new Exception($className . " must extend JiJiHoHoCoCo\IchiORM\Database\Model", 1);
+				throw new \Exception($className . " must extend JiJiHoHoCoCo\IchiORM\Database\Model", 1);
 			}
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage());
