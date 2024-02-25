@@ -9,20 +9,17 @@ class ObserverSubject
 {
 
 	private $observers = [];
+	private static $caller = [];
 
 	public function attach(string $className, ModelObserver $modelObserver)
 	{
-		try {
-			if ($this->check($className)) {
-				throw new Exception("Duplicate " . $className . " in observers", 1);
-			}
-			$this->observers[$className][] = $modelObserver;
-		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+		if ($this->check($className)) {
+			throw new Exception("Duplicate " . $className . " in observers", 1);
 		}
+		$this->observers[$className][] = $modelObserver;
 	}
 
-	public function check(string $className)
+	private function check(string $className)
 	{
 		return isset($this->observers[$className]) && is_array($this->observers[$className]);
 	}
@@ -30,6 +27,7 @@ class ObserverSubject
 	public function use (string $className, string $method, $parameters)
 	{
 		try {
+			self::$caller = getCallerInfo();
 			foreach ($this->observers[$className] as $key => $observer) {
 				$observerName = get_class($observer);
 				if (!method_exists($observer, $method)) {
@@ -39,7 +37,7 @@ class ObserverSubject
 				$reflectionMethod->invokeArgs($observer, is_array($parameters) ? $parameters : [$parameters]);
 			}
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 

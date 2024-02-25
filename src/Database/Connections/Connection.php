@@ -33,33 +33,29 @@ abstract class Connection
 			if ($this->checkDetectableErrors($e->getMessage())) {
 				return $this->connect($config, $this->defaultOptions);
 			}
-			return showErrorPage($e->getMessage());
+			throw new Exception($e->getMessage());
 		}
 	}
 
 	private function connect(array $config, array $option)
 	{
-		try {
-			if (!isset($config['user_name']) || !isset($config['user_password'])) {
-				throw new Exception("You need to set your database user name and password", 1);
-			}
-			if (isset($config['options'])) {
-				$option = $config['options'] + $option;
-			}
-			$pdo = new PDO(
-				$this->getDSN($config),
-				$config['user_name'],
-				$config['user_password'],
-				$option
-			);
-			$extraOptions = $this->getExtraOptions($config);
-			if ($extraOptions !== NULL) {
-				$pdo->prepare($extraOptions)->execute();
-			}
-			return $pdo;
-		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+		if (!isset($config['user_name']) || !isset($config['user_password'])) {
+			throw new Exception("You need to set your database user name and password", 1);
 		}
+		if (isset($config['options'])) {
+			$option = $config['options'] + $option;
+		}
+		$pdo = new PDO(
+			$this->getDSN($config),
+			$config['user_name'],
+			$config['user_password'],
+			$option
+		);
+		$extraOptions = $this->getExtraOptions($config);
+		if ($extraOptions !== NULL) {
+			$pdo->prepare($extraOptions)->execute();
+		}
+		return $pdo;
 	}
 
 }

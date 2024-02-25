@@ -10,28 +10,22 @@ class PostgresSQLConnection extends Connection
 	protected function getDSN(array $config)
 	{
 
-		try {
+		if (!isset($config['dbname']) || !isset($config['host'])) {
 
-			if (!isset($config['dbname']) || !isset($config['host'])) {
-
-				throw new Exception("You must add database name and host for Postgres SQL Database Connection", 1);
-			}
-
-			$dsn = $config['driver'] . ':';
-
-			$dsn .= isset($config['host']) ? 'host=' . $config['host'] . ';' : '';
-
-			$dsn .= 'dbname=' . $config['dbname'];
-
-			if (isset($config['port'])) {
-				$dsn .= ';port=' . $config['port'];
-			}
-
-			return $this->getSSLOptions($config, $dsn);
-
-		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			throw new Exception("You must add database name and host for Postgres SQL Database Connection", 1);
 		}
+
+		$dsn = $config['driver'] . ':';
+
+		$dsn .= isset($config['host']) ? 'host=' . $config['host'] . ';' : '';
+
+		$dsn .= 'dbname=' . $config['dbname'];
+
+		if (isset($config['port'])) {
+			$dsn .= ';port=' . $config['port'];
+		}
+
+		return $this->getSSLOptions($config, $dsn);
 	}
 
 	protected function getExtraOptions(array $config)

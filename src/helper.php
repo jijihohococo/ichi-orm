@@ -218,7 +218,41 @@ if (!function_exists('makeOperator')) {
 if (!function_exists('showErrorPage')) {
 	function showErrorPage(string $message, int $code = 500)
 	{
-		http_response_code($code);
-		echo ErrorPage::show($message, $errorCode);
+		$headers = getallheaders();
+		if (isset($headers['Content-Type']) && $headers['Content-Type'] == 'application/json') {
+			return jsonResponse([
+				'status' => $code,
+				'message' => $message
+			], $code);
+		} else {
+			http_response_code($code);
+			echo ErrorPage::show($message, $code);
+			exit();
+		}
+	}
+}
+
+if (!function_exists('getCallerInfo')) {
+	function getCallerInfo()
+	{
+		// Get the call stack
+		$backtrace = debug_backtrace();
+		// Skip the first element (current function)
+		array_shift($backtrace);
+		// Extract information about the caller
+		$caller = $backtrace[0]; // Index 0 is the immediate caller
+		return $caller;
+	}
+}
+
+if (!function_exists('showCallerInfo')) {
+	function showCallerInfo(array $callerInfo)
+	{
+		if (isset($callerInfo['file']) && isset($callerInfo['line'])) {
+			$callerFile = $callerInfo['file'];
+			$callerLine = $callerInfo['line'];
+			return nl2br(" \n Error in file '$callerFile' at line $callerLine");
+		}
+		return null;
 	}
 }

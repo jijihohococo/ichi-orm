@@ -9,31 +9,26 @@ class MySQLConnection extends Connection
 
 	protected function getDSN(array $config)
 	{
+		if (!isset($config['dbname']) || !isset($config['host'])) {
 
-		try {
-			if (!isset($config['dbname']) || !isset($config['host'])) {
-
-				throw new Exception("You must add database name and host for MySQL Database Connection", 1);
-			}
-
-			$dsn = $config['driver'];
-
-			if (isset($config['unix_socket']) && $config['unix_socket'] !== NULL) {
-				$dsn .= ':unix_socket=' . $config['unix_socket'] .
-					';dbname=' . $config['dbname'];
-			} elseif (isset($config['port']) && $config['port'] !== NULL) {
-				$dsn .= ':host=' . $config['host'] .
-					';port=' . $config['port'] .
-					';dbname=' . $config['dbname'];
-			} else {
-				$dsn .= ':host=' . $config['host'] .
-					';dbname=' . $config['dbname'];
-			}
-
-			return $dsn;
-		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			throw new Exception("You must add database name and host for MySQL Database Connection", 1);
 		}
+
+		$dsn = $config['driver'];
+
+		if (isset($config['unix_socket']) && $config['unix_socket'] !== NULL) {
+			$dsn .= ':unix_socket=' . $config['unix_socket'] .
+				';dbname=' . $config['dbname'];
+		} elseif (isset($config['port']) && $config['port'] !== NULL) {
+			$dsn .= ':host=' . $config['host'] .
+				';port=' . $config['port'] .
+				';dbname=' . $config['dbname'];
+		} else {
+			$dsn .= ':host=' . $config['host'] .
+				';dbname=' . $config['dbname'];
+		}
+
+		return $dsn;
 	}
 
 	protected function getExtraOptions(array $config)

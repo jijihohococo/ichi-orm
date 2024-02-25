@@ -9,24 +9,19 @@ class SQLServerConnection extends Connection
 
 	protected function getDSN(array $config)
 	{
-		try {
 
-			if (!isset($config['dbname']) || !isset($config['host'])) {
+		if (!isset($config['dbname']) || !isset($config['host'])) {
 
-				throw new Exception("You must add database name and host for SQL Server Database Connection", 1);
-			}
-
-			switch ($config['driver']) {
-				case 'sqlsrv':
-					return $this->getSqlSrvDsn($config);
-					break;
-			}
-
-			throw new Exception("The database driver is unavailable");
-
-		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			throw new Exception("You must add database name and host for SQL Server Database Connection", 1);
 		}
+
+		switch ($config['driver']) {
+			case 'sqlsrv':
+				return $this->getSqlSrvDsn($config);
+				break;
+		}
+
+		throw new Exception("The database driver is unavailable");
 	}
 
 	protected function getExtraOptions(array $config)

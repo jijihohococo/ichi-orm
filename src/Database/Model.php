@@ -27,6 +27,7 @@ abstract class Model
 	private static $unionQuery = [0 => NULL];
 	private static $unionNumber, $currentUnionNumber = 0;
 	private static $unableUnionQuery = [];
+	private static $caller = [];
 
 	protected function connectDatabase()
 	{
@@ -50,6 +51,7 @@ abstract class Model
 
 	public static function withTrashed()
 	{
+		self::$caller = getCallerInfo();
 		self::checkInstance();
 		if (self::$currentSubQueryNumber == NULL) {
 			self::checkUnionQuery();
@@ -108,7 +110,7 @@ abstract class Model
 				throw new Exception(showDuplicateModelMessage(get_called_class(), self::$className), 1);
 			}
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
@@ -119,7 +121,7 @@ abstract class Model
 				throw new Exception("You are not allowed to use", 1);
 			}
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
@@ -133,7 +135,7 @@ abstract class Model
 				throw new Exception("You are not allowed to use", 1);
 			}
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
@@ -144,7 +146,7 @@ abstract class Model
 				throw new Exception("CRUD functions and querying are different", 1);
 			}
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
@@ -178,6 +180,7 @@ abstract class Model
 
 	public static function groupBy(string $groupBy)
 	{
+		self::$caller = getCallerInfo();
 		self::checkInstance();
 		if (self::$currentSubQueryNumber == NULL) {
 			self::checkUnionQuery();
@@ -193,6 +196,7 @@ abstract class Model
 
 	public static function having(string $field, string $operator, $value)
 	{
+		self::$caller = getCallerInfo();
 		self::checkInstance();
 		if (self::$currentSubQueryNumber == NULL) {
 			self::checkUnionQuery();
@@ -272,6 +276,7 @@ abstract class Model
 	public static function bulkUpdate(array $attributes)
 	{
 		try {
+			self::$caller = getCallerInfo();
 			self::checkInstance();
 			if (empty($attributes)) {
 				throw new Exception("You need to put non-empty array data", 1);
@@ -332,13 +337,14 @@ abstract class Model
 			$stmt->execute();
 			self::disableBooting();
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
 	public static function insert(array $attributes)
 	{
 		try {
+			self::$caller = getCallerInfo();
 			self::checkBoot();
 			if (empty($attributes)) {
 				throw new Exception("You need to put non-empty array data", 1);
@@ -393,13 +399,14 @@ abstract class Model
 			$stmt->execute();
 			self::disableBooting();
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
 	public static function create(array $attribute)
 	{
 		try {
+			self::$caller = getCallerInfo();
 			self::checkBoot();
 			if (empty($attribute)) {
 				throw new Exception("You need to put non-empty array data", 1);
@@ -449,11 +456,11 @@ abstract class Model
 
 			return $object;
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
-	public static function makeObserver(string $className, string $method, $parameters)
+	private static function makeObserver(string $className, string $method, $parameters)
 	{
 		if (self::$observerSubject !== NULL && self::$observerSubject->check($className)) {
 			self::$observerSubject->use($className, $method, $parameters);
@@ -463,6 +470,7 @@ abstract class Model
 	public function update(array $attribute)
 	{
 		try {
+			self::$caller = getCallerInfo();
 			self::checkBoot();
 			if (empty($attribute)) {
 				throw new Exception("You need to put non-empty array data", 1);
@@ -498,24 +506,29 @@ abstract class Model
 			self::makeObserver((string) get_class($this), 'update', $object);
 			return $object;
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
 	public static function find($id)
 	{
-		self::checkBoot();
-		self::boot();
-		$pdo = self::$instance->connectDatabase();
-		$getId = self::$instance->getID();
-		$stmt = $pdo->prepare(self::getSelect() . " WHERE " . $getId . " = ? " . self::$limitOne);
-		bindValues($stmt, [
-			0 => $id
-		]);
-		$stmt->execute();
-		$instance = $stmt->fetchObject(self::$className);
-		self::disableBooting();
-		return self::getObject($instance);
+		try {
+			self::$caller = getCallerInfo();
+			self::checkBoot();
+			self::boot();
+			$pdo = self::$instance->connectDatabase();
+			$getId = self::$instance->getID();
+			$stmt = $pdo->prepare(self::getSelect() . " WHERE " . $getId . " = ? " . self::$limitOne);
+			bindValues($stmt, [
+				0 => $id
+			]);
+			$stmt->execute();
+			$instance = $stmt->fetchObject(self::$className);
+			self::disableBooting();
+			return self::getObject($instance);
+		} catch (Exception $e) {
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+		}
 	}
 
 	private static function getObject($instance)
@@ -525,62 +538,83 @@ abstract class Model
 
 	public static function findBy(string $field, $value)
 	{
-		self::checkBoot();
-		self::boot();
-		$pdo = self::$instance->connectDatabase();
-		$stmt = $pdo->prepare(self::getSelect() . " WHERE " . $field . " = ? " . self::$limitOne);
-		bindValues($stmt, [
-			0 => $value
-		]);
-		$stmt->execute();
-		$instance = $stmt->fetchObject(self::$className);
-		self::disableBooting();
-		return self::getObject($instance);
+		try {
+			self::$caller = getCallerInfo();
+			self::checkBoot();
+			self::boot();
+			$pdo = self::$instance->connectDatabase();
+			$stmt = $pdo->prepare(self::getSelect() . " WHERE " . $field . " = ? " . self::$limitOne);
+			bindValues($stmt, [
+				0 => $value
+			]);
+			$stmt->execute();
+			$instance = $stmt->fetchObject(self::$className);
+			self::disableBooting();
+			return self::getObject($instance);
+		} catch (Exception $e) {
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+		}
 	}
 
 	public function delete()
 	{
-		self::checkBoot();
-		$id = $this->getID();
-		$table = $this->getTable();
-		$pdo = $this->connectDatabase();
-		if (property_exists($this, 'deleted_at')) {
-			$stmt = $pdo->prepare("UPDATE " . $table . " SET deleted_at='" . now() . "' WHERE " . $id . "=" . $this->{$id});
-			$stmt->execute();
-		} else {
-			$stmt = $pdo->prepare("DELETE FROM " . $table . " WHERE " . $id . "=" . $this->{$id});
-			$stmt->execute();
+		try {
+			self::$caller = getCallerInfo();
+			self::checkBoot();
+			$id = $this->getID();
+			$table = $this->getTable();
+			$pdo = $this->connectDatabase();
+			if (property_exists($this, 'deleted_at')) {
+				$stmt = $pdo->prepare("UPDATE " . $table . " SET deleted_at='" . now() . "' WHERE " . $id . "=" . $this->{$id});
+				$stmt->execute();
+			} else {
+				$stmt = $pdo->prepare("DELETE FROM " . $table . " WHERE " . $id . "=" . $this->{$id});
+				$stmt->execute();
+			}
+			self::makeObserver((string) get_class($this), 'delete', $this);
+		} catch (Exception $e) {
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
-		self::makeObserver((string) get_class($this), 'delete', $this);
 	}
 
 	public function forceDelete()
 	{
-		self::checkBoot();
-		$id = $this->getID();
-		$table = $this->getTable();
-		$stmt = $this->connectDatabase()->prepare("DELETE FROM " . $table . " WHERE " . $id . '=' . $this->{$id});
-		self::makeObserver((string) get_class($this), 'forceDelete', $this);
-		$stmt->execute();
+		try {
+			self::$caller = getCallerInfo();
+			self::checkBoot();
+			$id = $this->getID();
+			$table = $this->getTable();
+			$stmt = $this->connectDatabase()->prepare("DELETE FROM " . $table . " WHERE " . $id . '=' . $this->{$id});
+			self::makeObserver((string) get_class($this), 'forceDelete', $this);
+			$stmt->execute();
+		} catch (Exception $e) {
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+		}
 	}
 
 	public function restore()
 	{
-		self::checkBoot();
-		$id = $this->getID();
-		$pdo = $this->connectDatabase();
-		$table = $this->getTable();
-		if (property_exists($this, 'deleted_at')) {
-			$stmt = $pdo->prepare("UPDATE " . $table . " SET deleted_at=NULL WHERE " . $id . "=" . $this->{$id});
-			$stmt->execute();
+		try {
+			self::$caller = getCallerInfo();
+			self::checkBoot();
+			$id = $this->getID();
+			$pdo = $this->connectDatabase();
+			$table = $this->getTable();
+			if (property_exists($this, 'deleted_at')) {
+				$stmt = $pdo->prepare("UPDATE " . $table . " SET deleted_at=NULL WHERE " . $id . "=" . $this->{$id});
+				$stmt->execute();
+			}
+			self::makeObserver((string) get_class($this), 'restore', $this);
+		} catch (Exception $e) {
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
-		self::makeObserver((string) get_class($this), 'restore', $this);
 	}
 
 
 	public static function select(array $fields)
 	{
 		try {
+			self::$caller = getCallerInfo();
 			self::checkInstance();
 			if (self::$currentSubQueryNumber == NULL) {
 				self::checkUnionQuery();
@@ -635,7 +669,7 @@ abstract class Model
 			}
 			return self::$instance;
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
@@ -656,6 +690,7 @@ abstract class Model
 
 	public static function limit(int $limit)
 	{
+		self::$caller = getCallerInfo();
 		self::checkInstance();
 		if (self::$currentSubQueryNumber == NULL) {
 			self::checkUnionQuery();
@@ -740,6 +775,7 @@ abstract class Model
 
 	public static function where()
 	{
+		self::$caller = getCallerInfo();
 		self::makeWhereQuery(func_get_args(), 'where');
 		return self::$instance;
 	}
@@ -775,6 +811,7 @@ abstract class Model
 	{
 
 		try {
+			self::$caller = getCallerInfo();
 
 			checkClass($className);
 
@@ -787,7 +824,7 @@ abstract class Model
 			}
 			throw new Exception("You can use 'from' function in only sub queries", 1);
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
@@ -811,18 +848,20 @@ abstract class Model
 			self::${$where}[self::$currentField . self::$currentSubQueryNumber]['select'] = $table . '.*';
 			self::${$where}[self::$currentField . self::$currentSubQueryNumber]['className'] = $className;
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
 	public static function whereColumn()
 	{
+		self::$caller = getCallerInfo();
 		self::makeWhereQuery(func_get_args(), 'whereColumn');
 		return self::$instance;
 	}
 
 	public static function orWhere()
 	{
+		self::$caller = getCallerInfo();
 		self::makeWhereQuery(func_get_args(), 'orWhere');
 		return self::$instance;
 	}
@@ -894,7 +933,7 @@ abstract class Model
 				throw new Exception("Invalid Argument Parameter", 1);
 			}
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
@@ -937,18 +976,20 @@ abstract class Model
 				self::makeSubQueryInSubQuery($whereIn, $value, $field, $currentQuery);
 			}
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
 	public static function whereIn(string $field, $value)
 	{
+		self::$caller = getCallerInfo();
 		self::makeInQuery('whereIn', $field, $value);
 		return self::$instance;
 	}
 
 	public static function whereNotIn(string $field, $value)
 	{
+		self::$caller = getCallerInfo();
 		self::makeInQuery('whereNotIn', $field, $value);
 		return self::$instance;
 	}
@@ -1224,6 +1265,7 @@ abstract class Model
 
 	public static function orderBy(string $field, string $sort = "ASC")
 	{
+		self::$caller = getCallerInfo();
 		self::checkInstance();
 		if (self::$currentSubQueryNumber == NULL) {
 			self::checkUnionQuery();
@@ -1248,6 +1290,7 @@ abstract class Model
 
 	public static function latest(string $field = null)
 	{
+		self::$caller = getCallerInfo();
 		self::checkInstance();
 		if (self::$currentSubQueryNumber == NULL) {
 			self::checkUnionQuery();
@@ -1355,11 +1398,13 @@ abstract class Model
 
 	public static function union(callable $value)
 	{
+		self::$caller = getCallerInfo();
 		return self::makeUnionQuery($value, ' UNION ');
 	}
 
 	public static function unionAll(callable $value)
 	{
+		self::$caller = getCallerInfo();
 		return self::makeUnionQuery($value, ' UNION ALL ');
 	}
 
@@ -1432,35 +1477,40 @@ abstract class Model
 			}
 			return self::$instance;
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
 	public static function get()
 	{
-		self::checkInstance();
-		if (self::$currentSubQueryNumber == NULL) {
-			self::boot();
-			$mainSQL = self::getQuery();
-			if (self::$toSQL == TRUE) {
-				self::disableForSQL();
-				return $mainSQL;
+		try {
+			self::$caller = getCallerInfo();
+			self::checkInstance();
+			if (self::$currentSubQueryNumber == NULL) {
+				self::boot();
+				$mainSQL = self::getQuery();
+				if (self::$toSQL == TRUE) {
+					self::disableForSQL();
+					return $mainSQL;
+				}
+				$class = get_called_class();
+				$fields = self::getFields();
+				$stmt = self::$instance->connectDatabase()->prepare($mainSQL);
+				bindValues($stmt, $fields);
+				$stmt->execute();
+				self::disableBooting();
+				$object = $stmt->fetchAll(PDO::FETCH_CLASS, $class);
+				self::$selectedFields = [];
+				self::$select = self::$table = NULL;
+				if (self::$unionQuery !== NULL) {
+					self::$unionQuery = NULL;
+				}
+				return $object;
+			} else {
+				self::makeSubQuery(self::showCurrentSubQuery());
 			}
-			$class = get_called_class();
-			$fields = self::getFields();
-			$stmt = self::$instance->connectDatabase()->prepare($mainSQL);
-			bindValues($stmt, $fields);
-			$stmt->execute();
-			self::disableBooting();
-			$object = $stmt->fetchAll(PDO::FETCH_CLASS, $class);
-			self::$selectedFields = [];
-			self::$select = self::$table = NULL;
-			if (self::$unionQuery !== NULL) {
-				self::$unionQuery = NULL;
-			}
-			return $object;
-		} else {
-			self::makeSubQuery(self::showCurrentSubQuery());
+		} catch (Exception $e) {
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
@@ -1585,27 +1635,33 @@ abstract class Model
 
 	public static function toArray()
 	{
-		self::checkInstance();
-		if (self::$currentSubQueryNumber !== NULL) {
-			throw new Exception("Please use get() function in sub query to get sub query", 1);
+		try {
+			self::$caller = getCallerInfo();
+			self::checkInstance();
+			if (self::$currentSubQueryNumber !== NULL) {
+				throw new Exception("Please use get() function in sub query to get sub query", 1);
+			}
+			if (self::$currentUnionNumber !== 0) {
+				throw new Exception("Please use toArray function in main query", 1);
+			}
+			self::boot();
+			$mainSQL = self::getQuery();
+			$fields = self::getFields();
+			$stmt = self::$instance->connectDatabase()->prepare($mainSQL);
+			bindValues($stmt, $fields);
+			$stmt->execute();
+			self::disableBooting();
+			self::$selectedFields = [];
+			self::$select = self::$table = NULL;
+			return $stmt->fetchAll(PDO::FETCH_ASSOC);
+		} catch (Exception $e) {
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
-		if (self::$currentUnionNumber !== 0) {
-			throw new Exception("Please use toArray function in main query", 1);
-		}
-		self::boot();
-		$mainSQL = self::getQuery();
-		$fields = self::getFields();
-		$stmt = self::$instance->connectDatabase()->prepare($mainSQL);
-		bindValues($stmt, $fields);
-		$stmt->execute();
-		self::disableBooting();
-		self::$selectedFields = [];
-		self::$select = self::$table = NULL;
-		return $stmt->fetchAll(PDO::FETCH_ASSOC);
 	}
 
 	public static function toSQL()
 	{
+		self::$caller = getCallerInfo();
 		self::checkInstance();
 		if (self::$currentSubQueryNumber !== NULL) {
 			throw new Exception("Don't use toSQL() function in sub query", 1);
@@ -1618,6 +1674,7 @@ abstract class Model
 	public static function addSelect(array $fields)
 	{
 		try {
+			self::$caller = getCallerInfo();
 			self::checkInstance();
 			if (self::$currentSubQueryNumber == NULL) {
 				self::checkUnionQuery();
@@ -1631,7 +1688,7 @@ abstract class Model
 			}
 			throw new Exception("You are not allow to use addSelect function in subquery", 1);
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
@@ -1651,13 +1708,14 @@ abstract class Model
 			}
 			return self::$instance;
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
 	public static function addOnlySelect(array $fields)
 	{
 		try {
+			self::$caller = getCallerInfo();
 			self::checkInstance();
 			if (self::$currentSubQueryNumber == NULL) {
 				self::checkUnionQuery();
@@ -1689,13 +1747,14 @@ abstract class Model
 			}
 			return self::$instance;
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
 	public static function paginate(int $per_page = 10)
 	{
 		try {
+			self::$caller = getCallerInfo();
 			self::checkInstance();
 			if (self::$currentSubQueryNumber !== NULL) {
 				throw new Exception("You can't use paginate() function in sub queries.", 1);
@@ -1749,7 +1808,7 @@ abstract class Model
 				$objectArray
 			);
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
@@ -1801,20 +1860,23 @@ abstract class Model
 
 	public static function innerJoin()
 	{
+		self::$caller = getCallerInfo();
 		return self::sqlJoin(func_get_args(), ' INNER JOIN ');
 	}
 
 	public static function leftJoin()
 	{
+		self::$caller = getCallerInfo();
 		return self::sqlJoin(func_get_args(), ' LEFT JOIN ');
 	}
 
 	public static function rightJoin()
 	{
+		self::$caller = getCallerInfo();
 		return self::sqlJoin(func_get_args(), ' RIGHT JOIN ');
 	}
 
-	public static function sqlJoin(array $parameters, string $join)
+	private static function sqlJoin(array $parameters, string $join)
 	{
 		try {
 			self::checkInstance();
@@ -1836,7 +1898,7 @@ abstract class Model
 			}
 			throw new Exception("You need to pass correct parameters");
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
@@ -1850,7 +1912,7 @@ abstract class Model
 			}
 			throw new Exception($field . ' is not available', 1);
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 	}
 
@@ -1865,19 +1927,24 @@ abstract class Model
 			}
 			throw new Exception($referField . ' is not available', 1);
 		} catch (Exception $e) {
-			return showErrorPage($e->getMessage());
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
 
 	}
 
 	public static function observe(ModelObserver $modelObserver)
 	{
-		self::checkBoot();
-		checkObserverFunctions($modelObserver);
-		if (self::$observerSubject == NULL) {
-			self::$observerSubject = new ObserverSubject;
+		try {
+			self::$caller = getCallerInfo();
+			self::checkBoot();
+			checkObserverFunctions($modelObserver);
+			if (self::$observerSubject == NULL) {
+				self::$observerSubject = new ObserverSubject;
+			}
+			$className = (string) get_called_class();
+			self::$observerSubject->attach($className, $modelObserver);
+		} catch (Exception $e) {
+			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
-		$className = (string) get_called_class();
-		self::$observerSubject->attach($className, $modelObserver);
 	}
 }
