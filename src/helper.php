@@ -16,7 +16,7 @@ if (!function_exists('jsonResponse')) {
 		header('Content-type:application/json');
 		http_response_code($code);
 		echo json_encode($data);
-		return TRUE;
+		exit();
 	}
 }
 
