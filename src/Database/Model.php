@@ -289,7 +289,6 @@ abstract class Model
 			}
 			$getID = $instance->getID();
 			$updatedFields = [];
-			$updatedIds = [];
 			$updatedBindValues = [];
 			$i = 0;
 			foreach ($attributes as $key => $attribute) {
@@ -305,7 +304,7 @@ abstract class Model
 				$i++;
 				$j = 0;
 				if (property_exists($instance, 'updated_at')) {
-					$attribute['updated_at'] = now();
+					$attribute['updated_at'] = isset ($attribute['updated_at']) ? $attribute['updated_at'] : now();
 				}
 				foreach ($attribute as $field => $value) {
 					$j++;
@@ -318,7 +317,7 @@ abstract class Model
 						}
 						$updatedFields[$field] .= ' WHEN ' . $getID . ' = ? THEN ?';
 						if ($key + 1 == count($attributes)) {
-							$updatedFields[$field] .= ' END, ';
+							$updatedFields[$field] .= ' ELSE ' . $field . ' END, ';
 						}
 					} elseif (!array_key_exists($field, $arrayKeys) && $field !== $getID) {
 						throw new Exception("You need to put the available column data to update", 1);
@@ -373,17 +372,15 @@ abstract class Model
 				}
 				$insertedData = [];
 				unset($attribute[$getID]);
-				unset($attribute['created_at']);
 				unset($attribute['deleted_at']);
-				unset($attribute['updated_at']);
 				foreach ($arrayKeys as $key => $value) {
 					if (!isset ($insertedFields[$key . ','])) {
 						$insertedFields[$key . ','] = NULL;
 					}
 					if (isset ($attribute[$key])) {
 						$insertedData[$key] = $attribute[$key];
-					} elseif ($key == 'created_at') {
-						$insertedData[$key] = now();
+					} elseif ($key == 'created_at' || $key == 'updated_at') {
+						$insertedData[$key] = isset ($attribute[$key]) ? $attribute[$key] : now();
 					} else {
 						$insertedData[$key] = $value;
 					}
@@ -431,8 +428,8 @@ abstract class Model
 				}
 				if (isset ($attribute[$key])) {
 					$insertedData[$key] = $attribute[$key];
-				} elseif ($key == 'created_at' || $key == 'updated_at') {
-					$insertedData[$key] = now();
+				} else if ($key == 'created_at' || $key == 'updated_at') {
+					$insertedData[$key] = isset ($attribute[$key]) ? $attribute[$key] : now();
 				} else {
 					$insertedData[$key] = $value;
 				}
@@ -480,7 +477,6 @@ abstract class Model
 				throw new Exception("You need to add column data", 1);
 			}
 			unset($arrayKeys[$getID]);
-			unset($arrayKeys['deleted_at']);
 			$updatedBindValues = [];
 			$updatedFields = NULL;
 			$insertedData = [];
@@ -489,7 +485,7 @@ abstract class Model
 				if (isset ($attribute[$key])) {
 					$insertedData[$key] = $attribute[$key];
 				} elseif ($key == 'updated_at') {
-					$insertedData[$key] = now();
+					$insertedData[$key] = isset ($attribute[$key]) ? $attribute[$key] : now();
 				} else {
 					$insertedData[$key] = $value;
 				}
@@ -497,9 +493,6 @@ abstract class Model
 			$insertedArrayValues = array_values($insertedData);
 			$updatedBindValues = array_merge($updatedBindValues, $insertedArrayValues);
 			$updatedFields = substr($updatedFields, 0, -1);
-			if (property_exists($this, 'deleted_at')) {
-				$updatedFields .= ',deleted_at=NULL';
-			}
 			$stmt = $this->connectDatabase()->prepare("UPDATE " . $this->getTable() . " SET " . $updatedFields . " WHERE " . $getID . "=" . $this->{$getID});
 			bindValues($stmt, $updatedBindValues);
 			$stmt->execute();
@@ -606,8 +599,6 @@ abstract class Model
 			if (property_exists($this, 'deleted_at')) {
 				$stmt = $pdo->prepare("UPDATE " . $table . " SET deleted_at=NULL WHERE " . $id . "=" . $this->{$id});
 				$stmt->execute();
-			} else {
-				throw new Exception("You need to set deleted_at property in " . get_class($this));
 			}
 			self::makeObserver((string) get_class($this), 'restore', $this);
 		} catch (Exception $e) {
