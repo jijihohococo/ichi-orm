@@ -86,7 +86,7 @@ abstract class Model
 
 	private static function getSubQuerySelect($where)
 	{
-		if (isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
+		if (isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
 			$current = self::${$where}[self::$currentField . self::$currentSubQueryNumber];
 
 			// $select=$current['select']!==NULL ? str_replace(self::$table.'.*', $current['table'].'.*', $current['select']) : NULL;
@@ -117,7 +117,7 @@ abstract class Model
 	private static function checkUnionQuery()
 	{
 		try {
-			if (isset(self::$unableUnionQuery[self::$currentUnionNumber]) && self::$unableUnionQuery[self::$currentUnionNumber] !== NULL) {
+			if (isset (self::$unableUnionQuery[self::$currentUnionNumber]) && self::$unableUnionQuery[self::$currentUnionNumber] !== NULL) {
 				throw new Exception("You are not allowed to use", 1);
 			}
 		} catch (Exception $e) {
@@ -129,7 +129,7 @@ abstract class Model
 	{
 		try {
 			if (
-				isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber . 'unableUnionQuery']) &&
+				isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber . 'unableUnionQuery']) &&
 				self::${$where}[self::$currentField . self::$currentSubQueryNumber . 'unableUnionQuery'] == FALSE
 			) {
 				throw new Exception("You are not allowed to use", 1);
@@ -254,7 +254,7 @@ abstract class Model
 	private static function getSubQueryHaving($where)
 	{
 		$string = NULL;
-		if (isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
+		if (isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
 			$current = self::${$where}[self::$currentField . self::$currentSubQueryNumber];
 			if ($current['havingNumber'] !== NULL) {
 				foreach (range(0, $current['havingNumber'] - 1) as $key => $value) {
@@ -268,7 +268,7 @@ abstract class Model
 
 	private static function getSubQueryGroupBy($where)
 	{
-		if (isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber]['groupBy'])) {
+		if (isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber]['groupBy'])) {
 			return self::${$where}[self::$currentField . self::$currentSubQueryNumber]['groupBy'];
 		}
 	}
@@ -278,13 +278,13 @@ abstract class Model
 		try {
 			self::$caller = getCallerInfo();
 			self::checkInstance();
-			if (empty($attributes)) {
+			if (empty ($attributes)) {
 				throw new Exception("You need to put non-empty array data", 1);
 			}
 			static::boot();
 			$instance = self::$instance;
 			$arrayKeys = get_object_vars($instance);
-			if (empty($arrayKeys)) {
+			if (empty ($arrayKeys)) {
 				throw new Exception("You need to add column data", 1);
 			}
 			$getID = $instance->getID();
@@ -296,10 +296,10 @@ abstract class Model
 				if (!is_array($attribute)) {
 					throw new Exception("You need to add the array data", 1);
 				}
-				if (empty($attribute)) {
+				if (empty ($attribute)) {
 					throw new Exception("You need to put non-empty array data", 1);
 				}
-				if (!isset($attribute[$getID])) {
+				if (!isset ($attribute[$getID])) {
 					throw new Exception("You don't have the primary id data to update", 1);
 				}
 				$i++;
@@ -313,7 +313,7 @@ abstract class Model
 						$updatedIds[$i . '0'] = $attribute[$getID];
 						$updatedBindValues[$field][$i . '0'] = $attribute[$getID];
 						$updatedBindValues[$field][$i . $j] = $value;
-						if (!isset($updatedFields[$field])) {
+						if (!isset ($updatedFields[$field])) {
 							$updatedFields[$field] = $field . ' = CASE ';
 						}
 						$updatedFields[$field] .= ' WHEN ' . $getID . ' = ? THEN ?';
@@ -346,13 +346,13 @@ abstract class Model
 		try {
 			self::$caller = getCallerInfo();
 			self::checkBoot();
-			if (empty($attributes)) {
+			if (empty ($attributes)) {
 				throw new Exception("You need to put non-empty array data", 1);
 			}
 			self::boot();
 			$instance = self::$instance;
 			$arrayKeys = get_object_vars($instance);
-			if (empty($arrayKeys)) {
+			if (empty ($arrayKeys)) {
 				throw new Exception("You need to add column data", 1);
 			}
 			$getID = $instance->getID();
@@ -368,7 +368,7 @@ abstract class Model
 				if (!is_array($attribute)) {
 					throw new Exception("You need to add the array data", 1);
 				}
-				if (empty($attribute)) {
+				if (empty ($attribute)) {
 					throw new Exception("You need to put non-empty array data", 1);
 				}
 				$insertedData = [];
@@ -377,10 +377,10 @@ abstract class Model
 				unset($attribute['deleted_at']);
 				unset($attribute['updated_at']);
 				foreach ($arrayKeys as $key => $value) {
-					if (!isset($insertedFields[$key . ','])) {
+					if (!isset ($insertedFields[$key . ','])) {
 						$insertedFields[$key . ','] = NULL;
 					}
-					if (isset($attribute[$key])) {
+					if (isset ($attribute[$key])) {
 						$insertedData[$key] = $attribute[$key];
 					} elseif ($key == 'created_at') {
 						$insertedData[$key] = now();
@@ -408,13 +408,13 @@ abstract class Model
 		try {
 			self::$caller = getCallerInfo();
 			self::checkBoot();
-			if (empty($attribute)) {
+			if (empty ($attribute)) {
 				throw new Exception("You need to put non-empty array data", 1);
 			}
 			self::boot();
 			$instance = self::$instance;
 			$arrayKeys = get_object_vars($instance);
-			if (empty($arrayKeys)) {
+			if (empty ($arrayKeys)) {
 				throw new Exception("You need to add column data", 1);
 			}
 			$getID = $instance->getID();
@@ -422,17 +422,16 @@ abstract class Model
 				unset($arrayKeys[$getID]);
 			}
 			unset($arrayKeys['deleted_at']);
-			unset($arrayKeys['updated_at']);
 			$insertBindValues = [];
 			$insertedFields = [];
 			$insertedData = [];
 			foreach ($arrayKeys as $key => $value) {
-				if (!isset($insertedFields[$key . ','])) {
+				if (!isset ($insertedFields[$key . ','])) {
 					$insertedFields[$key . ','] = NULL;
 				}
-				if (isset($attribute[$key])) {
+				if (isset ($attribute[$key])) {
 					$insertedData[$key] = $attribute[$key];
-				} elseif ($key == 'created_at') {
+				} elseif ($key == 'created_at' || $key == 'updated_at') {
 					$insertedData[$key] = now();
 				} else {
 					$insertedData[$key] = $value;
@@ -472,21 +471,22 @@ abstract class Model
 		try {
 			self::$caller = getCallerInfo();
 			self::checkBoot();
-			if (empty($attribute)) {
+			if (empty ($attribute)) {
 				throw new Exception("You need to put non-empty array data", 1);
 			}
 			$getID = $this->getID();
 			$arrayKeys = get_object_vars($this);
-			if (empty($arrayKeys)) {
+			if (empty ($arrayKeys)) {
 				throw new Exception("You need to add column data", 1);
 			}
 			unset($arrayKeys[$getID]);
+			unset($arrayKeys['deleted_at']);
 			$updatedBindValues = [];
 			$updatedFields = NULL;
 			$insertedData = [];
 			foreach ($arrayKeys as $key => $value) {
 				$updatedFields .= $key . '=?,';
-				if (isset($attribute[$key])) {
+				if (isset ($attribute[$key])) {
 					$insertedData[$key] = $attribute[$key];
 				} elseif ($key == 'updated_at') {
 					$insertedData[$key] = now();
@@ -497,6 +497,9 @@ abstract class Model
 			$insertedArrayValues = array_values($insertedData);
 			$updatedBindValues = array_merge($updatedBindValues, $insertedArrayValues);
 			$updatedFields = substr($updatedFields, 0, -1);
+			if (property_exists($this, 'deleted_at')) {
+				$updatedFields .= ',deleted_at=NULL';
+			}
 			$stmt = $this->connectDatabase()->prepare("UPDATE " . $this->getTable() . " SET " . $updatedFields . " WHERE " . $getID . "=" . $this->{$getID});
 			bindValues($stmt, $updatedBindValues);
 			$stmt->execute();
@@ -603,6 +606,8 @@ abstract class Model
 			if (property_exists($this, 'deleted_at')) {
 				$stmt = $pdo->prepare("UPDATE " . $table . " SET deleted_at=NULL WHERE " . $id . "=" . $this->{$id});
 				$stmt->execute();
+			} else {
+				throw new Exception("You need to set deleted_at property in " . get_class($this));
 			}
 			self::makeObserver((string) get_class($this), 'restore', $this);
 		} catch (Exception $e) {
@@ -631,7 +636,7 @@ abstract class Model
 				}
 
 				foreach ($fields as $key => $field) {
-					if (strpos($field, '(') == FALSE && strpos($field, ')') == FALSE && !isset(self::$selectedFields[self::$className][$field])) {
+					if (strpos($field, '(') == FALSE && strpos($field, ')') == FALSE && !isset (self::$selectedFields[self::$className][$field])) {
 						$selectedField = function () use ($field) {
 							if (strpos($field, '.') !== FALSE) {
 								$getField = explode('.', $field);
@@ -721,8 +726,8 @@ abstract class Model
 			'addSelect' => FALSE,
 			'withTrashed' => FALSE,
 			'addTrashed' => FALSE,
-			'table' => $previousField !== NULL && isset($previousField['table']) ? $previousField['table'] : self::$table,
-			'select' => $previousField !== NULL && isset($previousField['table']) ? $previousField['table'] . '.*' : self::$table . '.*',
+			'table' => $previousField !== NULL && isset ($previousField['table']) ? $previousField['table'] : self::$table,
+			'select' => $previousField !== NULL && isset ($previousField['table']) ? $previousField['table'] . '.*' : self::$table . '.*',
 			'className' => NULL,
 			'object' => NULL,
 			'havingNumber' => NULL,
@@ -882,10 +887,10 @@ abstract class Model
 					throw new Exception("You can add only database operators in {$where} function", 1);
 				}
 
-				if (isset($parameters[1]) && in_array($parameters[1], databaseOperators()) && (isset($parameters[2]) || $parameters[2] == NULL)) {
+				if (isset ($parameters[1]) && in_array($parameters[1], databaseOperators()) && (isset ($parameters[2]) || $parameters[2] == NULL)) {
 					$operator = $parameters[1];
 					$value = $parameters[2];
-				} elseif ((isset($parameters[1]) && !in_array($parameters[1], databaseOperators()) || !isset($parameters[1])) && !isset($parameters[2])) {
+				} elseif ((isset ($parameters[1]) && !in_array($parameters[1], databaseOperators()) || !isset ($parameters[1])) && !isset ($parameters[2])) {
 					$value = $parameters[1];
 					$operator = '=';
 				}
@@ -1001,7 +1006,7 @@ abstract class Model
 
 	private static function getSubQueryLimit($where)
 	{
-		if (isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
+		if (isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
 			$limit = self::${$where}[self::$currentField . self::$currentSubQueryNumber]['limit'];
 			return $limit == NULL ? $limit : ' LIMIT ' . $limit;
 		}
@@ -1031,7 +1036,7 @@ abstract class Model
 	{
 		$string = NULL;
 		$i = 0;
-		if (isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
+		if (isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
 			$current = self::${$where}[self::$currentField . self::$currentSubQueryNumber];
 			if ($current['where'] !== NULL && is_array($current['where'])) {
 				$string = ' WHERE ';
@@ -1066,7 +1071,7 @@ abstract class Model
 			$string = ' WHERE ';
 
 			foreach (self::$where as $key => $value) {
-				if (isset(self::$whereSubQuery[$key . 'where'])) {
+				if (isset (self::$whereSubQuery[$key . 'where'])) {
 					// WHERE SUBQUERY //
 
 					$string .= $i == 0 ? $key . self::$operators[$key . 'where'] . $value : ' AND ' . $key . self::$operators[$key . 'where'] . $value;
@@ -1108,7 +1113,7 @@ abstract class Model
 	{
 		$string = NULL;
 		$i = 0;
-		if (isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
+		if (isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
 			$current = self::${$where}[self::$currentField . self::$currentSubQueryNumber];
 			if ($current['whereColumn'] !== NULL && is_array($current['whereColumn'])) {
 				foreach ($current['whereColumn'] as $key => $value) {
@@ -1130,7 +1135,7 @@ abstract class Model
 		$string = NULL;
 		if (self::$orWhere !== NULL) {
 			foreach (self::$orWhere as $key => $value) {
-				if (isset(self::$whereSubQuery[$key . 'orWhere'])) {
+				if (isset (self::$whereSubQuery[$key . 'orWhere'])) {
 					// OR WHERE SUBQUERY //
 					$string .= ' OR ' . $key . self::$operators[$key . 'orWhere'] . $value;
 				} else {
@@ -1146,7 +1151,7 @@ abstract class Model
 	private static function getSubQueryOrWhere($where)
 	{
 		$string = NULL;
-		if (isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
+		if (isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
 			$current = self::${$where}[self::$currentField . self::$currentSubQueryNumber];
 			if ($current['orWhere'] !== NULL && is_array($current['orWhere'])) {
 				foreach ($current['orWhere'] as $key => $value) {
@@ -1167,7 +1172,7 @@ abstract class Model
 		$i = 0;
 		if (self::$whereIn !== NULL) {
 			foreach (self::$whereIn as $key => $value) {
-				if (is_array($value) && !empty($value)) {
+				if (is_array($value) && !empty ($value)) {
 					$in = addArray($value);
 					$string .= $i == 0 && self::$where == NULL && self::$whereColumn == NULL && self::$addTrashed == FALSE ? ' WHERE ' . $key . ' IN (' . $in . ') ' : ' AND ' . $key . ' IN (' . $in . ') ';
 
@@ -1187,11 +1192,11 @@ abstract class Model
 	{
 		$string = NULL;
 		$i = 0;
-		if (isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
+		if (isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
 			$current = self::${$where}[self::$currentField . self::$currentSubQueryNumber];
 			if ($current['whereIn'] !== NULL && is_array($current['whereIn'])) {
 				foreach ($current['whereIn'] as $key => $value) {
-					if (is_array($value) && !empty($value)) {
+					if (is_array($value) && !empty ($value)) {
 						$in = addArray($value);
 						$string .= $i == 0 && $current['where'] == NULL && $current['whereColumn'] == NULL && $current['addTrashed'] == FALSE ? ' WHERE ' . $key . ' IN (' . $in . ') ' : ' AND ' . $key . ' IN (' . $in . ') ';
 
@@ -1216,7 +1221,7 @@ abstract class Model
 		$i = 0;
 		if (self::$whereNotIn !== NULL) {
 			foreach (self::$whereNotIn as $key => $value) {
-				if (is_array($value) && !empty($value)) {
+				if (is_array($value) && !empty ($value)) {
 					$in = addArray($value);
 					$string .= $i == 0 && self::$where == NULL && self::$whereColumn == NULL && self::$whereIn == NULL && self::$addTrashed == FALSE ?
 						' WHERE ' . $key . ' NOT IN (' . $in . ') ' : ' AND ' . $key . ' NOT IN (' . $in . ') ';
@@ -1236,11 +1241,11 @@ abstract class Model
 	{
 		$string = NULL;
 		$i = 0;
-		if (isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
+		if (isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
 			$current = self::${$where}[self::$currentField . self::$currentSubQueryNumber];
 			if ($current['whereNotIn'] !== NULL && is_array($current['whereNotIn'])) {
 				foreach ($current['whereNotIn'] as $key => $value) {
-					if (is_array($value) && !empty($value)) {
+					if (is_array($value) && !empty ($value)) {
 						$in = addArray($value);
 						$string .= $i == 0 && $current['where'] == NULL && $current['whereColumn'] && $current['whereIn'] == NULL && $current['addTrashed'] == FALSE ?
 							' WHERE ' . $key . ' NOT IN (' . $in . ') ' : ' AND ' . $key . ' NOT IN (' . $in . ') ';
@@ -1312,7 +1317,7 @@ abstract class Model
 
 	private static function getSubQueryOrder($where)
 	{
-		if (isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber]['order'])) {
+		if (isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber]['order'])) {
 			return self::${$where}[self::$currentField . self::$currentSubQueryNumber]['order'];
 		}
 	}
@@ -1410,7 +1415,7 @@ abstract class Model
 
 	private static function checkUnion()
 	{
-		return isset(self::$unionQuery[self::$currentUnionNumber]) && self::$unionQuery[self::$currentUnionNumber] !== NULL && self::$useUnionQuery[self::$currentUnionNumber] == TRUE;
+		return isset (self::$unionQuery[self::$currentUnionNumber]) && self::$unionQuery[self::$currentUnionNumber] !== NULL && self::$useUnionQuery[self::$currentUnionNumber] == TRUE;
 	}
 
 	private static function getQuery()
@@ -1439,13 +1444,13 @@ abstract class Model
 				$currentField = self::$currentField;
 				$currentSubQueryNumber = self::$currentSubQueryNumber;
 				if (
-					isset(self::${$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery']) &&
+					isset (self::${$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery']) &&
 					self::${$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] == TRUE
 				) {
 					throw new Exception("You are not allowed to use " . $union, 1);
 				}
 
-				$previousUnionQuery = isset(self::${$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery']) ?
+				$previousUnionQuery = isset (self::${$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery']) ?
 					self::${$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] : NULL;
 				$previousField = self::${$currentQuery}[$currentField . $currentSubQueryNumber];
 				if ($previousUnionQuery == NULL) {
@@ -1518,10 +1523,10 @@ abstract class Model
 	{
 		$class = get_called_class();
 		$selectedValues = [];
-		if (!empty(self::$selectedFields) && isset(self::$selectedFields[$class]) && self::$select !== self::$table . '.*' && self::$select !== NULL) {
+		if (!empty (self::$selectedFields) && isset (self::$selectedFields[$class]) && self::$select !== self::$table . '.*' && self::$select !== NULL) {
 			// FOR ADD SELECT WITH OR WITHOUT SELECT
 			foreach (get_object_vars($this) as $key => $value) {
-				if (!isset(self::$selectedFields[$class][$key])) {
+				if (!isset (self::$selectedFields[$class][$key])) {
 					unset($this->{$key});
 				}
 			}
@@ -1542,10 +1547,10 @@ abstract class Model
 			// 		$this->{$key}=$value;
 			// 	}
 			// }
-		} elseif (self::$select == NULL && !empty(self::$selectedFields) && isset(self::$selectedFields[$class])) {
+		} elseif (self::$select == NULL && !empty (self::$selectedFields) && isset (self::$selectedFields[$class])) {
 			// FOR ADD ONLY SELECT 
 			foreach (get_object_vars($this) as $key => $value) {
-				if (isset(self::$selectedFields[$class][$key])) {
+				if (isset (self::$selectedFields[$class][$key])) {
 					$this->{$key} = $value;
 				} else {
 					unset($this->{$key});
@@ -1556,7 +1561,7 @@ abstract class Model
 
 	private static function checkSubQuery($where)
 	{
-		return isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber]);
+		return isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber]);
 	}
 
 	private static function makeMainSubQuery($where, $mainSQL)
@@ -1573,7 +1578,7 @@ abstract class Model
 			self::makeDefaultSubQueryData();
 		}
 
-		if (isset(self::${$where}[$currentField . $currentSubQueryNumber])) {
+		if (isset (self::${$where}[$currentField . $currentSubQueryNumber])) {
 			unset(self::${$where}[$currentField . $currentSubQueryNumber]);
 		}
 	}
@@ -1581,8 +1586,8 @@ abstract class Model
 	private static function makeSubQuery($where)
 	{
 		if (
-			isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber . 'unionQuery']) &&
-			isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber . 'unableUnionQuery']) &&
+			isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber . 'unionQuery']) &&
+			isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber . 'unableUnionQuery']) &&
 			self::${$where}[self::$currentField . self::$currentSubQueryNumber . 'unableUnionQuery'] == FALSE
 		) {
 			$currentField = self::$currentField;
@@ -1595,7 +1600,7 @@ abstract class Model
 			self::makeDefaultSubQueryData();
 			unset(self::${$where}[$currentField . $currentSubQueryNumber . 'unionQuery']);
 			unset(self::${$where}[$currentField . $currentSubQueryNumber . 'unableUnionQuery']);
-			if (isset(self::${$where}[$currentField . $currentSubQueryNumber])) {
+			if (isset (self::${$where}[$currentField . $currentSubQueryNumber])) {
 				unset(self::${$where}[$currentField . $currentSubQueryNumber]);
 			}
 		} else {
@@ -1907,7 +1912,7 @@ abstract class Model
 		try {
 			checkClass($class);
 			self::checkBoot();
-			if (isset($this->{$field})) {
+			if (isset ($this->{$field})) {
 				return $class::findBy($referField, $this->{$field});
 			}
 			throw new Exception($field . ' is not available', 1);
@@ -1921,7 +1926,7 @@ abstract class Model
 		try {
 			checkClass($class);
 			self::checkBoot();
-			if (isset($this->{$referField})) {
+			if (isset ($this->{$referField})) {
 				$classObject = new $class;
 				return $class::where($classObject->getTable() . '.' . $field, $this->{$referField});
 			}

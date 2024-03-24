@@ -141,6 +141,10 @@ $connector->selectConnection('mysql');
 
 <i>R means required</i>
 
+## Table Structure
+
+If you have the column named "deleted_at", be sure that the column is NULLABLE column.
+
 ## Create Model From Commandline
 
 Firstly you need to created the file named "ichi" under your project folder and use the below code in this file
