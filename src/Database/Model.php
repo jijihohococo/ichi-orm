@@ -702,7 +702,7 @@ abstract class Model
 		return self::$instance;
 	}
 
-	public static function skip(int $offset)
+	public static function offset(int $offset)
 	{
 		self::$caller = getCallerInfo();
 		self::checkInstance();
