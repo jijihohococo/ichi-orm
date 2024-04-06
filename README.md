@@ -108,13 +108,13 @@ $connector->selectConnection('mysql');
 
 | Name                         | Description                                                    | Required |
 |------------------------------|----------------------------------------------------------------|----------|
-| driver                       | Database driver name                                           | - [x]    |
-| dbname                       | Database name                                                  | - [x]    |
+| driver                       | Database driver name                                           |   [x]    |
+| dbname                       | Database name                                                  |   [x]    |
 | charset                      | Charset Font                                                   |          |
 | collation                    | Collation Font Setting for MySQL and Postgres SQL              |          |
-| host                         | Database Host Address                                          | - [x]    |
-| user_name                    | Database User Name                                             | - [x]    |
-| user_password                | Database User Password                                         | - [x]    |
+| host                         | Database Host Address                                          |   [x]    |
+| user_name                    | Database User Name                                             |   [x]    |
+| user_password                | Database User Password                                         |   [x]    |
 | unix_socket                  | Unix Socket For MySQL                                          |          |
 | port                         | Databse Port Number                                            |          |
 | strict (bool)                | Strict Mode In MySQL                                           |          |
