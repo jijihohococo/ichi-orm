@@ -106,39 +106,39 @@ $connector->selectConnection('mysql');
 
 ### Available Database Setting
 
-| Name                         | Description                                                    | Required |
-|------------------------------|----------------------------------------------------------------|----------|
-| driver                       | Database driver name                                           |   [x]    |
-| dbname                       | Database name                                                  |   [x]    |
-| charset                      | Charset Font                                                   |          |
-| collation                    | Collation Font Setting for MySQL and Postgres SQL              |          |
-| host                         | Database Host Address                                          |   [x]    |
-| user_name                    | Database User Name                                             |   [x]    |
-| user_password                | Database User Password                                         |   [x]    |
-| unix_socket                  | Unix Socket For MySQL                                          |          |
-| port                         | Databse Port Number                                            |          |
-| strict (bool)                | Strict Mode In MySQL                                           |          |
-| time_zone                    | Database Time Zone in MySQL and Postgres SQL                   |          |
-| isolation_level              | To set Isolation Level in MySQL                                |          |
-| modes (array)                | To set sql_mode in MySQL                                       |          |
-| synchronous_commit           | To set Synchronous Commit in Postgres SQL                      |          |
-| sslmode                      | To set SSL Mode in Postgres SQL                                |          |
-| sslcert                      | To set SSL Certificate in Postgres SQL                         |          |
-| sslkey                       | To set SSL Key in Postgres SQL                                 |          |
-| sslrootcert                  | To set SSL Root Certificate in Postgres SQL                    |          |
-| readOnly (bool)              | True To set ApplicationIntent to ReadOnly in MS SQL Server     |          |
-| pooling (bool)               | True To set ConnectionPooling to true in MS SQL Server         |          |
-| application_name             | To set APP in MS SQL Server OR application name in Postgres SQL|          |
-| encrypt                      | To set ENCRYPT in MS SQL Server                                |          |
-| trust_server_certificate     | To set TrustServerCertificate in MS SQL Server                 |          |
-| multiple_active_result_sets  | To set MultipleActiveResultSets in MS SQL Server               |          |
-| transaction_isolation        | To set TransactionIsolation in MS SQL Server                   |          |
-| multi_subnet_failover        | To set MultiSubnetFailover in MS SQL Server                    |          |
-| column_encryption            | To set ColumnEncryption in MS SQL Server                       |          |
-| key_store_authentication     | To set KeyStoreAuthentication in MS SQL Server                 |          |
-| key_store_principal_id       | TO set KeyStorePrincipalId in MS SQL Server                    |          |
-| key_store_secret             | To set KeyStoreSecret in MS SQL Server                         |          |
-| login_timeout                | To set LoginTimeout in MS SQL Server                           |          |
+| Name                         | Description                                                    | Required                   |
+|------------------------------|----------------------------------------------------------------|----------------------------|
+| driver                       | Database driver name                                           | &check;                    |
+| dbname                       | Database name                                                  | &check;                    |
+| charset                      | Charset Font                                                   |                            |
+| collation                    | Collation Font Setting for MySQL and Postgres SQL              |                            |
+| host                         | Database Host Address                                          | &check;                    |
+| user_name                    | Database User Name                                             | &check;                    |
+| user_password                | Database User Password                                         | &check;                    |
+| unix_socket                  | Unix Socket For MySQL                                          |                            |
+| port                         | Databse Port Number                                            |                            |
+| strict (bool)                | Strict Mode In MySQL                                           |                            |
+| time_zone                    | Database Time Zone in MySQL and Postgres SQL                   |                            |
+| isolation_level              | To set Isolation Level in MySQL                                |                            |
+| modes (array)                | To set sql_mode in MySQL                                       |                            |
+| synchronous_commit           | To set Synchronous Commit in Postgres SQL                      |                            |
+| sslmode                      | To set SSL Mode in Postgres SQL                                |                            |
+| sslcert                      | To set SSL Certificate in Postgres SQL                         |                            |
+| sslkey                       | To set SSL Key in Postgres SQL                                 |                            |
+| sslrootcert                  | To set SSL Root Certificate in Postgres SQL                    |                            |
+| readOnly (bool)              | True To set ApplicationIntent to ReadOnly in MS SQL Server     |                            |
+| pooling (bool)               | True To set ConnectionPooling to true in MS SQL Server         |                            |
+| application_name             | To set APP in MS SQL Server OR application name in Postgres SQL|                            |
+| encrypt                      | To set ENCRYPT in MS SQL Server                                |                            |
+| trust_server_certificate     | To set TrustServerCertificate in MS SQL Server                 |                            |
+| multiple_active_result_sets  | To set MultipleActiveResultSets in MS SQL Server               |                            |
+| transaction_isolation        | To set TransactionIsolation in MS SQL Server                   |                            |
+| multi_subnet_failover        | To set MultiSubnetFailover in MS SQL Server                    |                            |
+| column_encryption            | To set ColumnEncryption in MS SQL Server                       |                            |
+| key_store_authentication     | To set KeyStoreAuthentication in MS SQL Server                 |                            |
+| key_store_principal_id       | TO set KeyStorePrincipalId in MS SQL Server                    |                            |
+| key_store_secret             | To set KeyStoreSecret in MS SQL Server                         |                            |
+| login_timeout                | To set LoginTimeout in MS SQL Server                           |                            |
 
 
 ## Table Structure
