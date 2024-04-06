@@ -729,6 +729,7 @@ abstract class Model
 			'operators' => NULL,
 			'order' => NULL,
 			'limit' => NULL,
+			'offset' => NULL,
 			'groupBy' => NULL,
 			'joinSQL' => NULL,
 			'addSelect' => FALSE,
