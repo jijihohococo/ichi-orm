@@ -11,7 +11,7 @@ abstract class Model
 
 	private static $limitOne = " LIMIT 1";
 
-	private static $instance, $getID, $table, $fields, $where, $whereColumn, $orWhere, $whereIn, $whereNotIn, $operators, $order, $limit, $groupBy, $joinSQL, $select, $addSelect, $withTrashed, $addTrashed, $className, $toSQL;
+	private static $instance, $getID, $table, $fields, $where, $whereColumn, $orWhere, $whereIn, $whereNotIn, $operators, $order, $limit, $offset, $groupBy, $joinSQL, $select, $addSelect, $withTrashed, $addTrashed, $className, $toSQL;
 	private static $numberOfSubQueries, $currentSubQueryNumber, $currentField, $whereSubQuery;
 	private static $subQuery;
 	private static $subQueries, $selectedFields = [];
@@ -701,6 +701,22 @@ abstract class Model
 		return self::$instance;
 	}
 
+	public static function skip(int $offset)
+	{
+		self::$caller = getCallerInfo();
+		self::checkInstance();
+		if (self::$currentSubQueryNumber == NULL) {
+			self::checkUnionQuery();
+			self::boot();
+			self::$offset = ' OFFSET ' . $offset;
+		} else {
+			$check = self::showCurrentSubQuery();
+			self::checkSubQueryUnionQuery($check);
+			self::${$check}[self::$currentField . self::$currentSubQueryNumber]['offset'] = $offset;
+		}
+		return self::$instance;
+	}
+
 	private static function makeSubQueryAttributes($previousField = NULL)
 	{
 		return [
@@ -995,11 +1011,23 @@ abstract class Model
 		return self::$limit;
 	}
 
+	private static function getOffset()
+	{
+		return self::$offset;
+	}
 	private static function getSubQueryLimit($where)
 	{
 		if (isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
 			$limit = self::${$where}[self::$currentField . self::$currentSubQueryNumber]['limit'];
 			return $limit == NULL ? $limit : ' LIMIT ' . $limit;
+		}
+	}
+
+	private static function getSubQueryOffset($where)
+	{
+		if (isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
+			$offset = self::${$where}[self::$currentField . self::$currentSubQueryNumber]['offset'];
+			return $offset == NULL ? $offset : ' OFFSET ' . $offset;
 		}
 	}
 
@@ -1611,12 +1639,14 @@ abstract class Model
 			self::getOrder() .
 			self::getGroupBy() .
 			self::getHaving() .
-			self::getLimit();
+			self::getLimit() .
+			self::getOffset();
 	}
 
 	private static function getSubQuery($where)
 	{
 		$limit = self::getSubQueryLimit($where);
+		$offset = self::getSubQueryOffset($where);
 		$result = self::getSubQuerySelect($where) .
 			self::getSubQueryWhere($where) .
 			self::getSubQueryWhereColumn($where) .
@@ -1626,7 +1656,7 @@ abstract class Model
 			self::getSubQueryOrder($where) .
 			self::getSubQueryGroupBy($where) .
 			self::getSubQueryHaving($where);
-		return $limit == NULL ? $result : "SELECT * FROM (" . $result . $limit . ") AS l" . self::getSubQueryLimitNumber();
+		return $limit == NULL ? $result : "SELECT * FROM (" . $result . $limit . $offset . ") AS l" . self::getSubQueryLimitNumber();
 	}
 
 	public static function toArray()
