@@ -1656,7 +1656,7 @@ abstract class Model
 			self::getSubQueryOrder($where) .
 			self::getSubQueryGroupBy($where) .
 			self::getSubQueryHaving($where);
-		return $limit == NULL ? $result : "SELECT * FROM (" . $result . $limit . $offset . ") AS l" . self::getSubQueryLimitNumber();
+		return $limit == NULL ? $result . $offset : "SELECT * FROM (" . $result . $limit . $offset . ") AS l" . self::getSubQueryLimitNumber();
 	}
 
 	public static function toArray()
