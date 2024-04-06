@@ -163,6 +163,7 @@ abstract class Model
 			self::$operators = NULL;
 			self::$order = NULL;
 			self::$limit = NULL;
+			self::$offset = NULL;
 			self::$groupBy = NULL;
 			self::$joinSQL = NULL;
 			self::$instance = new static;
@@ -1354,6 +1355,7 @@ abstract class Model
 			self::$operators =
 			self::$order =
 			self::$limit =
+			self::$offset =
 			self::$groupBy =
 			self::$joinSQL =
 			self::$addSelect =
@@ -1393,6 +1395,7 @@ abstract class Model
 			self::$operators =
 			self::$order =
 			self::$limit =
+			self::$offset =
 			self::$groupBy =
 			self::$joinSQL =
 			self::$select =
