@@ -187,7 +187,8 @@ abstract class Model
 			self::checkUnionQuery();
 			self::boot();
 			self::$groupBy = self::$groupByString . $groupBy;
-		} else {
+		}
+		if (self::$currentSubQueryNumber !== NULL) {
 			$currentQuery = self::showCurrentSubQuery();
 			self::checkSubQueryUnionQuery($currentQuery);
 			self::makeSubQueryGroupBy($currentQuery, $groupBy);
@@ -209,7 +210,8 @@ abstract class Model
 			self::$havingOperator[self::$havingNumber] = $operator;
 			self::$havingValue[self::$havingNumber] = $value;
 			self::$havingNumber++;
-		} else {
+		}
+		if (self::$currentSubQueryNumber !== NULL) {
 			$currentQuery = self::showCurrentSubQuery();
 			self::checkSubQueryUnionQuery($currentQuery);
 			self::makeSubQueryHaving($currentQuery, $field, $operator, $value);
@@ -671,7 +673,8 @@ abstract class Model
 
 				if ($addSelectCheck == TRUE) {
 					self::addCommaToSubQuerySelect($check);
-				} else {
+				}
+				if ($addSelectCheck == FALSE) {
 					self::makeNullToSubQuerySelect($check);
 				}
 
@@ -708,7 +711,8 @@ abstract class Model
 			self::checkUnionQuery();
 			self::boot();
 			self::$limit = ' LIMIT ' . $limit;
-		} else {
+		}
+		if (self::$currentSubQueryNumber !== NULL) {
 			$check = self::showCurrentSubQuery();
 			self::checkSubQueryUnionQuery($check);
 			self::${$check}[self::$currentField . self::$currentSubQueryNumber]['limit'] = $limit;
@@ -725,7 +729,8 @@ abstract class Model
 			self::checkUnionQuery();
 			self::boot();
 			self::$offset = ' OFFSET ' . $offset;
-		} else {
+		}
+		if (self::$currentSubQueryNumber !== NULL) {
 			$check = self::showCurrentSubQuery();
 			self::checkSubQueryUnionQuery($check);
 			self::${$check}[self::$currentField . self::$currentSubQueryNumber]['offset'] = $offset;
@@ -921,9 +926,11 @@ abstract class Model
 
 				if (is_array($value)) {
 					throw new Exception("You can add single value or sub query function in {$where} function", 1);
-				} elseif ($value == NULL && $operator == '=') {
+				}
+				if ($value == NULL && $operator == '=') {
 					$operator = ' IS ';
-				} elseif ($value == NULL && ($operator == '!=' || $operator == '<>')) {
+				}
+				if ($value == NULL && ($operator == '!=' || $operator == '<>')) {
 					$operator = ' IS NOT ';
 				}
 
@@ -936,7 +943,8 @@ abstract class Model
 					if ($value !== NULL && $where !== 'whereColumn') {
 						self::$fields[] = $value;
 					}
-				} elseif (is_callable($value) && self::$currentSubQueryNumber == NULL) {
+				} 
+				if (is_callable($value) && self::$currentSubQueryNumber == NULL) {
 					self::checkUnionQuery();
 					self::boot();
 					self::$operators[$field . $where] = makeOperator($operator);
@@ -945,14 +953,16 @@ abstract class Model
 					self::$subQueries[$field . self::$currentSubQueryNumber] = self::$currentSubQueryNumber;
 					$value($query);
 					self::makeDefaultSubQueryData();
-				} elseif (!is_callable($value) && self::$currentSubQueryNumber !== NULL) {
+				}
+				if (!is_callable($value) && self::$currentSubQueryNumber !== NULL) {
 					$currentQuery = self::showCurrentSubQuery();
 					self::checkSubQueryUnionQuery($currentQuery);
 					self::setSubWhere($currentQuery, $value, $field, $operator, $where);
 					if ($value !== NULL && $where !== 'whereColumn') {
 						self::$fields[] = $value;
 					}
-				} elseif (is_callable($value) && self::$currentSubQueryNumber !== NULL) {
+				}
+				if (is_callable($value) && self::$currentSubQueryNumber !== NULL) {
 					$check = self::showCurrentSubQuery();
 					self::checkSubQueryUnionQuery($check);
 					self::${$check}[self::$currentField . self::$currentSubQueryNumber]['operators'][$field . $where] = makeOperator($operator);
@@ -984,7 +994,8 @@ abstract class Model
 				if ($value !== NULL) {
 					self::$fields[] = $value;
 				}
-			} elseif (is_callable($value) && self::$currentSubQueryNumber == NULL) {
+			} 
+			if (is_callable($value) && self::$currentSubQueryNumber == NULL) {
 				self::checkUnionQuery();
 				self::boot();
 				$query = self::$instance;
@@ -992,14 +1003,16 @@ abstract class Model
 				self::$subQueries[$field . self::$currentSubQueryNumber] = self::$currentSubQueryNumber;
 				$value($query);
 				self::makeDefaultSubQueryData();
-			} elseif ((is_array($value) || $value == NULL) && self::$currentSubQueryNumber !== NULL) {
+			} 
+			if ((is_array($value) || $value == NULL) && self::$currentSubQueryNumber !== NULL) {
 				$currentQuery = self::showCurrentSubQuery();
 				self::checkSubQueryUnionQuery($currentQuery);
 				self::setSubWhereIn($currentQuery, $value, $field, $whereIn);
 				if ($value !== NULL) {
 					self::$fields[] = $value;
 				}
-			} elseif (is_callable($value) && self::$currentSubQueryNumber !== NULL) {
+			} 
+			if (is_callable($value) && self::$currentSubQueryNumber !== NULL) {
 				$currentQuery = self::showCurrentSubQuery();
 				self::checkSubQueryUnionQuery($currentQuery);
 				self::makeSubQueryInSubQuery($whereIn, $value, $field, $currentQuery);
@@ -1157,7 +1170,8 @@ abstract class Model
 					$string .= $i == 0 && $current['where'] == NULL && $current['addTrashed'] == FALSE ? ' WHERE ' . $result : ' AND ' . $result;
 					$i++;
 				}
-			} elseif ($current['whereColumn'] !== NULL && !is_array($current['whereColumn'])) {
+			} 
+			if ($current['whereColumn'] !== NULL && !is_array($current['whereColumn'])) {
 				$currentField = getCurrentField(self::$subQueries, self::$currentField, self::$currentSubQueryNumber);
 				$result = $currentField . $current['operators'][$currentField . 'whereColumn'] . ' (' . $current['whereColumn'] . ') ';
 				$string .= $current['where'] == NULL && $current['addTrashed'] == FALSE ? ' WHERE ' . $result : ' AND ' . $result;
@@ -1194,7 +1208,8 @@ abstract class Model
 
 					$string .= ' OR ' . $key . $current['operators'][$key . 'orWhere'] . '?';
 				}
-			} elseif ($current['orWhere'] !== NULL && !is_array($current['orWhere'])) {
+			}
+			if ($current['orWhere'] !== NULL && !is_array($current['orWhere'])) {
 				$currentField = getCurrentField(self::$subQueries, self::$currentField, self::$currentSubQueryNumber);
 				$string .= ' OR ' . $currentField . $current['operators'][$currentField . 'orWhere'] . ' (' . $current['orWhere'] . ') ';
 			}
@@ -1312,7 +1327,8 @@ abstract class Model
 			self::checkUnionQuery();
 			self::boot();
 			self::$order = " ORDER BY " . $field . " " . $sort;
-		} else {
+		} 
+		if (self::$currentSubQueryNumber !== NULL) {
 			$currentQuery = self::showCurrentSubQuery();
 			self::checkSubQueryUnionQuery($currentQuery);
 			self::makeSubQueryOrderBy($currentQuery, $field, $sort);
@@ -1338,7 +1354,8 @@ abstract class Model
 			self::boot();
 			$field = $field == null ? self::$instance->getID() : $field;
 			self::$order = " ORDER BY " . self::$table . '.' . $field . " DESC";
-		} else {
+		}
+		if (self::$currentSubQueryNumber !== NULL) {
 			$currentQuery = self::showCurrentSubQuery();
 			self::checkSubQueryUnionQuery($currentQuery);
 			self::makeSubQueryOrderBy($currentQuery, $field, " DESC");
@@ -1477,7 +1494,8 @@ abstract class Model
 				self::boot();
 				self::$unionQuery[$uNumber] = $previousQuery . $union . $newUnionQuery;
 				return self::$instance;
-			} else {
+			}
+			if (self::$currentSubQueryNumber !== NULL) {
 				$currentQuery = self::showCurrentSubQuery();
 				$currentField = self::$currentField;
 				$currentSubQueryNumber = self::$currentSubQueryNumber;
@@ -1505,7 +1523,8 @@ abstract class Model
 					self::${$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = FALSE;
 					self::${$currentQuery}[$currentField . $currentSubQueryNumber] = self::makeSubQueryAttributes($previousField);
 
-				} else {
+				} 
+				if ($previousUnionQuery !== NULL) {
 					self::${$currentQuery}[self::$currentField . self::$currentSubQueryNumber . 'unableUnionQuery'] = TRUE;
 					unset(self::${$currentQuery}[self::$currentField]);
 					self::$subQueries[$currentField . $currentSubQueryNumber] = $currentSubQueryNumber;
@@ -1549,7 +1568,8 @@ abstract class Model
 					self::$unionQuery = NULL;
 				}
 				return $object;
-			} else {
+			} 
+			if (self::$currentSubQueryNumber !== NULL) {
 				self::makeSubQuery(self::showCurrentSubQuery());
 			}
 		} catch (Exception $e) {
@@ -1585,7 +1605,8 @@ abstract class Model
 			// 		$this->{$key}=$value;
 			// 	}
 			// }
-		} elseif (self::$select == NULL && !empty (self::$selectedFields) && isset (self::$selectedFields[$class])) {
+		}
+		if (self::$select == NULL && !empty (self::$selectedFields) && isset (self::$selectedFields[$class])) {
 			// FOR ADD ONLY SELECT 
 			foreach (get_object_vars($this) as $key => $value) {
 				if (isset (self::$selectedFields[$class][$key])) {
@@ -1772,7 +1793,8 @@ abstract class Model
 				self::$select = NULL;
 				self::$addSelect = TRUE;
 				return self::addingSelect($fields);
-			} else {
+			} 
+			if (self::$currentSubQueryNumber !== NULL) {
 				$check = self::showCurrentSubQuery();
 				self::checkSubQueryUnionQuery($check);
 				// If addOnlySelect function was used after using select or addSelect function //
@@ -1936,7 +1958,8 @@ abstract class Model
 				if (self::$currentSubQueryNumber == NULL) {
 					self::boot();
 					self::makeJoin($parameters, $join);
-				} else {
+				} 
+				if (self::$currentSubQueryNumber !== NULL) {
 					self::makeSubQueryJoin($parameters, $join);
 				}
 				return self::$instance;

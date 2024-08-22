@@ -37,7 +37,7 @@ abstract class ResourceCollection
 			self::$caller = getCallerInfo();
 			$newArray = [];
 			foreach ($objects as $key => $object) {
-				if (!object instanceof Model) {
+				if (!$object instanceof Model) {
 					throw new Exception("You need to extend JiJiHoHoCoCo\IchiORM\Database\Model abstract class.");
 				}
 				if ($object instanceof Model) {

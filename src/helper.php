@@ -104,7 +104,8 @@ if (!function_exists('bindValues')) {
 			foreach ($fields as $key => $field) {
 				if (!is_array($field)) {
 					$stmt->bindValue($key + 1, $field, getPDOBindDataType($field));
-				} elseif (is_array($field)) {
+				}
+				if (is_array($field)) {
 					return bindValues($stmt, $field);
 				}
 			}
