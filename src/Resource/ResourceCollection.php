@@ -16,14 +16,15 @@ abstract class ResourceCollection
 		try {
 			self::$caller = getCallerInfo();
 			$newArray = [];
+			if (!$model instanceof Model) {
+				throw new Exception("You need to extend JiJiHoHoCoCo\IchiORM\Database\Model abstract class.");
+			}
 			if ($model instanceof Model) {
 				foreach ($this->getSelectedResource($model) as $resourceKey => $newData) {
 					$model->{$resourceKey} = $newData;
 					$newArray[$resourceKey] = $model->{$resourceKey};
 				}
 				return $newArray;
-			} else {
-				throw new Exception("You need to extend JiJiHoHoCoCo\IchiORM\Database\Model abstract class.");
 			}
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
@@ -36,13 +37,14 @@ abstract class ResourceCollection
 			self::$caller = getCallerInfo();
 			$newArray = [];
 			foreach ($objects as $key => $object) {
-				if ($model instanceof Model) {
+				if (!object instanceof Model) {
+					throw new Exception("You need to extend JiJiHoHoCoCo\IchiORM\Database\Model abstract class.");
+				}
+				if ($object instanceof Model) {
 					foreach ($this->getSelectedResource($object) as $resourceKey => $newData) {
 						$object->{$resourceKey} = $newData;
 						$newArray[$key][$resourceKey] = $object->{$resourceKey};
 					}
-				} else {
-					throw new Exception("You need to extend JiJiHoHoCoCo\IchiORM\Database\Model abstract class.");
 				}
 			}
 			return $newArray;

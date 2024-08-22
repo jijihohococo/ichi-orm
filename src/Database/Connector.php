@@ -81,12 +81,13 @@ class Connector
 		try {
 			self::$caller = getCallerInfo();
 			$this->boot();
+			if (!array_key_exists($connection, $this->connections)) {
+				throw new Exception("You are connecting to unavialble database connection", 1);
+			}
 			if (array_key_exists($connection, $this->connections)) {
 				$resultConnection = isset($this->connections[$connection]['driver']) ? $this->connections[$connection] + $config : $config;
 				$this->pdos[$connection] = $this->getPDO($resultConnection);
 				self::$instance = $this;
-			} else {
-				throw new Exception("You are connecting to unavialble database connection", 1);
 			}
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
@@ -98,10 +99,11 @@ class Connector
 	{
 		try {
 			self::$caller = getCallerInfo();
+			if (!isset($this->pdos[$connection])) {
+				throw new Exception("Your database connection is unavailable", 1);
+			}
 			if (isset($this->pdos[$connection])) {
 				self::$pdo = $this->pdos[$connection];
-			} else {
-				throw new Exception("Your database connection is unavailable", 1);
 			}
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));

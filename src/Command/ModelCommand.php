@@ -245,16 +245,19 @@ class " . $createdFile . " extends ResourceCollection{
 					file_put_contents($baseDir . '/' . $this->createdFile . '.php', $createdFileContent, LOCK_EX);
 					return $this->success($this->createdFile, $createdOption);
 
-				} elseif ($count == 1 && $inputFile[0] !== NULL && file_exists($baseDir . '/' . $inputFile[0] . '.php')) {
+				} 
+				if ($count == 1 && $inputFile[0] !== NULL && file_exists($baseDir . '/' . $inputFile[0] . '.php')) {
 					$this->createdFile = $inputFile[0];
 
 					return $this->alreadyHave($this->createdFile, $createdOption);
 
-				} elseif ($count > 1 && file_exists($baseDir . '/' . implode('/', $inputFile) . '.php')) {
+				} 
+				if ($count > 1 && file_exists($baseDir . '/' . implode('/', $inputFile) . '.php')) {
 					$this->createdFile = implode('/', $inputFile);
 					return $this->alreadyHave($this->createdFile, $createdOption);
 
-				} elseif ($count > 1 && !file_exists($baseDir . '/' . implode('/', $inputFile) . '.php')) {
+				} 
+				if ($count > 1 && !file_exists($baseDir . '/' . implode('/', $inputFile) . '.php')) {
 					$this->createdFile = $inputFile[$count - 1];
 					unset($inputFile[$count - 1]);
 					$currentFolder = NULL;

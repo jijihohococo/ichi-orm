@@ -11,13 +11,14 @@ abstract class CacheAbstract
 
 	public function remember(string $key, $data, int $expiredTime = NULL)
 	{
+		if ($this->cachedObject->get($key)) {
+			return $this->get($key);
+		}
 		if (!$this->cachedObject->get($key)) {
 			$data = $this->getData($data);
 			$this->getData = TRUE;
 			$this->set($key, $data, $expiredTime);
 			return $data;
-		} else {
-			return $this->get($key);
 		}
 	}
 

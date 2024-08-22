@@ -553,6 +553,10 @@ abstract class Model
 		}
 	}
 
+	private function getDeleteSQL(string $table, string $id) {
+		return "DELETE FROM " . $table . " WHERE " . $id . "= ?";
+	}
+
 	public function delete()
 	{
 		try {
@@ -561,13 +565,14 @@ abstract class Model
 			$id = $this->getID();
 			$table = $this->getTable();
 			$pdo = $this->connectDatabase();
-			if (property_exists($this, 'deleted_at')) {
-				$stmt = $pdo->prepare("UPDATE " . $table . " SET deleted_at='" . now() . "' WHERE " . $id . "=" . $this->{$id});
-				$stmt->execute();
-			} else {
-				$stmt = $pdo->prepare("DELETE FROM " . $table . " WHERE " . $id . "=" . $this->{$id});
-				$stmt->execute();
-			}
+			$updateSQL = "UPDATE " . $table . " SET deleted_at='" . now() . "' WHERE " . $id . "= ?";
+			$deleteSQL = $this->getDeleteSQL($table, $id);
+			$sql = property_exists($this, 'deleted_at') ? $updateSQL : $deleteSQL;
+			$stmt = $pdo->prepare($sql);
+			bindValues($stmt, [
+				0 => $this->{$id}
+			]);
+			$stmt->execute();
 			self::makeObserver((string) get_class($this), 'delete', $this);
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
@@ -581,9 +586,14 @@ abstract class Model
 			self::checkBoot();
 			$id = $this->getID();
 			$table = $this->getTable();
-			$stmt = $this->connectDatabase()->prepare("DELETE FROM " . $table . " WHERE " . $id . '=' . $this->{$id});
-			self::makeObserver((string) get_class($this), 'forceDelete', $this);
+			$pdo = $this->connectDatabase();
+			$sql = $this->getDeleteSQL($table, $id);
+			$stmt = $pdo->prepare($sql);
+			bindValues($stmt, [
+				0 => $this->{$id}
+			]);
 			$stmt->execute();
+			self::makeObserver((string) get_class($this), 'forceDelete', $this);
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
@@ -597,10 +607,15 @@ abstract class Model
 			$id = $this->getID();
 			$pdo = $this->connectDatabase();
 			$table = $this->getTable();
-			if (property_exists($this, 'deleted_at')) {
-				$stmt = $pdo->prepare("UPDATE " . $table . " SET deleted_at=NULL WHERE " . $id . "=" . $this->{$id});
-				$stmt->execute();
+			if (!property_exists($this, 'deleted_at')) {
+				throw new Exception($table . " does not have deleted_at column for soft deleting");
 			}
+			$sql = "UPDATE " . $table . " SET deleted_at=NULL WHERE " . $id . "= ?";
+			$stmt = $pdo->prepare($sql);
+			bindValues($stmt, [
+				0 => $this->{$id}
+			]);
+			$stmt->execute();
 			self::makeObserver((string) get_class($this), 'restore', $this);
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
