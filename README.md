@@ -8,48 +8,51 @@ This package is Open Source According to [MIT license](LICENSE.md)
 
 ## Table of Contents
 
-* [Installation](#installation)
-* [Set up Database Connection](#set-up-database-connection)
-* [Available Database Setting](#available-database-setting)
-* [Table Structure](#table-structure)
-* [Create Model From Commandline](#create-model-from-commandline)
-* [Configuration Table Name](#configuration-table-name)
-* [Configuration Primary Key](#configuration-primary-key)
-* [CRUD](#crud)
-	* [Create](#create)
-		* [Disable Auto increment Id](#disable-auto-increment-id)
-	* [Insert Multiple Rows In One Query](#insert-multiple-rows-in-one-query)
-	* [Retrieve](#retrieve)
-		* [Refers To](#refers-to)
-		* [Refers Many](#refers-many)
-	* [Update](#update)
-	* [Update Multiple Rows In One Query](#update-multiple-rows-in-one-query)
-	* [Delete](#delete)
-* [Querying](#querying)
-	* [SELECT](#select)
-	* [Getting Query Data](#getting-query-data)
-		* [Get](#get)
-		* [To Array](#to-array)
-		* [Get Query Data With Soft Deleted Data](#get-query-data-with-soft-deleted-data)
-	* [LIMIT](#limit)
-	* [WHERE](#where)
-	* [OR WHERE](#or-where)
-	* [WHERE IN](#where-in)
-	* [WHERE NOT IN](#where-not-in)
-	* [Join](#join)
-		* [Inner Join](#inner-join)
-		* [Left Join](#left-join)
-		* [Right Join](#right-join)
-	* [Union](#union)
-	* [Pagination](#pagination)
-		* [Database Pagination](#database-pagination)
-		* [Array Pagination](#array-pagination)
-	* [Subqueries](#subqueries)
-* [Using PDO Functions](#using-pdo-functions)
-* [Using Different Databases](#using-different-databases)
-* [JSON Response](#json-response)
-* [Caching](#caching)
-* [Observers](#observers)
+- [Ichi ORM](#ichi-orm)
+	- [License](#license)
+	- [Table of Contents](#table-of-contents)
+	- [Installation](#installation)
+	- [Set up Database Connection](#set-up-database-connection)
+		- [Available Database Setting](#available-database-setting)
+	- [Table Structure](#table-structure)
+	- [Create Model From Commandline](#create-model-from-commandline)
+	- [Configuration Table Name](#configuration-table-name)
+	- [Configuration Primary Key](#configuration-primary-key)
+	- [CRUD](#crud)
+		- [Create](#create)
+			- [Disable Auto increment Id](#disable-auto-increment-id)
+		- [Insert Multiple Rows In One Query](#insert-multiple-rows-in-one-query)
+		- [Retrieve](#retrieve)
+			- [Refers To](#refers-to)
+			- [Refers Many](#refers-many)
+		- [Update](#update)
+		- [Update Multiple Rows In One Query](#update-multiple-rows-in-one-query)
+		- [Delete](#delete)
+	- [Querying](#querying)
+		- [SELECT](#select)
+		- [Getting Query Data](#getting-query-data)
+			- [Get](#get)
+			- [To Array](#to-array)
+			- [Get Query Data With Soft Deleted Data](#get-query-data-with-soft-deleted-data)
+		- [LIMIT](#limit)
+		- [WHERE](#where)
+		- [OR WHERE](#or-where)
+		- [WHERE IN](#where-in)
+		- [WHERE NOT IN](#where-not-in)
+		- [Join](#join)
+			- [Inner Join](#inner-join)
+			- [Left Join](#left-join)
+			- [Right Join](#right-join)
+		- [Union](#union)
+		- [Pagination](#pagination)
+			- [Database Pagination](#database-pagination)
+			- [Array Pagination](#array-pagination)
+		- [Subqueries](#subqueries)
+	- [Using PDO Functions](#using-pdo-functions)
+	- [Using Different Databases](#using-different-databases)
+	- [JSON Response](#json-response)
+	- [Caching](#caching)
+	- [Observers](#observers)
 
 ## Installation
 
@@ -67,7 +70,7 @@ Firstly, you need to declare your database driver like below.
 
 use JiJiHoHoCoCo\IchiORM\Database\Connector;
 
-$connector=new Connector;
+$connector = new Connector;
 $connector->createConnection('mysql',[
 	'dbname' => 'database_name',
 	'charset' => 'utf8mb4',
@@ -158,7 +161,7 @@ require __DIR__.'/vendor/autoload.php';
 use JiJiHoHoCoCo\IchiORM\Command\ModelCommand;
 
 
-$modelCommand=new ModelCommand;
+$modelCommand = new ModelCommand;
 $modelCommand->run(__DIR__,$argv);
 
 ```
@@ -176,7 +179,7 @@ The default file folder is "app/Models". So after making command, the model you 
 
 ```php
 
-$modelCommand=new ModelCommand;
+$modelCommand = new ModelCommand;
 $modelCommand->setPath('new_app/Models');
 $modelCommand->run(__DIR__,$argv);
 
@@ -292,10 +295,10 @@ If you want to insert multiple rows in one query you can do according to below c
 ```php
 use App\Models\Blog;
 
-$contents=$_REQUEST['content'];
-$insertBlogs=[];
+$contents = $_REQUEST['content'];
+$insertBlogs = [];
 foreach ($contents as $key => $content) {
-	$insertBlogs[]=[
+	$insertBlogs[] = [
 		'content' => $content,
 		'author_id' => $_REQUEST['author_id'][$key]
 	];
@@ -364,9 +367,9 @@ You can get parent data as single object in your controller or class.
 ```php
 use App\Models\Blog;
 
-$blogObject=Blog::find(1);
-$authorObject=$blogObject->author();
-$authorId=$authorObject->id;
+$blogObject = Blog::find(1);
+$authorObject = $blogObject->author();
+$authorId = $authorObject->id;
 ```
 
 <b>You don't need to worry about null. It has null safety.</b>
@@ -423,7 +426,7 @@ You can get child data as object array in your controller or class.
 ```php
 use App\Models\Author;
 
-$authorObject=Author::find(1);
+$authorObject = Author::find(1);
 $blogs=$authorObject->blogs();
 ```
 
@@ -451,12 +454,12 @@ If you want to update multiple rows in one query you can do according to below c
 ```php
 use App\Models\Blog;
 
-$blogs=Blog::get();
-$updateBlogs=[];
+$blogs = Blog::get();
+$updateBlogs = [];
 
 foreach($blogs as $key => $blog){
 
-	$updateBlogs[]=[
+	$updateBlogs[] = [
 		'content' => $_REQUEST['content'][$key],
 		'author_id' => $_REQUEST['author_id'][$key],
 	];
@@ -524,7 +527,7 @@ You can get your query data with "get()" and "toArray()" functions.
 <b>You can call relationship functions directly with the object in the loop because "get()" function outputs the object array</b>
 
 ```php
-$blogs=Blog::select(['id','content'])->get();
+$blogs = Blog::select(['id','content'])->get();
 
 foreach($blogs as $blog){
 	echo $blog->id . '<br>';
@@ -549,7 +552,7 @@ Blog::get();
 <b>You can't use "toArray" function in subquery.</b>
 
 ```php
-$blogs=Blog::select(['id','content'])->toArray();
+$blogs = Blog::select(['id','content'])->toArray();
 
 foreach($blogs as $blog){
 	echo $blog['id'] . '<br>';
@@ -766,12 +769,12 @@ So, you can use server pagination into your frontend (like Vue and React) with t
 You can paginate your query result like that
 
 ```php
-$paginatedBlogs=Blog::whereIn('id',[1,2,3,4,5])->paginate();
+$paginatedBlogs = Blog::whereIn('id',[1,2,3,4,5])->paginate();
 ```
 You can customize the number of paginated data by
 
 ```php
-$paginatedBlogs=Blog::whereIn('id',[1,2,3,4,5])->paginate(12);
+$paginatedBlogs = Blog::whereIn('id',[1,2,3,4,5])->paginate(12);
 ```
 You can get paginated data like below. The data in "data" array key is object array.
 
@@ -802,9 +805,9 @@ You can paginate your array like below.
 ```php
 use JiJiHoHoCoCo\IchiORM\Pagination\ArrayPagination;
 
-$blogs=['Blog One','Blog Two','Blog Three','Blog Four','Blog Five'];
+$blogs = ['Blog One','Blog Two','Blog Three','Blog Four','Blog Five'];
 
-$paginatedBlogs=(new ArrayPagination)->paginate($blogs);
+$paginatedBlogs = (new ArrayPagination)->paginate($blogs);
 
 ```
 
@@ -813,7 +816,7 @@ You can also use multidimensional array
 ```php
 use JiJiHoHoCoCo\IchiORM\Pagination\ArrayPagination;
 
-$blogs=[
+$blogs = [
 			[
 				'content' => 'Blog One',
 				'author_name' => 'John Doe'
@@ -836,14 +839,14 @@ $blogs=[
 			]
 ];
 
-$paginatedBlogs=(new ArrayPagination)->paginate($blogs);
+$paginatedBlogs = (new ArrayPagination)->paginate($blogs);
 
 ```
 
 You can customize the number of paginated data by
 
 ```php
-$paginatedBlogs=(new ArrayPagination)->paginate($blogs,2);
+$paginatedBlogs = (new ArrayPagination)->paginate($blogs,2);
 ```
 
 You can use pagination user interface in your frontend php file like
@@ -1002,7 +1005,7 @@ The default path for observer is "app/Resources". You can also change this in "i
 
 ```php
 
-$modelCommand=new ModelCommand;
+$modelCommand = new ModelCommand;
 $modelCommand->setResourcePath('new_app/Resources');
 $modelCommand->run(__DIR__,$argv);
 
@@ -1122,7 +1125,7 @@ And then, you can call the cache functions to store and get.
 use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 use App\Models\Blog;
 
-$blogs=CacheModel::remember('blogs',function(){
+$blogs = CacheModel::remember('blogs',function(){
 		 	return  Blog::whereIn('author_id',[1,2,3])->get();
 		 },100);
 ```
@@ -1145,7 +1148,7 @@ You can just save your data in your cache
 ```php
 use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 
-$blogs=CacheModel::save('blogs',function(){
+$blogs = CacheModel::save('blogs',function(){
 		 	return  Blog::whereIn('author_id',[1,2,3])->get();
 		 },100);
 ```
@@ -1155,7 +1158,7 @@ To get your cached data
 ```php
 use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 
-$cachedBlogs=CacheModel::get('blogs');
+$cachedBlogs = CacheModel::get('blogs');
 
 ```
 
@@ -1164,7 +1167,7 @@ You can get back your redis object to implement the functions of redis extension
 ```php
 use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 
-$redisObject=CacheModel::getRedis();
+$redisObject = CacheModel::getRedis();
 ```
 
 You can also get back your memcached object to implement the functions of memcached.
@@ -1172,7 +1175,7 @@ You can also get back your memcached object to implement the functions of memcac
 ```php
 use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 
-$memcachedObject=CacheModel::getMemcached();
+$memcachedObject = CacheModel::getMemcached();
 ```
 
 ## Observers
@@ -1230,7 +1233,7 @@ The default path for observer is "app/Observers". You can also change this in "i
 
 ```php
 
-$modelCommand=new ModelCommand;
+$modelCommand = new ModelCommand;
 $modelCommand->setObserverPath('new_app/Observers');
 $modelCommand->run(__DIR__,$argv);
 
