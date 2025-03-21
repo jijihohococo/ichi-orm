@@ -19,7 +19,7 @@ class ObserverSubject
 		$this->observers[$className][] = $modelObserver;
 	}
 
-	private function check(string $className)
+	public function check(string $className)
 	{
 		return isset($this->observers[$className]) && is_array($this->observers[$className]);
 	}
