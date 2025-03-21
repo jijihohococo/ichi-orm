@@ -88,8 +88,6 @@ abstract class Model
 	{
 		if (isset (self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
 			$current = self::${$where}[self::$currentField . self::$currentSubQueryNumber];
-
-			// $select=$current['select']!==NULL ? str_replace(self::$table.'.*', $current['table'].'.*', $current['select']) : NULL;
 			$select = $current['select'];
 			if ($current['selectQuery'] !== NULL) {
 				$i = 0;
@@ -312,7 +310,6 @@ abstract class Model
 				foreach ($attribute as $field => $value) {
 					$j++;
 					if (array_key_exists($field, $arrayKeys) && $field !== $getID) {
-						$updatedIds[$i . '0'] = $attribute[$getID];
 						$updatedBindValues[$field][$i . '0'] = $attribute[$getID];
 						$updatedBindValues[$field][$i . $j] = $value;
 						if (!isset ($updatedFields[$field])) {
@@ -794,7 +791,6 @@ abstract class Model
 	{
 		self::$currentSubQueryNumber = NULL;
 		self::$currentField = NULL;
-		//self::$numberOfSubQueries=NULL;
 	}
 
 	private static function showCurrentSubQuery()
@@ -1089,7 +1085,6 @@ abstract class Model
 			$current = self::${$where}[self::$currentField . self::$currentSubQueryNumber];
 			if ($current['where'] !== NULL && is_array($current['where'])) {
 				$string = ' WHERE ';
-				//$string=$current['select']==NULL ? NULL : ' WHERE ';
 				foreach ($current['where'] as $key => $value) {
 					$operator = $current['operators'][$key . 'where'];
 					if ($value == NULL) {
@@ -1580,7 +1575,6 @@ abstract class Model
 	public function __construct()
 	{
 		$class = get_called_class();
-		$selectedValues = [];
 		if (!empty (self::$selectedFields) && isset (self::$selectedFields[$class]) && self::$select !== self::$table . '.*' && self::$select !== NULL) {
 			// FOR ADD SELECT WITH OR WITHOUT SELECT
 			foreach (get_object_vars($this) as $key => $value) {
@@ -1588,23 +1582,6 @@ abstract class Model
 					unset($this->{$key});
 				}
 			}
-			// foreach (get_object_vars($this) as $key => $value) {
-			// 	if(isset(self::$selectedFields[$class][$key])){
-			// 		$selectedValues[$key]=$value;
-			// 	}
-			// 	unset($this->{$key});
-			// }
-			// $id=$this->getID();
-			// if($id=='id'){
-			// 	unset($this->{$id});
-			// }
-			// foreach(self::$selectedFields[$class] as $key => $value){
-			// 	if(isset($selectedValues[$key])){
-			// 		$this->{$key}=$selectedValues[$key];
-			// 	}else{
-			// 		$this->{$key}=$value;
-			// 	}
-			// }
 		}
 		if (self::$select == NULL && !empty (self::$selectedFields) && isset (self::$selectedFields[$class])) {
 			// FOR ADD ONLY SELECT 
