@@ -89,6 +89,11 @@ abstract class Model
 		return "DELETE FROM " . self::$table . self::getJoinSQL();
 	}
 
+	private static function makeRestore()
+	{
+		return "UPDATE " . self::$table . " SET deleted_at=NULL" . self::getJoinSQL();
+	}
+
 	private static function getSubQuerySelect($where)
 	{
 		if (isset(self::${$where}[self::$currentField . self::$currentSubQueryNumber])) {
@@ -525,7 +530,7 @@ abstract class Model
 			]);
 			$stmt->execute();
 			$instance = $stmt->fetchObject(self::$className);
-			self::disableBooting();
+			self::where($getId, $id);
 			return self::getObject($instance);
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
@@ -550,7 +555,7 @@ abstract class Model
 			]);
 			$stmt->execute();
 			$instance = $stmt->fetchObject(self::$className);
-			self::disableBooting();
+			self::where($field, $value);
 			return self::getObject($instance);
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
@@ -567,13 +572,14 @@ abstract class Model
 			}
 			if (self::$currentSubQueryNumber == NULL) {
 				self::boot();
+				$instance = self::$instance;
 				$mainSQL = self::deleteQuery();
 				$fields = self::getFields();
-				$stmt = self::$instance->connectDatabase()->prepare($mainSQL);
+				$stmt = $instance->connectDatabase()->prepare($mainSQL);
 				bindValues($stmt, $fields);
 				$stmt->execute();
 				self::disableBooting();
-				self::makeObserver((string) get_class(self::$instance), 'delete', self::$instance);
+				self::makeObserver((string) get_class($instance), 'delete', $instance);
 			}
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
@@ -590,13 +596,14 @@ abstract class Model
 			}
 			if (self::$currentSubQueryNumber == NULL) {
 				self::boot();
+				$instance = self::$instance;
 				$mainSQL = self::forceDeleteQuery();
 				$fields = self::getFields();
-				$stmt = self::$instance->connectDatabase()->prepare($mainSQL);
+				$stmt = $instance->connectDatabase()->prepare($mainSQL);
 				bindValues($stmt, $fields);
 				$stmt->execute();
 				self::disableBooting();
-				self::makeObserver((string) get_class(self::$instance), 'delete', self::$instance);
+				self::makeObserver((string) get_class($instance), 'delete', $instance);
 			}
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
@@ -607,20 +614,22 @@ abstract class Model
 	{
 		try {
 			self::$caller = getCallerInfo();
-			self::checkBoot();
-			$id = $this->getID();
-			$pdo = $this->connectDatabase();
-			$table = $this->getTable();
-			if (!property_exists($this, 'deleted_at')) {
-				throw new Exception($table . " does not have deleted_at column for soft deleting");
+			self::checkInstance();
+			if (self::$currentSubQueryNumber !== NULL) {
+				throw new Exception("restore function can't be used in subquery");
 			}
-			$sql = "UPDATE " . $table . " SET deleted_at=NULL WHERE " . $id . "= ?";
-			$stmt = $pdo->prepare($sql);
-			bindValues($stmt, [
-				0 => $this->{$id}
-			]);
-			$stmt->execute();
-			self::makeObserver((string) get_class($this), 'restore', $this);
+			if (self::$currentSubQueryNumber == NULL) {
+				self::boot();
+				self::$withTrashed = TRUE;
+				$instance = self::$instance;
+				$mainSQL = self::restoreQuery();
+				$fields = self::getFields();
+				$stmt = $instance->connectDatabase()->prepare($mainSQL);
+				bindValues($stmt, $fields);
+				$stmt->execute();
+				self::disableBooting();
+				self::makeObserver((string) get_class($instance), 'restore', $instance);
+			}
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
@@ -1494,6 +1503,14 @@ abstract class Model
 		return self::forceDeleteSQL();
 	}
 
+	private static function restoreQuery()
+	{
+		if (self::checkUnion()) {
+			throw new Exception("restore function can't be used in union");
+		}
+		return self::restoreSQL();
+	}
+
 	private static function makeUnionQuery($value, $union)
 	{
 		try {
@@ -1684,7 +1701,7 @@ abstract class Model
 	private static function deleteSQL()
 	{
 		$checkTrash = property_exists(static::class, 'deleted_at');
-		$updateSQL = "UPDATE " . self::$table . " SET deleted_at='" . now();
+		$updateSQL = "UPDATE " . self::$table . " SET deleted_at='" . now() . "'";
 		$deleteSQL = $checkTrash ? $updateSQL : self::makeDelete();
 		return $deleteSQL .
 			self::getWhere() .
@@ -1702,6 +1719,21 @@ abstract class Model
 	private static function forceDeleteSQL()
 	{
 		return self::makeDelete() .
+			self::getWhere() .
+			self::getWhereColumn() .
+			self::getWhereIn() .
+			self::getWhereNotIn() .
+			self::getOrWhere() .
+			self::getOrder() .
+			self::getGroupBy() .
+			self::getHaving() .
+			self::getLimit() .
+			self::getOffset();
+	}
+
+	private static function restoreSQL()
+	{
+		return self::makeRestore() .
 			self::getWhere() .
 			self::getWhereColumn() .
 			self::getWhereIn() .
