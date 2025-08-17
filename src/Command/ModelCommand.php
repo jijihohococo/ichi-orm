@@ -63,10 +63,9 @@ class ModelCommand
 namespace " . $this->getNamespace($defaulFolder) . ";
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
-class " . $createdFile . " extends Model{
-
-
-
+class " . $createdFile . " extends Model
+{
+	//
 }
 ";
 	}
@@ -81,31 +80,33 @@ class " . $createdFile . " extends Model{
 namespace " . $this->getNamespace($defaulFolder) . ";
 use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 
-class " . $createdFile . " implements Observer{
+class " . $createdFile . " implements Observer
+{
 
-
-	public function create(" . $variable . "){
-
+	public function create(" . $variable . ")
+	{
+		//
 	}
 
-
-	public function update(" . $variable . "){
-
+	public function update(" . $variable . ")
+	{
+		//
 	}
 
-	public function delete(" . $variable . "){
-
+	public function delete(" . $variable . ")
+	{
+		//
 	}
 
-	public function restore(" . $variable . "){
-
+	public function restore(" . $variable . ")
+	{
+		//
 	}
 
-	public function forceDelete(" . $variable . "){
-
+	public function forceDelete(" . $variable . ")
+	{
+		//
 	}
-
-
 }
 ";
 	}
@@ -118,13 +119,13 @@ class " . $createdFile . " implements Observer{
 namespace " . $this->getNamespace($defaulFolder) . ";
 use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
 
-class " . $createdFile . " extends ResourceCollection{
+class " . $createdFile . " extends ResourceCollection
+{
 
-	public function getSelectedResource(" . $variable . "){
-
-
+	public function getSelectedResource(" . $variable . ")
+	{
+		//
 	}
-
 }";
 	}
 
