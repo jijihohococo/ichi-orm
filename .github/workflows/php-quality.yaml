@@ -1,4 +1,4 @@
-name: PHP Quality Check (Auto-Fix Multi-Version)
+name: PHP Quality Check & Auto-Fix
 
 on:
   push:
@@ -8,12 +8,12 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  php-lint:
+  phpcbf-fix:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
         php-version: [7.3, 7.4, 8.0, 8.1, 8.2, 8.3]
+      fail-fast: false
 
     steps:
       - name: Checkout code
@@ -38,7 +38,7 @@ jobs:
       - name: Run PHPCBF (auto-fix issues)
         run: phpcbf --standard=PSR12 src/
 
-      - name: Commit and push fixes
+      - name: Commit and push PHPCBF fixes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -46,4 +46,4 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           git diff-index --quiet HEAD || git commit -m "PHPCBF: auto-fix coding standards (PHP ${{ matrix.php-version }})"
-          git push origin HEAD:${GITHUB_REF#refs/heads/}
+          git push origin HEAD:phpcbf-fix-${{ matrix.php-version }}
