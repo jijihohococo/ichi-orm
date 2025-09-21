@@ -8,8 +8,8 @@ use ReflectionMethod, Exception;
 class ObserverSubject
 {
 
-	private $observers = [];
-	private static $caller = [];
+    private $observers = [];
+    private static $caller = [];
 
 	public function attach(string $className, ModelObserver $modelObserver)
 	{

@@ -7,7 +7,7 @@ use Exception;
 
 abstract class ResourceCollection
 {
-	private static $caller = [];
+    private static $caller = [];
 
 	abstract protected function getSelectedResource($model);
 

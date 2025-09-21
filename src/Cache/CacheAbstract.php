@@ -5,9 +5,9 @@ namespace JiJiHoHoCoCo\IchiORM\Cache;
 abstract class CacheAbstract
 {
 
-	private $getData = FALSE;
+    private $getData = FALSE;
 
-	protected $cachedObject;
+    protected $cachedObject;
 
 	public function remember(string $key, $data, int $expiredTime = NULL)
 	{

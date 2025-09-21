@@ -7,8 +7,8 @@ use Exception;
 class CacheModel
 {
 
-	private static $redis, $memcached;
-	private static $caller = [];
+    private static $redis, $memcached;
+    private static $caller = [];
 
 	public static function setCacheObject($cacheObject)
 	{

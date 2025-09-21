@@ -7,19 +7,19 @@ use Exception;
 class ModelCommand
 {
 
-	private $path = 'app/Models';
-	private $observerPath = 'app/Observers';
-	private $resourcePath = 'app/Resources';
+    private $path = 'app/Models';
+    private $observerPath = 'app/Observers';
+    private $resourcePath = 'app/Resources';
 
-	private $modelCommandLine = 'make:model';
-	private $observerCommandLine = 'make:observer';
-	private $resourceCommandLine = 'make:resource';
+    private $modelCommandLine = 'make:model';
+    private $observerCommandLine = 'make:observer';
+    private $resourceCommandLine = 'make:resource';
 
-	private $green = "\033[0;32m";
-	private $red = "\033[01;31m";
-	private $end = " \033[0m";
+    private $green = "\033[0;32m";
+    private $red = "\033[01;31m";
+    private $end = " \033[0m";
 
-	private $createdFile;
+    private $createdFile;
 
 	public function setPath(string $path)
 	{
