@@ -174,7 +174,7 @@ abstract class Model
 			self::$offset = NULL;
 			self::$groupBy = NULL;
 			self::$joinSQL = NULL;
-			self::$instance = new static;
+			self::$instance = new $calledClass;
 			self::$className = $calledClass;
 			self::$getID = self::$instance->getID();
 			self::$table = self::$instance->getTable();
@@ -531,7 +531,9 @@ abstract class Model
 			$stmt->execute();
 			$instance = $stmt->fetchObject(self::$className);
 			self::where($getId, $id);
-			return self::getObject($instance);
+			$object = self::getObject($instance);
+			self::disableBooting();
+			return $object;
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
@@ -556,7 +558,9 @@ abstract class Model
 			$stmt->execute();
 			$instance = $stmt->fetchObject(self::$className);
 			self::where($field, $value);
-			return self::getObject($instance);
+			$object = self::getObject($instance);
+			self::disableBooting();
+			return $object;
 		} catch (Exception $e) {
 			return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
 		}
