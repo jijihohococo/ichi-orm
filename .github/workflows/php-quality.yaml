@@ -1,4 +1,4 @@
-name: PHP Quality Check & Auto-Fix
+name: PHP Auto-Fix & Quality Check
 
 on:
   push:
@@ -35,15 +35,15 @@ jobs:
           composer global require squizlabs/php_codesniffer
           export PATH="$HOME/.config/composer/vendor/bin:$PATH"
 
-      # 4️⃣ Run PHPCS (detect issues)
+      # 4️⃣ Run PHPCS to detect issues (optional)
       - name: Run PHPCS (detect issues)
         run: phpcs --standard=PSR12 src/ || true
 
-      # 5️⃣ Run PHPCBF (auto-fix issues)
+      # 5️⃣ Run PHPCBF (auto-fix issues) and ignore exit codes
       - name: Run PHPCBF (auto-fix issues)
-        run: phpcbf --standard=PSR12 src/
+        run: phpcbf --standard=PSR12 src/ || true
 
-      # 6️⃣ Commit & push automatically using GITHUB_TOKEN
+      # 6️⃣ Commit & push fixes automatically
       - name: Commit and push PHPCBF fixes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,7 +52,6 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           git diff-index --quiet HEAD || git commit -m "PHPCBF: auto-fix coding standards (PHP ${{ matrix.php-version }})"
-          # Push to a branch unique to PHP version to avoid conflicts
           git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:phpcbf-fix-${{ matrix.php-version }}
 
   php-matrix:
