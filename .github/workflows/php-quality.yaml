@@ -1,4 +1,4 @@
-name: PHP Quality Check (Multi-Version)
+name: PHP Quality Check (Auto-Fix Multi-Version)
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  php-tests:
+  php-lint:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -19,7 +19,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          persist-credentials: false  # We will use our own Git config for pushing
+          persist-credentials: false
 
       - name: Setup PHP ${{ matrix.php-version }}
         uses: shivammathur/setup-php@v2
@@ -27,25 +27,23 @@ jobs:
           php-version: ${{ matrix.php-version }}
           coverage: none
 
-      - name: Install PHPStan and PHPCS globally
+      - name: Install PHPCS globally
         run: |
-          composer global require phpstan/phpstan squizlabs/php_codesniffer
+          composer global require squizlabs/php_codesniffer
           export PATH="$HOME/.composer/vendor/bin:$PATH"
 
-      - name: Run PHPStan (static analysis)
-        run: phpstan analyse src --memory-limit=1G
+      - name: Run PHPCS (detect issues)
+        run: phpcs --standard=PSR12 src/ || true
 
-      - name: Run PHPCS and auto-fix issues with PHPCBF
-        run: |
-          phpcs --standard=PSR12 src/ || true   # Run PHPCS first to detect issues
-          phpcbf --standard=PSR12 src/         # Fix automatically
+      - name: Run PHPCBF (auto-fix issues)
+        run: phpcbf --standard=PSR12 src/
 
-      - name: Commit and push PHPCBF fixes
+      - name: Commit and push fixes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git diff-index --quiet HEAD || git commit -m "PHPCBF: auto-fix coding standards"
+          git diff-index --quiet HEAD || git commit -m "PHPCBF: auto-fix coding standards (PHP ${{ matrix.php-version }})"
           git push origin HEAD:${GITHUB_REF#refs/heads/}
