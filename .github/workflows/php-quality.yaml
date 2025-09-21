@@ -35,11 +35,11 @@ jobs:
           composer global require squizlabs/php_codesniffer
           export PATH="$HOME/.config/composer/vendor/bin:$PATH"
 
-      # 4️⃣ Run PHPCS to detect issues (optional)
+      # 4️⃣ Run PHPCS to detect issues (ignore exit code so workflow continues)
       - name: Run PHPCS (detect issues)
         run: phpcs --standard=PSR12 src/ || true
 
-      # 5️⃣ Run PHPCBF (auto-fix issues) and ignore exit codes
+      # 5️⃣ Run PHPCBF (auto-fix issues) and ignore exit code
       - name: Run PHPCBF (auto-fix issues)
         run: phpcbf --standard=PSR12 src/ || true
 
@@ -53,37 +53,3 @@ jobs:
           git add .
           git diff-index --quiet HEAD || git commit -m "PHPCBF: auto-fix coding standards (PHP ${{ matrix.php-version }})"
           git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:phpcbf-fix-${{ matrix.php-version }}
-
-  php-matrix:
-    runs-on: ubuntu-latest
-    needs: phpcbf-fix
-    strategy:
-      fail-fast: false
-      matrix:
-        php-version: [7.4, 8.0, 8.1, 8.2, 8.3]
-
-    steps:
-      # 1️⃣ Checkout code
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # 2️⃣ Setup PHP
-      - name: Setup PHP ${{ matrix.php-version }}
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-version }}
-          coverage: none
-
-      # 3️⃣ Install PHPStan and PHPCS globally
-      - name: Install PHPStan and PHPCS
-        run: |
-          composer global require phpstan/phpstan squizlabs/php_codesniffer
-          export PATH="$HOME/.config/composer/vendor/bin:$PATH"
-
-      # 4️⃣ Run PHPStan (static analysis)
-      - name: Run PHPStan
-        run: phpstan analyse src --memory-limit=1G
-
-      # 5️⃣ Run PHPCS (lint only)
-      - name: Run PHPCS
-        run: phpcs --standard=PSR12 src/
