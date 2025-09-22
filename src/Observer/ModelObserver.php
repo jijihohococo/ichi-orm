@@ -2,6 +2,6 @@
 
 namespace JiJiHoHoCoCo\IchiORM\Observer;
 
-interface ModelObserver{
-	
+interface ModelObserver
+{
 }
