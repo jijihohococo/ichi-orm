@@ -217,10 +217,10 @@ class " . $createdFile . " extends ResourceCollection
     {
 
         if (
-            count($argv) == 3 
+            count($argv) == 3
             && (
-                $argv[1] == $this->modelCommandLine 
-                || $argv[1] == $this->observerCommandLine 
+                $argv[1] == $this->modelCommandLine
+                || $argv[1] == $this->observerCommandLine
                 || $argv[1] == $this->resourceCommandLine
             )
         ) {
@@ -248,7 +248,7 @@ class " . $createdFile . " extends ResourceCollection
                 if ($count == 1 && $inputFile[0] !== null && !file_exists($baseDir . '/' . $inputFile[0] . '.php')) {
                     $this->createdFile = $inputFile[0];
                     $filename = $baseDir . '/' . $this->createdFile . '.php';
-                    if (!fopen($filename,'w')) {
+                    if (!fopen($filename, 'w')) {
                         die('Unable to create ' . $createdOption);
                     }
                     $createdFileContent = $this->checkContent($command, $defaulFolder, $this->createdFile);
