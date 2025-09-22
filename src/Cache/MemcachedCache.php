@@ -6,11 +6,8 @@ use Memcached;
 
 class MemcachedCache extends CacheAbstract
 {
-
-	public function __construct(Memcached $memcached)
-	{
-		$this->cachedObject = $memcached;
-	}
-
-
+    public function __construct(Memcached $memcached)
+    {
+        $this->cachedObject = $memcached;
+    }
 }

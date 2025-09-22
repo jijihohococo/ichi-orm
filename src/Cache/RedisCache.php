@@ -6,11 +6,8 @@ use Redis;
 
 class RedisCache extends CacheAbstract
 {
-
-	public function __construct(Redis $redis)
-	{
-		$this->cachedObject = $redis;
-	}
-
-
+    public function __construct(Redis $redis)
+    {
+        $this->cachedObject = $redis;
+    }
 }
