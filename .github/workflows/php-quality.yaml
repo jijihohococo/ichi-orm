@@ -43,14 +43,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
-          git diff-index --quiet HEAD || git commit -m "PHPCBF: auto-fix coding standards"
+          git diff-index --quiet HEAD || git commit -m "PHPCBF: auto-fix coding standards (PHP ${{ matrix.php-version }})"
+          # Determine correct branch
           BRANCH="${GITHUB_REF#refs/heads/}"
           if [ -n "${GITHUB_HEAD_REF}" ]; then
             BRANCH="${GITHUB_HEAD_REF}"
           fi
-          git fetch origin $BRANCH
-          git rebase origin/$BRANCH || true
-          git push --force-with-lease https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:$BRANCH
+
+          # Push fixes back to the branch
+          git push --force https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:$BRANCH
 
   # 🧪 Run PHPCS + PHPStan on multiple PHP versions
   php-quality:
