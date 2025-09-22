@@ -23,7 +23,8 @@ abstract class CacheAbstract
 
     public function set(string $key, $data, int $expiredTime = null)
     {
-        $this->cachedObject->set($key, serialize($this->getData == false ? $this->getData($data) : $data), $expiredTime);
+        $serializedData = serialize($this->getData == false ? $this->getData($data) : $data);
+        $this->cachedObject->set($key, $serializedData, $expiredTime);
     }
 
     public function get(string $key)
