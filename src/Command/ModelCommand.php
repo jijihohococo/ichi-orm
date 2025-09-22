@@ -216,7 +216,14 @@ class " . $createdFile . " extends ResourceCollection
     public function run(string $dir, array $argv)
     {
 
-        if (count($argv) == 3 && ($argv[1] == $this->modelCommandLine || $argv[1] == $this->observerCommandLine || $argv[1] == $this->resourceCommandLine)) {
+        if (
+            count($argv) == 3 
+            && (
+                $argv[1] == $this->modelCommandLine 
+                || $argv[1] == $this->observerCommandLine 
+                || $argv[1] == $this->resourceCommandLine
+            )
+        ) {
             $command = $argv[1];
             $createdOption = $this->checkOption($command);
             $defaulFolder = $this->checkPath($command);
@@ -240,9 +247,12 @@ class " . $createdFile . " extends ResourceCollection
 
                 if ($count == 1 && $inputFile[0] !== null && !file_exists($baseDir . '/' . $inputFile[0] . '.php')) {
                     $this->createdFile = $inputFile[0];
-                    fopen($baseDir . '/' . $this->createdFile . '.php', 'w') or die('Unable to create ' . $createdOption);
+                    $filename = $baseDir . '/' . $this->createdFile . '.php';
+                    if (!fopen($filename,'w')) {
+                        die('Unable to create ' . $createdOption);
+                    }
                     $createdFileContent = $this->checkContent($command, $defaulFolder, $this->createdFile);
-                    file_put_contents($baseDir . '/' . $this->createdFile . '.php', $createdFileContent, LOCK_EX);
+                    file_put_contents($filename, $createdFileContent, LOCK_EX);
                     return $this->success($this->createdFile, $createdOption);
                 }
                 if ($count == 1 && $inputFile[0] !== null && file_exists($baseDir . '/' . $inputFile[0] . '.php')) {
@@ -267,7 +277,10 @@ class " . $createdFile . " extends ResourceCollection
                         }
                     }
 
-                    fopen($currentFolder . '/' . $this->createdFile . '.php', 'w') or die('Unable to create ' . $createdOption);
+                    $filename = $currentFolder . '/' . $this->createdFile . '.php';
+                    if (!fopen($filename, 'w')) {
+                        die('Unable to create ' . $createdOption);
+                    }
                     $createdFileContent = $this->checkContent($command, $newCreatedFolder, $this->createdFile);
                     file_put_contents($currentFolder . '/' . $this->createdFile . '.php', $createdFileContent, LOCK_EX);
                     return $this->success($this->createdFile, $createdOption);
