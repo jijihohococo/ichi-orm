@@ -9,8 +9,10 @@ Exception;
 
 class Connector
 {
-    private $connections, $pdos = [];
-    private static $pdo, $instance = null;
+    private $connections = [];
+    private $pdos = [];
+    private static $pdo = null;
+    private static $instance = null;
     private static $caller = [];
 
     private function checkConnection($driver)

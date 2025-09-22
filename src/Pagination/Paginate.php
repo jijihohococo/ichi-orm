@@ -4,7 +4,10 @@ namespace JiJiHoHoCoCo\IchiORM\Pagination;
 
 class Paginate
 {
-    private $per_page, $pageCheck, $current_page, $start;
+    private $per_page;
+    private $pageCheck;
+    private $current_page;
+    private $start;
 
     public function setPaginateData(int $per_page)
     {
