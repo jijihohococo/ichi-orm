@@ -37,6 +37,7 @@ jobs:
 
       # 5️⃣ Commit & push fixes back to branch
       - name: Commit and push PHPCBF fixes
+        if: github.ref != 'refs/heads/main'  # optional: skip main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -44,13 +45,11 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           git diff-index --quiet HEAD || git commit -m "PHPCBF: auto-fix coding standards (PHP ${{ matrix.php-version }})"
-          # Determine the branch correctly
-          if [ -n "$GITHUB_HEAD_REF" ]; then
-            BRANCH="$GITHUB_HEAD_REF"   # PR branch
-          else
-            BRANCH="${GITHUB_REF#refs/heads/}"  # Push branch
+          # Determine correct branch for PR or push
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          if [ -n "${GITHUB_HEAD_REF}" ]; then
+            BRANCH="${GITHUB_HEAD_REF}"
           fi
-          # Force push fixes
           git push --force https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:$BRANCH
 
   # 🧪 Run PHPCS + PHPStan on multiple PHP versions
