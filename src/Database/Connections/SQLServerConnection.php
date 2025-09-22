@@ -2,102 +2,100 @@
 
 namespace JiJiHoHoCoCo\IchiORM\Database\Connections;
 
-use PDO, Exception;
+use PDO,
+
+Exception;
 
 class SQLServerConnection extends Connection
 {
+    protected function getDSN(array $config)
+    {
 
-	protected function getDSN(array $config)
-	{
+        if (!isset($config['dbname']) || !isset($config['host'])) {
+            throw new Exception("You must add database name and host for SQL Server Database Connection", 1);
+        }
 
-		if (!isset($config['dbname']) || !isset($config['host'])) {
+        switch ($config['driver']) {
+            case 'sqlsrv':
+                return $this->getSqlSrvDsn($config);
+                break;
+        }
 
-			throw new Exception("You must add database name and host for SQL Server Database Connection", 1);
-		}
+        throw new Exception("The database driver is unavailable");
+    }
 
-		switch ($config['driver']) {
-			case 'sqlsrv':
-				return $this->getSqlSrvDsn($config);
-				break;
-		}
+    protected function getExtraOptions(array $config)
+    {
+        return null;
+    }
 
-		throw new Exception("The database driver is unavailable");
-	}
+    private function getSqlSrvDsn(array $config)
+    {
 
-	protected function getExtraOptions(array $config)
-	{
-		return null;
-	}
+        $dsn = $config['driver'] . ':Server=' . $config['host'];
 
-	private function getSqlSrvDsn(array $config)
-	{
+        if (isset($config['port'])) {
+            $dsn .= ',' . $config['port'];
+        }
 
-		$dsn = $config['driver'] . ':Server=' . $config['host'];
+        $dsn .= ';Database=' . $config['dbname'];
 
-		if (isset($config['port'])) {
-			$dsn .= ',' . $config['port'];
-		}
+        if (isset($config['charset'])) {
+            $dsn .= ';CharacterSet=' . $config['charset'];
+        }
 
-		$dsn .= ';Database=' . $config['dbname'];
+        if (isset($config['readOnly']) && $config['readOnly'] == true) {
+            $dsn .= ';ApplicationIntent=ReadOnly';
+        }
 
-		if (isset($config['charset'])) {
-			$dsn .= ';CharacterSet=' . $config['charset'];
-		}
+        if (isset($config['pooling']) && $config['pooling'] == false) {
+            $dsn .= ';ConnectionPooling=0';
+        }
 
-		if (isset($config['readOnly']) && $config['readOnly'] == TRUE) {
-			$dsn .= ';ApplicationIntent=ReadOnly';
-		}
+        if (isset($config['application_name'])) {
+            $dsn .= ';APP=' . $config['application_name'];
+        }
 
-		if (isset($config['pooling']) && $config['pooling'] == FALSE) {
-			$dsn .= ';ConnectionPooling=0';
-		}
+        if (isset($config['encrypt'])) {
+            $dsn .= ';Encrypt=' . $config['encrypt'];
+        }
 
-		if (isset($config['application_name'])) {
-			$dsn .= ';APP=' . $config['application_name'];
-		}
+        if (isset($config['trust_server_certificate'])) {
+            $dsn .= ';TrustServerCertificate=' . $config['trust_server_certificate'];
+        }
 
-		if (isset($config['encrypt'])) {
-			$dsn .= ';Encrypt=' . $config['encrypt'];
-		}
+        if (isset($config['multiple_active_result_sets']) && $config['multiple_active_result_sets'] == false) {
+            $dsn .= ';MultipleActiveResultSets=false';
+        }
 
-		if (isset($config['trust_server_certificate'])) {
-			$dsn .= ';TrustServerCertificate=' . $config['trust_server_certificate'];
-		}
+        if (isset($config['transaction_isolation'])) {
+            $dsn .= ';TransactionIsolation=' . $config['transaction_isolation'];
+        }
 
-		if (isset($config['multiple_active_result_sets']) && $config['multiple_active_result_sets'] == FALSE) {
-			$dsn .= ';MultipleActiveResultSets=false';
-		}
+        if (isset($config['multi_subnet_failover'])) {
+            $dsn .= ';MultiSubnetFailover=' . $config['multi_subnet_failover'];
+        }
 
-		if (isset($config['transaction_isolation'])) {
-			$dsn .= ';TransactionIsolation=' . $config['transaction_isolation'];
-		}
+        if (isset($config['column_encryption'])) {
+            $dsn .= ';ColumnEncryption=' . $config['column_encryption'];
+        }
 
-		if (isset($config['multi_subnet_failover'])) {
-			$dsn .= ';MultiSubnetFailover=' . $config['multi_subnet_failover'];
-		}
+        if (isset($config['key_store_authentication'])) {
+            $dsn .= ';KeyStoreAuthentication=' . $config['key_store_authentication'];
+        }
 
-		if (isset($config['column_encryption'])) {
-			$dsn .= ';ColumnEncryption=' . $config['column_encryption'];
-		}
+        if (isset($config['key_store_principal_id'])) {
+            $dsn .= ';KeyStorePrincipalId=' . $config['key_store_principal_id'];
+        }
 
-		if (isset($config['key_store_authentication'])) {
-			$dsn .= ';KeyStoreAuthentication=' . $config['key_store_authentication'];
-		}
+        if (isset($config['key_store_secret'])) {
+            $dsn .= ';KeyStoreSecret=' . $config['key_store_secret'];
+        }
 
-		if (isset($config['key_store_principal_id'])) {
-			$dsn .= ';KeyStorePrincipalId=' . $config['key_store_principal_id'];
-		}
+        if (isset($config['login_timeout'])) {
+            $dsn .= ';LoginTimeout=' . $config['login_timeout'];
+        }
 
-		if (isset($config['key_store_secret'])) {
-			$dsn .= ';KeyStoreSecret=' . $config['key_store_secret'];
-		}
-
-		if (isset($config['login_timeout'])) {
-			$dsn .= ';LoginTimeout=' . $config['login_timeout'];
-		}
-
-		return $dsn;
-
-	}
-
+        return $dsn;
+    }
 }

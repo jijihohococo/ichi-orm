@@ -4,9 +4,8 @@ namespace JiJiHoHoCoCo\IchiORM\Database\Connections;
 
 trait DetectableDatabaseError
 {
-
-	public function checkDetectableErrors($message)
-	{
+    public function checkDetectableErrors($message)
+    {
         return strpos($message, 'server has gone away') !== false ||
             strpos($message, 'no connection to the server') !== false ||
             strpos($message, 'Lost connection') !== false ||
