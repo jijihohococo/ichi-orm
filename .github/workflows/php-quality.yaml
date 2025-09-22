@@ -43,8 +43,9 @@ jobs:
       - name: Run PHPCBF (auto-fix issues)
         run: phpcbf --standard=PSR12 src/ || true
 
-      # 6️⃣ Commit & push fixes to the same branch
+      # 6️⃣ Commit & push fixes to the branch that triggered the workflow
       - name: Commit and push PHPCBF fixes
+        if: github.ref != 'refs/heads/main'  # optional: skip main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -52,7 +53,12 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           git diff-index --quiet HEAD || git commit -m "PHPCBF: auto-fix coding standards (PHP ${{ matrix.php-version }})"
-          git push --force https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:${GITHUB_REF#refs/heads/}
+          # Determine correct branch for PR or push
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          if [ -n "${GITHUB_HEAD_REF}" ]; then
+            BRANCH="${GITHUB_HEAD_REF}"
+          fi
+          git push --force https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:$BRANCH
 
       # 7️⃣ Optional: Check remaining PHPCS violations after push
       - name: Check remaining PHPCS violations
