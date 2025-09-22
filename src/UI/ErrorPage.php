@@ -4,18 +4,17 @@ namespace JiJiHoHoCoCo\IchiORM\UI;
 
 class ErrorPage
 {
+    private static $errorPage = null;
 
-  private static $errorPage = NULL;
+    public static function setErrorPage($errorPage)
+    {
+        self::$errorPage = $errorPage;
+    }
 
-  public static function setErrorPage($errorPage)
-  {
-    self::$errorPage = $errorPage;
-  }
-
-  public static function show(string $message, int $code)
-  {
-    if (self::$errorPage == NULL) {
-      return <<<HTML
+    public static function show(string $message, int $code)
+    {
+        if (self::$errorPage == null) {
+            return <<<HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -75,8 +74,8 @@ class ErrorPage
 </body>
 </html>
 HTML;
+        }
+        $errorPage = self::$errorPage;
+        return is_callable($errorPage) ? $errorPage($message, $code) : $errorPage;
     }
-    $errorPage = self::$errorPage;
-    return is_callable($errorPage) ? $errorPage($message, $code) : $errorPage;
-  }
 }

@@ -385,14 +385,13 @@ namespace App\Models;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
-class Author extends Model{
- 	
- 	publilc $id,$name,$created_at,$updated_at,$deleted_at;
+class Author extends Model
+{
+    publilc $id,$name,$created_at,$updated_at,$deleted_at;
 
  	public function blogs(){
  		return $this->refersMany('App\Models\Blog','author_id')->get();
  	}
-
 }
 ```
 
