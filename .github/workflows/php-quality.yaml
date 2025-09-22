@@ -34,19 +34,41 @@ jobs:
 
       # 4️⃣ Run PHPCBF (auto-fix issues)
       - name: Run PHPCBF
-        run: phpcbf --standard=PSR12 src/ || true
+        run: |
+          # Run PHPCBF but ignore exit code so workflow continues
+          phpcbf --standard=PSR12 src/ || true
+
+          # Check if PHPCBF changed any files
+          if ! git diff --quiet; then
+            echo "PHPCBF_CHANGED=true" >> $GITHUB_ENV
+          else
+            echo "PHPCBF_CHANGED=false" >> $GITHUB_ENV
+          fi
 
       # 5️⃣ Commit & push fixes back to branch
       - name: Commit and push PHPCBF fixes
-        if: github.ref != 'refs/heads/main'  # optional: skip main
+        if: env.PHPCBF_CHANGED == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Add all PHPCBF-modified files
           git add .
-          git diff-index --quiet HEAD || git commit -m "PHPCBF: auto-fix coding standards (PHP ${{ matrix.php-version }})"
-          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD
+
+          # Commit with message
+          git commit -m "PHPCBF: auto-fix coding standards"
+
+          # Determine branch to push
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+
+          # Pull latest to avoid push rejection
+          git fetch origin $BRANCH
+          git rebase origin/$BRANCH
+
+          # Push PHPCBF fixes
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:$BRANCH
 
   # 🧪 Run PHPCS + PHPStan on multiple PHP versions
   php-quality:
