@@ -48,7 +48,9 @@ jobs:
           if [ -n "${GITHUB_HEAD_REF}" ]; then
             BRANCH="${GITHUB_HEAD_REF}"
           fi
-          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:$BRANCH
+          git fetch origin $BRANCH
+          git rebase origin/$BRANCH || true
+          git push --force-with-lease https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:$BRANCH
 
   # 🧪 Run PHPCS + PHPStan on multiple PHP versions
   php-quality:
