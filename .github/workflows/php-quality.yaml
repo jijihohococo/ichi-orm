@@ -16,6 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.head_ref || github.ref_name }}
           persist-credentials: false  # allows bot to push fixes
 
       # 2️⃣ Setup PHP (single version for auto-fix)
@@ -45,12 +46,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           git diff-index --quiet HEAD || git commit -m "PHPCBF: auto-fix coding standards (PHP ${{ matrix.php-version }})"
-          # Determine correct branch for PR or push
-          BRANCH="${GITHUB_REF#refs/heads/}"
-          if [ -n "${GITHUB_HEAD_REF}" ]; then
-            BRANCH="${GITHUB_HEAD_REF}"
-          fi
-          git push --force https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:$BRANCH
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD
 
   # 🧪 Run PHPCS + PHPStan on multiple PHP versions
   php-quality:
