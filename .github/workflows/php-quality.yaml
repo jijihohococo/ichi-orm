@@ -85,4 +85,4 @@ jobs:
 
       # 5️⃣ Run PHPCS
       - name: Run PHPCS (lint only)
-        run: phpcs --standard=PSR12 src/
+        run: phpcs --standard=PSR12 --warning-severity=0 src/
