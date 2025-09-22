@@ -23,7 +23,7 @@ abstract class Model
     private static $operators;
     private static $order;
     private static $limit;
-    private static $offset; 
+    private static $offset;
     private static $groupBy;
     private static $joinSQL;
     private static $select;
