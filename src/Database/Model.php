@@ -11,12 +11,38 @@ abstract class Model
 {
     private static $limitOne = " LIMIT 1";
 
-    private static $instance, $getID, $table, $fields, $where, $whereColumn, $orWhere, $whereIn, $whereNotIn, $operators, $order, $limit, $offset, $groupBy, $joinSQL, $select, $addSelect, $withTrashed, $addTrashed, $className, $toSQL;
-    private static $numberOfSubQueries, $currentSubQueryNumber, $currentField, $whereSubQuery;
+    private static $instance;
+    private static $getID;
+    private static $table;
+    private static $fields;
+    private static $where;
+    private static $whereColumn;
+    private static $orWhere;
+    private static $whereIn;
+    private static $whereNotIn;
+    private static $operators;
+    private static $order;
+    private static $limit;
+    private static $offset;
+    private static $groupBy;
+    private static $joinSQL;
+    private static $select;
+    private static $addSelect;
+    private static $withTrashed;
+    private static $addTrashed;
+    private static $className;
+    private static $toSQL;
+    private static $numberOfSubQueries;
+    private static $currentSubQueryNumber;
+    private static $currentField;
+    private static $whereSubQuery;
     private static $subQuery;
-    private static $subQueries, $selectedFields = [];
+    private static $subQueries = [];
+    private static $selectedFields = [];
     private static $havingNumber = null;
-    private static $havingField, $havingOperator, $havingValue;
+    private static $havingField;
+    private static $havingOperator;
+    private static $havingValue;
     private static $whereZero = ' WHERE 0 = 1 ';
     private static $andZero = ' AND 0 = 1 ';
     private static $groupByString = ' GROUP BY ';
@@ -25,7 +51,8 @@ abstract class Model
     private static $subQueryLimitNumber = 0;
     private static $useUnionQuery = [0 => true];
     private static $unionQuery = [0 => null];
-    private static $unionNumber, $currentUnionNumber = 0;
+    private static $unionNumber = 0;
+    private static $currentUnionNumber = 0;
     private static $unableUnionQuery = [];
     private static $caller = [];
 
