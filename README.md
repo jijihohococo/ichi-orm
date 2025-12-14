@@ -426,7 +426,7 @@ You can get child data as object array in your controller or class.
 use App\Models\Author;
 
 $authorObject = Author::find(1);
-$blogs=$authorObject->blogs();
+$blogs = $authorObject->blogs();
 ```
 
 
@@ -923,7 +923,7 @@ https://www.php.net/manual/en/class.pdo.php
 
 <i>If you want to use default database connection with PDO object</i>
 ```php
-$pdo=connectPDO();
+$pdo = connectPDO();
 
 ```
 
@@ -931,7 +931,7 @@ $pdo=connectPDO();
 ```php
 use JiJiHoHoCoCo\IchiORM\Database\Connector;
 
-$pdo=Connector::getInstance()->executeConnect('new_mysql_connection');
+$pdo = Connector::getInstance()->executeConnect('new_mysql_connection');
 
 ```
 
@@ -1273,8 +1273,8 @@ class Blog extends Model{
 		/*----- your business logic -----*/
 		
 		//--- Example to pass one parameter into observer function ---//
-		$currentObject=$this;
-		self::$observerSubject->use(get_class($this),'customFunction',$currentObject);
+		$currentObject = $this;
+		self::getObserverSubject()->use(get_class($this),'customFunction',$currentObject);
 	}
 
 }
@@ -1313,9 +1313,9 @@ class Blog extends Model{
 		/*----- your business logic -----*/
 		
 		//--- Example to pass multiple parameter into observer function ---//
-		$currentObject=$this;
-		$author=$this->author();
-		self::$observerSubject->use(get_class($this),'customFunction',[$currentObject,$author]);
+		$currentObject = $this;
+		$author = $this->author();
+		self::getObserverSubject()->use(get_class($this),'customFunction',[$currentObject,$author]);
 	}
 
 }

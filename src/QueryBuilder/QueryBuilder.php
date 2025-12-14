@@ -2069,4 +2069,9 @@ class QueryBuilder
             return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
+
+    public function getObserverSubject()
+    {
+        return $this->observerSubject;
+    }
 }

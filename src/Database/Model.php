@@ -228,4 +228,9 @@ abstract class Model
     {
         self::getQueryBuilder()->observe($modelObserver);
     }
+
+    protected static function getObserverSubect()
+    {
+        return self::getQueryBuilder()->getObserverSubject();
+    }
 }
