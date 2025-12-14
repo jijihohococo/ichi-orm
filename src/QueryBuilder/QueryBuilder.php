@@ -1091,7 +1091,7 @@ class QueryBuilder
 
         $subClassName = $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['className'];
 
-        $className = $subClassName == null ? $this : $subClassName;
+        $className = $subClassName == null ? $this->getCalledClass() : $subClassName;
 
         return property_exists($className, 'deleted_at') && $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['withTrashed'] == false;
     }
@@ -1804,7 +1804,7 @@ class QueryBuilder
             if ($this->currentSubQueryNumber == null) {
                 $this->checkUnionQuery();
                 // If addSelect was used after using addOnlySelect function
-                if ($this !== null && $this->select == null && $this->addSelect == true) {
+                if ($this->select == null && $this->addSelect == true) {
                     throw new Exception("You must not use addOnlySelect function before", 1);
                 }
                 $this->boot();
@@ -1845,7 +1845,7 @@ class QueryBuilder
             if ($this->currentSubQueryNumber == null) {
                 $this->checkUnionQuery();
                 // If addOnlySelect function was used after using select or addSelect function //
-                if ($this !== null && $this->select !== $this->table . '.*') {
+                if ($this->select !== $this->table . '.*') {
                     throw new Exception("You need to use only addOnlySelect function to select the data", 1);
                 }
                 $this->boot();
