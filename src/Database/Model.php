@@ -25,7 +25,7 @@ abstract class Model
 
     protected function getTable()
     {
-       return self::getQueryBuilder()->getTable();
+        return self::getQueryBuilder()->getTable();
     }
 
     protected function getID()
