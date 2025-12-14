@@ -29,7 +29,7 @@ class ErrorPage
 
     header {
       background-color: #333;
-      color: 0000;
+      color: #FFFFFF;
       text-align: center;
       padding: 1rem;
     }
