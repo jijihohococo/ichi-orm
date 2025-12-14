@@ -72,17 +72,17 @@ class QueryBuilder
         return connectPDO();
     }
 
-    protected function getTable()
+    public function getTable()
     {
         return getTableName((string) $this->getCalledClass());
     }
 
-    protected function getID()
+    public function getID()
     {
         return "id";
     }
 
-    protected function autoIncrementId()
+    public function autoIncrementId()
     {
         return true;
     }
@@ -179,17 +179,6 @@ class QueryBuilder
                 $this->{$where}[$this->currentField . $this->currentSubQueryNumber . 'unableUnionQuery'] == false
             ) {
                 throw new Exception("You are not allowed to use", 1);
-            }
-        } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
-        }
-    }
-
-    private function checkBoot()
-    {
-        try {
-            if ($this !== null) {
-                throw new Exception("CRUD functions and querying are different", 1);
             }
         } catch (Exception $e) {
             return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
@@ -373,7 +362,6 @@ class QueryBuilder
     {
         try {
             $this->caller = getCallerInfo();
-            $this->checkBoot();
             if (empty($attributes)) {
                 throw new Exception("You need to put non-empty array data", 1);
             }
@@ -433,7 +421,6 @@ class QueryBuilder
     {
         try {
             $this->caller = getCallerInfo();
-            $this->checkBoot();
             if (empty($attribute)) {
                 throw new Exception("You need to put non-empty array data", 1);
             }
@@ -496,7 +483,6 @@ class QueryBuilder
     {
         try {
             $this->caller = getCallerInfo();
-            $this->checkBoot();
             if (empty($attribute)) {
                 throw new Exception("You need to put non-empty array data", 1);
             }
@@ -539,7 +525,6 @@ class QueryBuilder
     {
         try {
             $this->caller = getCallerInfo();
-            $this->checkBoot();
             $this->boot();
             $pdo = $this->connectDatabase();
             $getId = $this->getID();
@@ -549,7 +534,7 @@ class QueryBuilder
             ]);
             $stmt->execute();
             $instance = $stmt->fetchObject($this->className);
-            $this->where($getId, $id);
+            $this->where([$getId, $id]);
             $object = $this->getObject($instance);
             $this->disableBooting();
             return $object;
@@ -567,7 +552,6 @@ class QueryBuilder
     {
         try {
             $this->caller = getCallerInfo();
-            $this->checkBoot();
             $this->boot();
             $pdo = $this->connectDatabase();
             $stmt = $pdo->prepare($this->getSelect() . " WHERE " . $field . " = ? " . $this->limitOne);
@@ -576,7 +560,7 @@ class QueryBuilder
             ]);
             $stmt->execute();
             $instance = $stmt->fetchObject($this->className);
-            $this->where($field, $value);
+            $this->where([$field, $value]);
             $object = $this->getObject($instance);
             $this->disableBooting();
             return $object;
@@ -1622,9 +1606,9 @@ class QueryBuilder
         }
     }
 
-    public function __construct()
+    public function new()
     {
-        $class = get_called_class();
+        $class = $this->getCalledClass();
         if (!empty($this->selectedFields) && isset($this->selectedFields[$class]) && $this->select !== $this->table . '.*' && $this->select !== null) {
             // FOR ADD SELECT WITH OR WITHOUT SELECT
             foreach (get_object_vars($this) as $key => $value) {
@@ -2045,11 +2029,10 @@ class QueryBuilder
         }
     }
 
-    protected function refersTo(string $class, string $field, string $referField = 'id')
+    public function refersTo(string $class, string $field, string $referField = 'id')
     {
         try {
             checkClass($class);
-            $this->checkBoot();
             if (isset($this->{$field})) {
                 return $class::findBy($referField, $this->{$field});
             }
@@ -2059,11 +2042,10 @@ class QueryBuilder
         }
     }
 
-    protected function refersMany(string $class, string $field, string $referField = 'id')
+    public function refersMany(string $class, string $field, string $referField = 'id')
     {
         try {
             checkClass($class);
-            $this->checkBoot();
             if (isset($this->{$referField})) {
                 $classObject = new $class();
                 return $class::where($classObject->getTable() . '.' . $field, $this->{$referField});
@@ -2078,7 +2060,6 @@ class QueryBuilder
     {
         try {
             $this->caller = getCallerInfo();
-            $this->checkBoot();
             checkObserverFunctions($modelObserver);
             if ($this->observerSubject == null) {
                 $this->observerSubject = new ObserverSubject();
