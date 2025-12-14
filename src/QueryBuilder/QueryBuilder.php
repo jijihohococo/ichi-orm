@@ -650,7 +650,7 @@ class QueryBuilder
             if ($this->currentSubQueryNumber == null) {
                 $this->checkUnionQuery();
                 // If addSelect was used after using addOnlySelect function
-                if ($this !== null && $this->select == null && $this->addSelect == true) {
+                if ($this->select == null && $this->addSelect == true) {
                     throw new Exception("You must not use addOnlySelect function before", 1);
                 }
 
