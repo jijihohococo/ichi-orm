@@ -104,12 +104,3 @@ jobs:
       # 5️⃣ Run PHPCS
       - name: Run PHPCS (lint only)
         run: phpcs --standard=PSR12 --warning-severity=0 src/
-
-  # Block merge pull request until workflow is finished successfully
-  pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - '**'
-    jobs:
-      - php-quality
-      - phpcbf-fix
