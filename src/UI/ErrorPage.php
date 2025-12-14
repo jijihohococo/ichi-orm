@@ -25,12 +25,11 @@ class ErrorPage
       font-family: 'Arial', sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #f4f4f4;
     }
 
     header {
       background-color: #333;
-      color: 0000;
+      color: #FFFFFF;
       text-align: center;
       padding: 1rem;
     }

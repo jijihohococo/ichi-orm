@@ -2063,7 +2063,7 @@ class QueryBuilder
             if ($this->observerSubject == null) {
                 $this->observerSubject = new ObserverSubject();
             }
-            $className = (string) get_called_class();
+            $className = (string) $this->getCalledClass();
             $this->observerSubject->attach($className, $modelObserver);
         } catch (Exception $e) {
             return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
