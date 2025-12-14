@@ -836,7 +836,7 @@ $blogs = [
 				'content' => 'Blog Five',
 				'author_name' => 'John Doe'
 			]
-];
+		];
 
 $paginatedBlogs = (new ArrayPagination)->paginate($blogs);
 
@@ -1065,7 +1065,7 @@ class BlogResourceCollection extends ResourceCollection{
 		return [
 			'id' => $data->id,
 			'author_id' => $data->author_id,
-			'author' => (new AuthorResourceCollection)->singleCollection( $data->author() )  ,
+			'author' => (new AuthorResourceCollection)->singleCollection($data->author()),
 			'content' => $data->content,
 			'created_at' => $data->created_at,
 			'updated_at' => $data->updated_at
