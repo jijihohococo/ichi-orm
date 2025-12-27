@@ -38,4 +38,14 @@ return [
         'port'          => 1433,
         'trust_server_certificate' => true,
     ]),
+    // Binary encoding
+    'charset_binary' => array_merge($base, [
+        'port'          => 1433,
+        'charset'       => 'binary',
+    ]),
+    // System encoding
+    'charset_system' => array_merge($base, [
+        'port'          => 1433,
+        'charset'       => 'system',
+    ]),
 ];
