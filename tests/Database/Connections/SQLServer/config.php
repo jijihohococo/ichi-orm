@@ -42,6 +42,7 @@ return [
     'charset_binary' => array_merge($base, [
         'port'          => 1433,
         'charset'       => 'binary',
+        'trust_server_certificate' => true,
     ]),
     // System encoding
     'charset_system' => array_merge($base, [
