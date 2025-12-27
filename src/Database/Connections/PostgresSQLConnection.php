@@ -37,7 +37,7 @@ class PostgresSQLConnection extends Connection
 
         if (isset($config['time_zone']) && $config['time_zone'] !== null) {
             $time_zone = true;
-            $option .= $charset == true ? ', time zone ' . $config['time_zone'] : 'set time zone ' . $config['time_zone'];
+            $option .= $charset == true ? ", time_zone = '{$config['time_zone']}'" : "set time_zone = '{$config['time_zone']}'";
         }
 
         if (isset($config['application_name']) && $config['application_name'] !== null) {
