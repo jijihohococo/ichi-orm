@@ -50,7 +50,7 @@ class MySQLConnection extends Connection
 
         if (isset($config['time_zone']) && $config['time_zone'] !== null) {
             $time_zone = true;
-            $option .= $mode == false && $charset == false ? 'set time_zone ' . $config['time_zone'] : ', time_zone ' . $config['time_zone'];
+            $option .= $mode == false && $charset == false ? "set time_zone = '{$config['time_zone']}'" : ", time_zone = '{$config['time_zone']}'";
         }
 
         if (isset($config['isolation_level']) && $config['isolation_level'] !== null) {
