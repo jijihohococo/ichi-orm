@@ -19,18 +19,18 @@ jobs:
 
     services:
       sqlserver:
-        image: mcr.microsoft.com/mssql/server:2019-latest
+        image: mcr.microsoft.com/mssql/server:2022-latest
         env:
           ACCEPT_EULA: Y
-          SA_PASSWORD: SqlServer2022!
+          SA_PASSWORD: SqlServerPassword123!
           MSSQL_PID: Developer
         ports:
           - 1433:1433
         options: >-
-          --health-cmd="/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P SqlServer2022! -Q 'SELECT 1' || exit 1"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=12
+          --health-cmd="echo SELECT 1 | /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'SqlServerPassword123!' || exit 1"
+          --health-interval=15s
+          --health-timeout=10s
+          --health-retries=10
 
     name: PHP ${{ matrix.php-version }} + SQL Server 2019
 
@@ -52,18 +52,18 @@ jobs:
         run: |
           echo "Waiting for SQL Server..."
           for i in {1..60}; do
-            if /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P SqlServer2022! -Q "SELECT 1" &>/dev/null; then
+            if /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "SqlServerPassword123!" -Q "SELECT 1" &>/dev/null; then
               echo "✅ SQL Server is ready"
               exit 0
             fi
-            sleep 2
+            sleep 3
           done
           echo "SQL Server did not become ready"
           exit 1
 
       - name: Create test database
         run: |
-          /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P SqlServer2022! -Q "IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'test') CREATE DATABASE test;"
+          /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "SqlServerPassword123!" -Q "IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'test') CREATE DATABASE test;"
 
       - name: Run SQL Server connection tests
         run: |
