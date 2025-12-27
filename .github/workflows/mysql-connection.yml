@@ -70,8 +70,8 @@ jobs:
 
       - name: Run MySQL connection tests
         run: |
-          php tests/Database/Connections/test.port_modes_full.php
-          php tests/Database/Connections/test.port_strict_full.php
-          php tests/Database/Connections/test.host_only.php
-          php tests/Database/Connections/test.port_timezone_only.php
-          php tests/Database/Connections/test.socket_modes_full.php
+          php tests/Database/Connections/MySQL/test.port_modes_full.php
+          php tests/Database/Connections/MySQL/test.port_strict_full.php
+          php tests/Database/Connections/MySQL/test.host_only.php
+          php tests/Database/Connections/MySQL/test.port_timezone_only.php
+          php tests/Database/Connections/MySQL/test.socket_modes_full.php
