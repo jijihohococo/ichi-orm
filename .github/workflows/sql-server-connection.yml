@@ -53,13 +53,6 @@ jobs:
           echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.profile
           export PATH="$PATH:/opt/mssql-tools/bin"
 
-      - name: Verify ODBC drivers
-        run: |
-          odbcinst -j || true
-          echo "Registered ODBC drivers:"
-          odbcinst -q -d || true
-          php -m | grep -E "sqlsrv|pdo_sqlsrv" || true
-
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-scripts
 
