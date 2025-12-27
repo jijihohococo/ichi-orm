@@ -29,7 +29,8 @@ jobs:
     name: PHP ${{ matrix.php-version }} + MySQL 8
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup PHP ${{ matrix.php-version }}
         uses: shivammathur/setup-php@v2
@@ -44,7 +45,7 @@ jobs:
       - name: Install MySQL client
         run: sudo apt-get update && sudo apt-get install -y default-mysql-client
 
-      # ✅ WAIT USING CORRECT PASSWORD
+      # ✅ WAIT UNTIL MYSQL IS ACTUALLY READY
       - name: Wait for MySQL
         run: |
           echo "Waiting for MySQL..."
@@ -55,8 +56,16 @@ jobs:
             fi
             sleep 2
           done
-          echo "❌ MySQL did not become ready"
+          echo "MySQL did not become ready"
           exit 1
+
+      # 🔥 FIX MYSQL 8 AUTH FOR PHP 7.3 / 7.4
+      - name: Fix MySQL auth plugin
+        run: |
+          mysql -h127.0.0.1 -uroot -proot --protocol=tcp -e "
+            ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'root';
+            FLUSH PRIVILEGES;
+          "
 
       - name: Create test database and table
         run: |
