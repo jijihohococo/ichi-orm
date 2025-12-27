@@ -11,6 +11,7 @@ on:
 jobs:
   mysql-connection:
     runs-on: ubuntu-latest
+
     services:
       mysql:
         image: mysql:8.0
@@ -20,11 +21,11 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --default-authentication-plugin=mysql_native_password
           --health-cmd="mysqladmin ping -h127.0.0.1 -uroot -proot --silent"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
+        command: --default-authentication-plugin=mysql_native_password
 
     steps:
       - name: Checkout repository
