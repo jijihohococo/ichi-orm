@@ -53,9 +53,11 @@ abstract class Connection
         }
 
         $sqlSrvBinary = false;
-        if ($extraOptions !== null && 
-        isset($extraOptions[PDO::SQLSRV_ATTR_ENCODING]) &&
-        $extraOptions[PDO::SQLSRV_ATTR_ENCODING] === PDO::SQLSRV_ENCODING_BINARY) {
+        if (
+            $extraOptions !== null &&
+            isset($extraOptions[PDO::SQLSRV_ATTR_ENCODING]) &&
+            $extraOptions[PDO::SQLSRV_ATTR_ENCODING] === PDO::SQLSRV_ENCODING_BINARY
+        ) {
             unset($option[PDO::SQLSRV_ATTR_ENCODING]);
             $sqlSrvBinary = true;
         }
