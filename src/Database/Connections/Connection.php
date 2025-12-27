@@ -51,7 +51,14 @@ abstract class Connection
         if (is_array($extraOptions)) {
             $option = $extraOptions + $option; // driver-specific PDO options
         }
-        print_r($option);
+
+        $sqlSrvBinary = false;
+        if ($extraOptions !== null && 
+        isset($extraOptions[PDO::SQLSRV_ATTR_ENCODING]) &&
+        $extraOptions[PDO::SQLSRV_ATTR_ENCODING] === PDO::SQLSRV_ENCODING_BINARY) {
+            unset($option[PDO::SQLSRV_ATTR_ENCODING]);
+            $sqlSrvBinary = true;
+        }
 
         $pdo = new PDO(
             $this->getDSN($config),
@@ -62,6 +69,9 @@ abstract class Connection
 
         if (is_string($extraOptions)) {
             $pdo->prepare($extraOptions)->execute();
+        }
+        if ($sqlSrvBinary === true) {
+            $pdo->setAttribute(PDO::SQLSRV_ATTR_ENCODING, PDO::SQLSRV_ENCODING_BINARY);
         }
 
         return $pdo;
