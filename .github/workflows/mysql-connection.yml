@@ -52,9 +52,16 @@ jobs:
           echo "MySQL did not become ready"
           exit 1
 
-      - name: Fix MySQL auth plugin
+      - name: Set MySQL root password
         run: |
           mysql --socket=/var/run/mysqld/mysqld.sock -uroot -e "
+            ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';
+            FLUSH PRIVILEGES;
+          "
+
+      - name: Fix MySQL auth plugin
+        run: |
+          mysql --socket=/var/run/mysqld/mysqld.sock -uroot -proot -e "
             ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';
             FLUSH PRIVILEGES;
           "
