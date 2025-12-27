@@ -17,6 +17,21 @@ jobs:
       matrix:
         php-version: ['7.3', '7.4', '8.0', '8.1', '8.2', '8.3']
 
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: P@ssw0rd12345!
+          MSSQL_PID: Developer
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd="/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'P@ssw0rd12345!' -Q 'SELECT 1' || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
     name: PHP ${{ matrix.php-version }} + SQL Server 2022
 
     steps:
@@ -33,24 +48,11 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-scripts
 
-      - name: Install SQL Server 2022
-        run: |
-          curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-          sudo curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
-          sudo apt-get update
-          sudo ACCEPT_EULA=Y apt-get install -y mssql-server mssql-tools
-
-      - name: Start SQL Server
-        run: |
-          sudo /opt/mssql/bin/mssql-conf -n setup accept-eula
-          sudo systemctl start mssql-server
-          sleep 10
-
       - name: Wait for SQL Server
         run: |
           echo "Waiting for SQL Server..."
           for i in {1..60}; do
-            if /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "SqlServerPassword123!" -Q "SELECT 1" &>/dev/null; then
+            if /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P 'P@ssw0rd12345!' -Q "SELECT 1" &>/dev/null; then
               echo "✅ SQL Server is ready"
               exit 0
             fi
@@ -61,7 +63,7 @@ jobs:
 
       - name: Create test database
         run: |
-          /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "SqlServerPassword123!" -Q "IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'test') CREATE DATABASE test;"
+          /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P 'P@ssw0rd12345!' -Q "IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'test') CREATE DATABASE test;"
 
       - name: Run SQL Server connection tests
         run: |

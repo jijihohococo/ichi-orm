@@ -7,7 +7,7 @@ $base = [
     'host'          => '127.0.0.1',
     'dbname'        => 'test',
     'user_name'     => 'sa',
-    'user_password' => 'SqlServerPassword123!',
+    'user_password' => 'P@ssw0rd12345!',
 ];
 
 return [
