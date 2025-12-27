@@ -26,7 +26,26 @@ class SQLServerConnection extends Connection
 
     protected function getExtraOptions(array $config)
     {
-        return null;
+        $options = [];
+
+        if (isset($config['charset'])) {
+            if (!defined('\\PDO::SQLSRV_ATTR_ENCODING')) {
+                throw new Exception('pdo_sqlsrv extension is required to set charset options');
+            }
+
+            $charset = strtolower($config['charset']);
+            if (in_array($charset, ['utf8', 'utf-8'], true)) {
+                $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_UTF8;
+            } elseif ($charset == 'binary') {
+                $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_BINARY;
+            } elseif ($charset == 'system') {
+                $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_SYSTEM;
+            } else {
+                throw new Exception("Unsupported SQL Server charset: {$config['charset']}");
+            }
+        }
+
+        return $options ?: null;
     }
 
     private function getSqlSrvDsn(array $config)
@@ -39,10 +58,6 @@ class SQLServerConnection extends Connection
         }
 
         $dsn .= ';Database=' . $config['dbname'];
-
-        if (isset($config['charset'])) {
-            $dsn .= ';CharacterSet=' . $config['charset'];
-        }
 
         if (isset($config['readOnly']) && $config['readOnly'] == true) {
             $dsn .= ';ApplicationIntent=ReadOnly';
@@ -58,10 +73,14 @@ class SQLServerConnection extends Connection
 
         if (isset($config['encrypt'])) {
             $dsn .= ';Encrypt=' . $config['encrypt'];
+        } else {
+            $dsn .= ';Encrypt=false';
         }
 
         if (isset($config['trust_server_certificate'])) {
             $dsn .= ';TrustServerCertificate=' . $config['trust_server_certificate'];
+        } else {
+            $dsn .= ';TrustServerCertificate=true';
         }
 
         if (isset($config['multiple_active_result_sets']) && $config['multiple_active_result_sets'] == false) {

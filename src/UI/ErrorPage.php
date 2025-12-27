@@ -13,6 +13,10 @@ class ErrorPage
 
     public static function show(string $message, int $code)
     {
+        if (php_sapi_name() === 'cli') {
+            fwrite(STDERR, "Error ($code): $message" . PHP_EOL);
+            exit(1);
+        }
         if (self::$errorPage == null) {
             return <<<HTML
 <!DOCTYPE html>

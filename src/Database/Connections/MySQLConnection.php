@@ -35,7 +35,7 @@ class MySQLConnection extends Connection
         $mode = $charset = $time_zone = false;
         if (isset($config['modes']) && is_array($config['modes'])) {
             $mode = true;
-            $option .= 'set session sql_mode=' . implode(',', $config['modes']);
+            $option .= "set session sql_mode='" . implode(',', $config['modes']) . "'";
         } elseif (isset($config['strict'])) {
             $mode = true;
             $option .= $config['strict'] == true ? $this->getStrictMode() :
@@ -50,12 +50,14 @@ class MySQLConnection extends Connection
 
         if (isset($config['time_zone']) && $config['time_zone'] !== null) {
             $time_zone = true;
-            $option .= $mode == false && $charset == false ? 'set time_zone ' . $config['time_zone'] : ', time_zone ' . $config['time_zone'];
+            $sql = "time_zone = '{$config['time_zone']}'";
+            $option .= $mode == false && $charset == false ? 'set ' . $sql : ", " . $sql;
         }
 
         if (isset($config['isolation_level']) && $config['isolation_level'] !== null) {
-            $isolationLevel = 'SESSION TRANSACTION ISOLATION LEVEL ' . $config['isolation_level'];
-            $option .= $mode == false && $charset == false && $time_zone == false ? 'set ' . $isolationLevel : ', ' . $isolationLevel;
+            $isolationLevelValue = str_replace(' ', '-', $config['isolation_level']);
+            $sql = "transaction_isolation = '" . $isolationLevelValue . "'";
+            $option .= $mode == false && $charset == false && $time_zone == false ? 'set ' . $sql : ", " . $sql;
         }
 
         return $option;

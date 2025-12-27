@@ -1,0 +1,78 @@
+name: Test MySQL Connection
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - master
+
+jobs:
+  mysql-connection:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.3', '7.4', '8.0', '8.1', '8.2', '8.3']
+
+    name: PHP ${{ matrix.php-version }} + MySQL 8
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: pdo_mysql
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-scripts
+
+      - name: Install MySQL Server
+        run: |
+          sudo DEBIAN_FRONTEND=noninteractive apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server
+          sudo service mysql start
+
+      - name: Wait for MySQL
+        run: |
+          echo "Waiting for MySQL..."
+          for i in {1..60}; do
+            if mysqladmin ping --socket=/var/run/mysqld/mysqld.sock --silent; then
+              echo "✅ MySQL is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MySQL did not become ready"
+          exit 1
+
+      - name: Set MySQL root password
+        run: |
+          sudo cat /etc/mysql/debian.cnf
+          DEBIAN_PWD=$(sudo grep password /etc/mysql/debian.cnf | head -n1 | awk '{print $3}')
+          mysql -u debian-sys-maint -p"$DEBIAN_PWD" -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root'; FLUSH PRIVILEGES;"
+
+      - name: Create test database and table
+        run: |
+          mysql --socket=/var/run/mysqld/mysqld.sock -uroot -p'root' -e "CREATE DATABASE IF NOT EXISTS test;"
+          mysql --socket=/var/run/mysqld/mysqld.sock -uroot -p'root' test -e "
+            CREATE TABLE IF NOT EXISTS users (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              name VARCHAR(255)
+            );
+          "
+
+      - name: Run MySQL connection tests
+        run: |
+          php tests/Database/Connections/MySQL/test.port_modes_full.php
+          php tests/Database/Connections/MySQL/test.port_strict_full.php
+          php tests/Database/Connections/MySQL/test.host_only.php
+          php tests/Database/Connections/MySQL/test.port_timezone_only.php
+          php tests/Database/Connections/MySQL/test.socket_modes_full.php
