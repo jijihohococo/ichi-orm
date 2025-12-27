@@ -19,24 +19,21 @@ jobs:
           MYSQL_DATABASE: test
         ports:
           - 3306:3306
-        command: --default-authentication-plugin=mysql_native_password
         options: >-
           --health-cmd="mysqladmin ping --silent"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
+          --health-retries=5
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
           extensions: pdo_mysql
 
-      - name: Install composer dependencies
+      - name: Install Composer dependencies
         run: composer install --no-interaction --no-scripts
 
       - name: Install getallheaders polyfill
@@ -44,23 +41,32 @@ jobs:
 
       - name: Install MySQL client
         run: sudo apt-get update && sudo apt-get install -y default-mysql-client
-      
-      - name: Wait for MySQL to be ready
+
+      - name: Wait for MySQL
         run: |
           for i in {1..30}; do
-            if mysql -h127.0.0.1 -uroot -proot -e "SELECT 1" >/dev/null 2>&1; then
-              echo "MySQL is ready!"
-              break
-            fi
-            sleep 5
+            mysql -h127.0.0.1 -uroot -proot -e "SELECT 1" && break
+            sleep 2
           done
+
+      - name: Fix MySQL 8 auth plugin (IMPORTANT)
+        run: |
+          mysql -h127.0.0.1 -uroot -proot -e "
+            ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'root';
+            FLUSH PRIVILEGES;
+          "
 
       - name: Create test database and table
         env:
           MYSQL_PWD: root
         run: |
           mysql -h127.0.0.1 -uroot -e "CREATE DATABASE IF NOT EXISTS test;"
-          mysql -h127.0.0.1 -uroot -D test -e "CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255));"
+          mysql -h127.0.0.1 -uroot -D test -e "
+            CREATE TABLE IF NOT EXISTS users (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              name VARCHAR(255)
+            );
+          "
 
       - name: Run MySQL connection test
         run: php tests/mysql-connection.php
