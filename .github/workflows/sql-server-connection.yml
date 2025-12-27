@@ -1,0 +1,73 @@
+name: Test SQL Server Connection
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  sqlserver-connection:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.3', '7.4', '8.0', '8.1', '8.2', '8.3']
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        env:
+          ACCEPT_EULA: Y
+          SA_PASSWORD: SqlServer2022!
+          MSSQL_PID: Developer
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd="/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P SqlServer2022! -Q 'SELECT 1' || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+    name: PHP ${{ matrix.php-version }} + SQL Server 2019
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: pdo_sqlsrv
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-scripts
+
+      - name: Wait for SQL Server
+        run: |
+          echo "Waiting for SQL Server..."
+          for i in {1..60}; do
+            if /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P SqlServer2022! -Q "SELECT 1" &>/dev/null; then
+              echo "✅ SQL Server is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "SQL Server did not become ready"
+          exit 1
+
+      - name: Create test database
+        run: |
+          /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P SqlServer2022! -Q "IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'test') CREATE DATABASE test;"
+
+      - name: Run SQL Server connection tests
+        run: |
+          php tests/Database/Connections/SQLServer/test.port_standard.php
+          php tests/Database/Connections/SQLServer/test.port_minimal.php
+          php tests/Database/Connections/SQLServer/test.mars_enabled.php
+          php tests/Database/Connections/SQLServer/test.trust_certificate.php
