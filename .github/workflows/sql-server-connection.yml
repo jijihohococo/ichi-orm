@@ -47,11 +47,8 @@ jobs:
           curl -s https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
           curl -s https://packages.microsoft.com/config/ubuntu/22.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
           sudo apt-get update
-          # Use ONLY msodbcsql17 to avoid the ODBC 18 encryption/encoding conflict
+          # msodbcsql17 is the most stable for cross-PHP version testing
           sudo ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools unixodbc-dev
-          sudo locale-gen en_US.UTF-8
-          sudo update-locale LANG=en_US.UTF-8
-          # Update paths for mssql-tools (no '18' in the folder name for v17)
           echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
           echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.profile
           export PATH="$PATH:/opt/mssql-tools/bin"
@@ -69,8 +66,9 @@ jobs:
       - name: Wait for SQL Server
         run: |
           echo "Waiting for SQL Server..."
+          # Note the path: /opt/mssql-tools/ NOT /opt/mssql-tools18/
           for i in {1..90}; do
-            if /opt/mssql-tools18/bin/sqlcmd -C -S 127.0.0.1 -U sa -P 'P@ssw0rd12345!' -Q "SELECT 1" &>/dev/null; then
+            if /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P 'P@ssw0rd12345!' -Q "SELECT 1" &>/dev/null; then
               echo "✅ SQL Server is ready"
               exit 0
             fi
@@ -81,7 +79,8 @@ jobs:
 
       - name: Create test database
         run: |
-          /opt/mssql-tools18/bin/sqlcmd -C -S 127.0.0.1 -U sa -P 'P@ssw0rd12345!' -Q "IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'test') CREATE DATABASE test;"
+          # Updated path here as well
+          /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P 'P@ssw0rd12345!' -Q "IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'test') CREATE DATABASE test;"
 
       - name: Run SQL Server connection tests
         run: |
