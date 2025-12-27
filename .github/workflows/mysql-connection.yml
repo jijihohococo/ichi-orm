@@ -54,22 +54,22 @@ jobs:
 
       - name: Set MySQL root password
         run: |
-          mysql --socket=/var/run/mysqld/mysqld.sock -uroot -e "
+          sudo mysql --socket=/var/run/mysqld/mysqld.sock -uroot -e "
             ALTER USER 'root'@'localhost' IDENTIFIED BY 'root';
             FLUSH PRIVILEGES;
           "
 
       - name: Fix MySQL auth plugin
         run: |
-          mysql --socket=/var/run/mysqld/mysqld.sock -uroot -proot -e "
+          sudo mysql --socket=/var/run/mysqld/mysqld.sock -uroot -proot -e "
             ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';
             FLUSH PRIVILEGES;
           "
 
       - name: Create test database and table
         run: |
-          mysql --socket=/var/run/mysqld/mysqld.sock -uroot -proot -e "CREATE DATABASE IF NOT EXISTS test;"
-          mysql --socket=/var/run/mysqld/mysqld.sock -uroot -proot test -e "
+          sudo mysql --socket=/var/run/mysqld/mysqld.sock -uroot -proot -e "CREATE DATABASE IF NOT EXISTS test;"
+          sudo mysql --socket=/var/run/mysqld/mysqld.sock -uroot -proot test -e "
             CREATE TABLE IF NOT EXISTS users (
               id INT AUTO_INCREMENT PRIMARY KEY,
               name VARCHAR(255)
