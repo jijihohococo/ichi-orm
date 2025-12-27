@@ -38,4 +38,10 @@ return [
         'port'          => 1433,
         'trust_server_certificate' => true,
     ]),
+
+    // Explicit charset scenario to ensure CharacterSet is handled
+    'charset' => array_merge($base, [
+        'port'          => 1433,
+        'charset'       => 'utf8',
+    ]),
 ];

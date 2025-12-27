@@ -34,6 +34,10 @@ class SQLServerConnection extends Connection
 
         $dsn = $config['driver'] . ':Server=' . $config['host'];
 
+        if (isset($config['charset'])) {
+            $dsn .= ';CharacterSet=' . $config['charset'];
+        }
+
         if (isset($config['port'])) {
             $dsn .= ',' . $config['port'];
         }
