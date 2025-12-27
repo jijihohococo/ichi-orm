@@ -1,11 +1,12 @@
-name: PHP Auto-Fix & Quality Check
+name: PHP Quality
 
 on:
+  pull_request:
+    branches:
+      - master
   push:
     branches:
-      - '**'
-  pull_request:
-    types: [opened, synchronize, reopened]
+      - master
 
 jobs:
   # 🔧 Auto-fix coding standards (only once, PHP 8.1)
