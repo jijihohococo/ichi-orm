@@ -1,4 +1,4 @@
-name: MySQL Connection
+name: Test MySQL Connection
 
 on:
   pull_request:
@@ -20,11 +20,10 @@ jobs:
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h127.0.0.1 -uroot -proot --silent"
+          --health-cmd="mysqladmin ping --silent"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
-        command: --default-authentication-plugin=mysql_native_password
+          --health-retries=3
 
     steps:
       - name: Checkout repository
@@ -36,7 +35,7 @@ jobs:
           php-version: '8.1'
           extensions: pdo_mysql
 
-      - name: Install Composer dependencies
+      - name: Install composer dependencies
         run: composer install --no-interaction --no-scripts
 
       - name: Install getallheaders polyfill
@@ -44,33 +43,23 @@ jobs:
 
       - name: Install MySQL client
         run: sudo apt-get update && sudo apt-get install -y default-mysql-client
-
-      - name: Wait for MySQL to be healthy
+      
+      - name: Wait for MySQL to be ready
         run: |
-          echo "Waiting for MySQL to become healthy..."
           for i in {1..30}; do
-            STATUS=$(docker inspect --format='{{.State.Health.Status}}' "${{ job.services.mysql.id }}")
-            if [ "$STATUS" = "healthy" ]; then
-              echo "MySQL is healthy!"
-              exit 0
+            if mysql -h127.0.0.1 -uroot -proot -e "SELECT 1" >/dev/null 2>&1; then
+              echo "MySQL is ready!"
+              break
             fi
-            echo "Current status: $STATUS"
-            sleep 2
+            sleep 5
           done
-          echo "MySQL did not become healthy in time"
-          exit 1
 
       - name: Create test database and table
         env:
           MYSQL_PWD: root
         run: |
           mysql -h127.0.0.1 -uroot -e "CREATE DATABASE IF NOT EXISTS test;"
-          mysql -h127.0.0.1 -uroot -D test -e "
-            CREATE TABLE IF NOT EXISTS users (
-              id INT AUTO_INCREMENT PRIMARY KEY,
-              name VARCHAR(255)
-            );
-          "
+          mysql -h127.0.0.1 -uroot -D test -e "CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255));"
 
       - name: Run MySQL connection test
         run: php tests/mysql-connection.php
