@@ -41,17 +41,18 @@ jobs:
       - name: Install getallheaders polyfill
         run: composer require ralouphie/getallheaders
 
+      - name: Install MySQL client
+        run: sudo apt-get update && sudo apt-get install -y default-mysql-client
+      
       - name: Wait for MySQL to be ready
         run: |
           for i in {1..30}; do
-            if mysqladmin ping -h127.0.0.1 -uroot -proot --silent; then
-              echo "MySQL is up"; break;
+            if mysql -h127.0.0.1 -uroot -proot -e "SELECT 1" >/dev/null 2>&1; then
+              echo "MySQL is ready!"
+              break
             fi
-            sleep 1
+            sleep 5
           done
-
-      - name: Install MySQL client
-        run: sudo apt-get update && sudo apt-get install -y default-mysql-client
 
       - name: Create test database and table
         env:
