@@ -46,16 +46,23 @@ abstract class Connection
         if (isset($config['options'])) {
             $option = $config['options'] + $option;
         }
+        $extraOptions = $this->getExtraOptions($config);
+
+        if (is_array($extraOptions)) {
+            $option = $extraOptions + $option; // driver-specific PDO options
+        }
+
         $pdo = new PDO(
             $this->getDSN($config),
             $config['user_name'],
             $config['user_password'],
             $option
         );
-        $extraOptions = $this->getExtraOptions($config);
-        if ($extraOptions !== null) {
+
+        if (is_string($extraOptions)) {
             $pdo->prepare($extraOptions)->execute();
         }
+
         return $pdo;
     }
 }
