@@ -47,7 +47,7 @@ jobs:
           curl -s https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
           curl -s https://packages.microsoft.com/config/ubuntu/22.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
           sudo apt-get update
-          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 msodbcsql17 mssql-tools18 unixodbc-dev libc6 libgssapi-krb5-2 libkrb5-3 libkrb5support0 locales
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 mssql-tools18 unixodbc-dev
           sudo locale-gen en_US.UTF-8
           sudo update-locale LANG=en_US.UTF-8
           echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
