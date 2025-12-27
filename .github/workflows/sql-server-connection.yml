@@ -27,7 +27,7 @@ jobs:
         ports:
           - 1433:1433
         options: >-
-          --health-cmd="/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'P@ssw0rd12345!' -Q 'SELECT 1' || exit 1"
+          --health-cmd="bash -c 'for p in /opt/mssql-tools18/bin/sqlcmd /opt/mssql-tools/bin/sqlcmd; do if [ -x $p ]; then $p -S localhost -U sa -P \"P@ssw0rd12345!\" -Q \"SELECT 1\" && exit 0; fi; done; exit 1'"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=12
