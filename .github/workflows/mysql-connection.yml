@@ -12,6 +12,11 @@ jobs:
   mysql-connection:
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.3', '7.4', '8.0', '8.1', '8.2', '8.3']
+
     services:
       mysql:
         image: mysql:8.0
@@ -21,13 +26,17 @@ jobs:
         ports:
           - 3306:3306
 
+    name: PHP ${{ matrix.php-version }} + MySQL 8
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: shivammathur/setup-php@v2
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.1'
+          php-version: ${{ matrix.php-version }}
           extensions: pdo_mysql
+          coverage: none
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-scripts
