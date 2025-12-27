@@ -27,7 +27,7 @@ jobs:
         ports:
           - 1433:1433
         options: >-
-          --health-cmd="/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'P@ssw0rd12345!' -Q 'SELECT 1' || exit 1"
+          --health-cmd="/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'P@ssw0rd12345!' -Q 'SELECT 1' || exit 1"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=12
@@ -45,6 +45,16 @@ jobs:
           extensions: pdo_sqlsrv
           coverage: none
 
+      - name: Install sqlcmd client
+        run: |
+          curl -s https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+          curl -s https://packages.microsoft.com/config/ubuntu/22.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y mssql-tools18 unixodbc-dev
+          echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
+          echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.profile
+          export PATH="$PATH:/opt/mssql-tools18/bin"
+
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-scripts
 
@@ -52,7 +62,7 @@ jobs:
         run: |
           echo "Waiting for SQL Server..."
           for i in {1..60}; do
-            if /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P 'P@ssw0rd12345!' -Q "SELECT 1" &>/dev/null; then
+            if /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U sa -P 'P@ssw0rd12345!' -Q "SELECT 1" &>/dev/null; then
               echo "✅ SQL Server is ready"
               exit 0
             fi
@@ -63,7 +73,7 @@ jobs:
 
       - name: Create test database
         run: |
-          /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1 -U sa -P 'P@ssw0rd12345!' -Q "IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'test') CREATE DATABASE test;"
+          /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U sa -P 'P@ssw0rd12345!' -Q "IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'test') CREATE DATABASE test;"
 
       - name: Run SQL Server connection tests
         run: |
