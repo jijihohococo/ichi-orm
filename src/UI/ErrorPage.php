@@ -75,6 +75,11 @@ class ErrorPage
 HTML;
         }
         $errorPage = self::$errorPage;
-        return is_callable($errorPage) ? $errorPage($message, $code) : $errorPage;
+        $output = is_callable($errorPage) ? $errorPage($message, $code) : $errorPage;
+        if (php_sapi_name() === 'cli') {
+            echo "Error ($code): $message" . PHP_EOL;
+            exit(1);
+        }
+        return $output;
     }
 }
