@@ -73,10 +73,14 @@ class SQLServerConnection extends Connection
 
         if (isset($config['encrypt'])) {
             $dsn .= ';Encrypt=' . $config['encrypt'];
+        } else {
+            $dsn .= ';Encrypt=yes';
         }
 
         if (isset($config['trust_server_certificate'])) {
             $dsn .= ';TrustServerCertificate=' . $config['trust_server_certificate'];
+        } else {
+            $dsn .= ';TrustServerCertificate=yes';
         }
 
         if (isset($config['multiple_active_result_sets']) && $config['multiple_active_result_sets'] == false) {
