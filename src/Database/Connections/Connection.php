@@ -51,6 +51,7 @@ abstract class Connection
         if (is_array($extraOptions)) {
             $option = $extraOptions + $option; // driver-specific PDO options
         }
+        print_r($option);
 
         $pdo = new PDO(
             $this->getDSN($config),
