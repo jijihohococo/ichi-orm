@@ -35,7 +35,7 @@ class MySQLConnection extends Connection
         $mode = $charset = $time_zone = false;
         if (isset($config['modes']) && is_array($config['modes'])) {
             $mode = true;
-            $option .= 'set session sql_mode=' . implode(',', $config['modes']);
+            $option .= "set session sql_mode='" . implode(',', $config['modes']) . "'";
         } elseif (isset($config['strict'])) {
             $mode = true;
             $option .= $config['strict'] == true ? $this->getStrictMode() :
