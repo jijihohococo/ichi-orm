@@ -18,11 +18,6 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: test
-        options: >-
-          --health-cmd="mysqladmin ping -uroot -proot --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
 
     steps:
       - uses: actions/checkout@v4
@@ -38,35 +33,30 @@ jobs:
       - name: Install MySQL client
         run: sudo apt-get update && sudo apt-get install -y default-mysql-client
 
-      # ✅ BULLETPROOF WAIT STEP
-      - name: Wait for MySQL
+      # ✅ WAIT — NO PASSWORD, TCP ONLY
+      - name: Wait for MySQL (no auth)
         run: |
-          echo "Waiting for MySQL to be ready..."
-          for i in {1..40}; do
-            if mysql -h mysql -uroot -proot -e "SELECT 1" >/dev/null 2>&1; then
-              echo "✅ MySQL is ready"
-              exit 0
+          echo "Waiting for MySQL..."
+          for i in {1..60}; do
+            if mysqladmin ping -h mysql --protocol=tcp --silent; then
+              echo "✅ MySQL is up"
+              break
             fi
-            echo "⏳ MySQL not ready yet..."
-            sleep 3
+            sleep 2
           done
 
-          echo "❌ MySQL did not become ready"
-          docker logs "${{ job.services.mysql.id }}"
-          exit 1
-
-      # ✅ FIX MYSQL 8 AUTH *AFTER* STARTUP
-      - name: Fix MySQL 8 auth plugin
+      # ✅ NOW AUTH IS SAFE
+      - name: Configure MySQL root user
         run: |
-          mysql -h mysql -uroot -proot -e "
+          mysql -h mysql --protocol=tcp -uroot -e "
             ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'root';
             FLUSH PRIVILEGES;
           "
 
       - name: Create test database and table
         run: |
-          mysql -h mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS test;"
-          mysql -h mysql -uroot -proot test -e "
+          mysql -h mysql --protocol=tcp -uroot -proot -e "CREATE DATABASE IF NOT EXISTS test;"
+          mysql -h mysql --protocol=tcp -uroot -proot test -e "
             CREATE TABLE IF NOT EXISTS users (
               id INT AUTO_INCREMENT PRIMARY KEY,
               name VARCHAR(255)
