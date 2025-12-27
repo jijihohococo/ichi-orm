@@ -24,9 +24,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install getallheaders polyfill
-        run: composer require ralouphie/getallheaders
-
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
