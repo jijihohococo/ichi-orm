@@ -37,7 +37,7 @@ class SQLServerConnection extends Connection
             if (in_array($charset, ['utf8', 'utf-8'], true)) {
                 $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_UTF8;
             } elseif ($charset == 'binary') {
-                $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_BINARY;
+                $options[PDO::SQLSRV_ATTR_ENCODING] = 3;
             } elseif ($charset == 'system') {
                 $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_SYSTEM;
             } else {
@@ -72,15 +72,13 @@ class SQLServerConnection extends Connection
         }
 
         if (isset($config['encrypt'])) {
-            $encrypt = $config['encrypt'] ? 'true' : 'false';
-            $dsn .= ';Encrypt=' . $encrypt;
+            $dsn .= ';Encrypt=' . $config['encrypt'];
         } else {
             $dsn .= ';Encrypt=false';
         }
 
         if (isset($config['trust_server_certificate'])) {
-            $encrypt = $config['trust_server_certificate'] ? 'true' : 'false';
-            $dsn .= ';TrustServerCertificate=' . $encrypt;
+            $dsn .= ';TrustServerCertificate=' . $config['trust_server_certificate'];
         } else {
             $dsn .= ';TrustServerCertificate=true';
         }
