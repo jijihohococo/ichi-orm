@@ -1,0 +1,61 @@
+name: Test MySQL Connection
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  mysql-connection:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: pdo_mysql
+
+      - name: Install composer dependencies
+        run: composer install --no-interaction --no-scripts
+
+      - name: Wait for MySQL to be ready
+        run: |
+          for i in {1..30}; do
+            if mysqladmin ping -h127.0.0.1 -uroot -proot --silent; then
+              echo "MySQL is up"; break;
+            fi
+            sleep 1
+          done
+
+      - name: Install MySQL client
+        run: sudo apt-get update && sudo apt-get install -y default-mysql-client
+
+      - name: Create test database and table
+        env:
+          MYSQL_PWD: root
+        run: |
+          mysql -h127.0.0.1 -uroot -e "CREATE DATABASE IF NOT EXISTS test;"
+          mysql -h127.0.0.1 -uroot -D test -e "CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255));"
+
+      - name: Run MySQL connection test
+        run: php tests/mysql-connection.php
