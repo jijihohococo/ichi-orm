@@ -54,10 +54,7 @@ jobs:
 
       - name: Set MySQL root password
         run: |
-          sudo mysql --socket=/var/run/mysqld/mysqld.sock -uroot -e "
-            ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';
-            FLUSH PRIVILEGES;
-          "
+          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root'; FLUSH PRIVILEGES;"
 
       - name: Create test database and table
         run: |
