@@ -22,7 +22,7 @@ jobs:
           --health-cmd="mysqladmin ping -uroot -proot --silent"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=10
 
     steps:
       - uses: actions/checkout@v4
@@ -35,27 +35,27 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-scripts
 
-      - name: Install getallheaders polyfill
-        run: composer require ralouphie/getallheaders
-
       - name: Install MySQL client
         run: sudo apt-get update && sudo apt-get install -y default-mysql-client
 
-      # ✅ WAIT PROPERLY (FAILS IF MYSQL NEVER STARTS)
+      # ✅ BULLETPROOF WAIT STEP
       - name: Wait for MySQL
         run: |
-          echo "Waiting for MySQL..."
-          for i in {1..30}; do
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..40}; do
             if mysql -h mysql -uroot -proot -e "SELECT 1" >/dev/null 2>&1; then
-              echo "MySQL is ready"
+              echo "✅ MySQL is ready"
               exit 0
             fi
-            sleep 2
+            echo "⏳ MySQL not ready yet..."
+            sleep 3
           done
-          echo "MySQL did not become ready"
+
+          echo "❌ MySQL did not become ready"
+          docker logs "${{ job.services.mysql.id }}"
           exit 1
 
-      # ✅ FIX MYSQL 8 AUTH *AFTER* STARTUP (DO NOT USE `command:`)
+      # ✅ FIX MYSQL 8 AUTH *AFTER* STARTUP
       - name: Fix MySQL 8 auth plugin
         run: |
           mysql -h mysql -uroot -proot -e "
