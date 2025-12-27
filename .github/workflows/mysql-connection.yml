@@ -1,4 +1,4 @@
-name: Test MySQL Connection
+name: MySQL Connection
 
 on:
   pull_request:
