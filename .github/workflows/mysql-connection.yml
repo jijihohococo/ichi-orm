@@ -38,6 +38,9 @@ jobs:
       - name: Install composer dependencies
         run: composer install --no-interaction --no-scripts
 
+      - name: Install getallheaders polyfill
+        run: composer require ralouphie/getallheaders
+
       - name: Wait for MySQL to be ready
         run: |
           for i in {1..30}; do
