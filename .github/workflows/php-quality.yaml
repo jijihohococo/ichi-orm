@@ -21,10 +21,10 @@ jobs:
           persist-credentials: false  # allows bot to push fixes
 
       # 2️⃣ Setup PHP (single version for auto-fix)
-      - name: Setup PHP 7.4
+      - name: Setup PHP 8.3
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.4
+          php-version: 8.3
           coverage: none
 
       # 3️⃣ Install PHPCS
