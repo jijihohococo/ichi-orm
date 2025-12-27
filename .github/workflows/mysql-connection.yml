@@ -18,6 +18,8 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: test
+        ports:
+          - 3306:3306
 
     steps:
       - uses: actions/checkout@v4
@@ -33,30 +35,30 @@ jobs:
       - name: Install MySQL client
         run: sudo apt-get update && sudo apt-get install -y default-mysql-client
 
-      # ✅ WAIT — NO PASSWORD, TCP ONLY
-      - name: Wait for MySQL (no auth)
+      # ✅ WAIT (NO PASSWORD YET)
+      - name: Wait for MySQL (unauthenticated)
         run: |
           echo "Waiting for MySQL..."
           for i in {1..60}; do
-            if mysqladmin ping -h mysql --protocol=tcp --silent; then
-              echo "✅ MySQL is up"
+            if mysqladmin ping -h127.0.0.1 --protocol=tcp --silent; then
+              echo "✅ MySQL is ready"
               break
             fi
             sleep 2
           done
 
-      # ✅ NOW AUTH IS SAFE
+      # ✅ CONFIGURE ROOT AUTH (NOW SAFE)
       - name: Configure MySQL root user
         run: |
-          mysql -h mysql --protocol=tcp -uroot -e "
+          mysql -h127.0.0.1 --protocol=tcp -uroot -e "
             ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'root';
             FLUSH PRIVILEGES;
           "
 
       - name: Create test database and table
         run: |
-          mysql -h mysql --protocol=tcp -uroot -proot -e "CREATE DATABASE IF NOT EXISTS test;"
-          mysql -h mysql --protocol=tcp -uroot -proot test -e "
+          mysql -h127.0.0.1 --protocol=tcp -uroot -proot -e "CREATE DATABASE IF NOT EXISTS test;"
+          mysql -h127.0.0.1 --protocol=tcp -uroot -proot test -e "
             CREATE TABLE IF NOT EXISTS users (
               id INT AUTO_INCREMENT PRIMARY KEY,
               name VARCHAR(255)
