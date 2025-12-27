@@ -27,10 +27,7 @@ jobs:
         ports:
           - 1433:1433
         options: >-
-          --health-cmd="bash -c 'for p in /opt/mssql-tools18/bin/sqlcmd /opt/mssql-tools/bin/sqlcmd; do if [ -x $p ]; then $p -S localhost -U sa -P \"P@ssw0rd12345!\" -Q \"SELECT 1\" && exit 0; fi; done; exit 1'"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=12
+          --name sqlserver
 
     name: PHP ${{ matrix.php-version }} + SQL Server 2022
 
@@ -61,7 +58,7 @@ jobs:
       - name: Wait for SQL Server
         run: |
           echo "Waiting for SQL Server..."
-          for i in {1..60}; do
+          for i in {1..90}; do
             if /opt/mssql-tools18/bin/sqlcmd -C -S 127.0.0.1 -U sa -P 'P@ssw0rd12345!' -Q "SELECT 1" &>/dev/null; then
               echo "✅ SQL Server is ready"
               exit 0
