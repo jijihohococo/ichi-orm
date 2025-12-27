@@ -71,17 +71,11 @@ class SQLServerConnection extends Connection
             $dsn .= ';APP=' . $config['application_name'];
         }
 
-        if (isset($config['encrypt'])) {
-            $dsn .= ';Encrypt=' . $config['encrypt'];
-        } else {
-            $dsn .= ';Encrypt=false';
-        }
+        $encrypt = isset($config['encrypt']) && $config['encrypt'] ? 'true' : 'false';
+        $dsn .= ';Encrypt=' . $encrypt;
 
-        if (isset($config['trust_server_certificate'])) {
-            $dsn .= ';TrustServerCertificate=' . $config['trust_server_certificate'];
-        } else {
-            $dsn .= ';TrustServerCertificate=true';
-        }
+        $trust = isset($config['trust_server_certificate']) && $config['trust_server_certificate'] ? 'true' : 'false';
+        $dsn .= ';TrustServerCertificate=' . $trust;
 
         if (isset($config['multiple_active_result_sets']) && $config['multiple_active_result_sets'] == false) {
             $dsn .= ';MultipleActiveResultSets=false';
