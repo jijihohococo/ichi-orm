@@ -37,6 +37,7 @@ class SQLServerConnection extends Connection
             if (in_array($charset, ['utf8', 'utf-8'], true)) {
                 $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_UTF8;
             } elseif ($charset == 'binary') {
+                echo "The value of PDO::SQLSRV_ENCODING_BINARY is: " . PDO::SQLSRV_ENCODING_BINARY;
                 $options[PDO::SQLSRV_ATTR_ENCODING] = 3;
             } elseif ($charset == 'system') {
                 $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_SYSTEM;
