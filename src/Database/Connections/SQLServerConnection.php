@@ -74,14 +74,13 @@ class SQLServerConnection extends Connection
         if (isset($config['encrypt'])) {
             $dsn .= ';Encrypt=' . $config['encrypt'];
         } else {
-            // Disable encryption by default to avoid self-signed certificate issues in CI
-            $dsn .= ';Encrypt=no';
+            $dsn .= ';Encrypt=false';
         }
 
         if (isset($config['trust_server_certificate'])) {
             $dsn .= ';TrustServerCertificate=' . $config['trust_server_certificate'];
         } else {
-            $dsn .= ';TrustServerCertificate=yes';
+            $dsn .= ';TrustServerCertificate=true';
         }
 
         if (isset($config['multiple_active_result_sets']) && $config['multiple_active_result_sets'] == false) {

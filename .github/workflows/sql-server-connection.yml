@@ -47,12 +47,14 @@ jobs:
           curl -s https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
           curl -s https://packages.microsoft.com/config/ubuntu/22.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
           sudo apt-get update
-          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql17 msodbcsql18 mssql-tools18 unixodbc-dev
+          # Use ONLY msodbcsql17 to avoid the ODBC 18 encryption/encoding conflict
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools unixodbc-dev
           sudo locale-gen en_US.UTF-8
           sudo update-locale LANG=en_US.UTF-8
-          echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.bashrc
-          echo 'export PATH="$PATH:/opt/mssql-tools18/bin"' >> ~/.profile
-          export PATH="$PATH:/opt/mssql-tools18/bin"
+          # Update paths for mssql-tools (no '18' in the folder name for v17)
+          echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
+          echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.profile
+          export PATH="$PATH:/opt/mssql-tools/bin"
 
       - name: Verify ODBC drivers
         run: |
