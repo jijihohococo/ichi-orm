@@ -39,8 +39,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          extensions: pdo_sqlsrv
+          extensions: pdo_sqlsrv-5.11.1
           coverage: none
+          ini-values: extension=pdo_sqlsrv.so, extension=sqlsrv.so
 
       - name: Install ODBC driver and sqlcmd
         run: |
