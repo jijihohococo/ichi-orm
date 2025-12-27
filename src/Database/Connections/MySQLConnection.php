@@ -55,8 +55,12 @@ class MySQLConnection extends Connection
         }
 
         if (isset($config['isolation_level']) && $config['isolation_level'] !== null) {
-            $isolationLevel = 'SESSION TRANSACTION ISOLATION LEVEL ' . $config['isolation_level'];
-            $option .= $mode == false && $charset == false && $time_zone == false ? 'set ' . $isolationLevel : ', ' . $isolationLevel;
+            $isolationLevel = 'SET SESSION TRANSACTION ISOLATION LEVEL ' . $config['isolation_level'];
+            if ($mode || $charset || $time_zone) {
+                $option .= '; ' . $isolationLevel;
+            } else {
+                $option .= $isolationLevel;
+            }
         }
 
         return $option;
