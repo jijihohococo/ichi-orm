@@ -46,13 +46,13 @@ abstract class Connection
         if (isset($config['options'])) {
             $option = $config['options'] + $option;
         }
-        
+
         // Merge extra options into constructor options (for driver-specific attributes like SQLSRV_ATTR_ENCODING)
         $extraOptions = $this->getExtraOptions($config);
         if ($extraOptions !== null && is_array($extraOptions)) {
             $option = $extraOptions + $option;
         }
-        
+
         $pdo = new PDO(
             $this->getDSN($config),
             $config['user_name'],
