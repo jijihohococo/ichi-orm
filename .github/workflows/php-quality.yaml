@@ -55,6 +55,18 @@ jobs:
             echo "PHPCBF_CHANGED=false" >> $GITHUB_ENV
           fi
 
+      # ✅ Ensure PAT is present so bot pushes can trigger workflows
+      - name: Verify PAT secret (required to trigger workflows on push)
+        if: env.PHPCBF_CHANGED == 'true'
+        env:
+          WORKFLOW_PUSH_TOKEN: ${{ secrets.WORKFLOW_PUSH_TOKEN }}
+        run: |
+          if [ -z "$WORKFLOW_PUSH_TOKEN" ]; then
+            echo "::error::Missing WORKFLOW_PUSH_TOKEN secret. Define a Personal Access Token in repository secrets so bot pushes trigger workflows."
+            echo "See: Settings → Secrets and variables → Actions → New repository secret (WORKFLOW_PUSH_TOKEN)"
+            exit 1
+          fi
+
       # 5️⃣ Commit & push fixes back to branch
       - name: Commit and push PHPCBF fixes
         if: env.PHPCBF_CHANGED == 'true'
