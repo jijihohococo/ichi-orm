@@ -59,6 +59,9 @@ abstract class Connection
             $config['user_password'],
             $option
         );
+        if ($extraOptions !== null && !is_array($extraOptions)) {
+            $pdo->exec($extraOptions);
+        }
         return $pdo;
     }
 }
