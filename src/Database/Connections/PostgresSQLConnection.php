@@ -13,14 +13,15 @@ class PostgresSQLConnection extends Connection
             throw new Exception("You must add database name and host for Postgres SQL Database Connection", 1);
         }
 
-        $dsn = $config['driver'] . ':';
+        $dsn = "{$config['driver']}:";
 
-        $dsn .= isset($config['host']) ? 'host=' . $config['host'] . ';' : '';
+        if (isset($config['host'])) {
+            $dsn .= "host={$config['host']};";
+        }
 
-        $dsn .= 'dbname=' . $config['dbname'];
-
+        $dsn .= "dbname={$config['dbname']}";
         if (isset($config['port'])) {
-            $dsn .= ';port=' . $config['port'];
+            $dsn .= ";port={$config['port']}";
         }
 
         return $this->getSSLOptions($config, $dsn);
@@ -38,18 +39,18 @@ class PostgresSQLConnection extends Connection
         if (isset($config['time_zone']) && $config['time_zone'] !== null) {
             $time_zone = true;
             $sql = "timezone = '{$config['time_zone']}'";
-            $option .= $charset == true ? ", " . $sql : "set " . $sql;
+            $option .= $charset == true ? ", {$sql}" : "set {$sql}";
         }
 
         if (isset($config['application_name']) && $config['application_name'] !== null) {
             $application_name = true;
             $sql = "application_name = '{$config['application_name']}'";
-            $option .= $charset == true && $time_zone == true ? ', ' . $sql : 'set ' . $sql;
+            $option .= $charset == true && $time_zone == true ? ", {$sql}" : "set {$sql}";
         }
 
         if (isset($config['synchronous_commit']) && $config['synchronous_commit'] !== null) {
             $sql = "set synchronous_commit = '{$config['synchronous_commit']}'";
-            $option .= $charset == true && $time_zone == true && $application_name == true ? ', ' . $sql : $sql;
+            $option .= $charset == true && $time_zone == true && $application_name == true ? ", {$sql}" : $sql;
         }
 
         return $option;
