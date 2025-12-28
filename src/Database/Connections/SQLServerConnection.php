@@ -63,19 +63,6 @@ class SQLServerConnection extends Connection
 
         $dsn .= ';Database=' . $config['dbname'];
 
-        // Add charset/encoding to DSN if specified
-        if (isset($config['charset'])) {
-            $charset = strtolower($config['charset']);
-            if (in_array($charset, ['utf8', 'utf-8'], true)) {
-                $dsn .= ';Charset=UTF-8';
-            } elseif ($charset === 'binary') {
-                // Binary doesn't need explicit DSN setting for ODBC
-                // but can be handled via connection attributes
-            } elseif ($charset === 'system') {
-                // System encoding doesn't need explicit DSN setting
-            }
-        }
-
         if (isset($config['readOnly']) && $config['readOnly'] == true) {
             $dsn .= ';ApplicationIntent=ReadOnly';
         }
