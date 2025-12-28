@@ -46,36 +46,16 @@ abstract class Connection
         if (isset($config['options'])) {
             $option = $config['options'] + $option;
         }
-        $extraOptions = $this->getExtraOptions($config);
-
-        if (is_array($extraOptions)) {
-            $option = $extraOptions + $option; // driver-specific PDO options
-        }
-
-        $sqlSrvBinaryEncoding = false;
-        if (
-            $extraOptions !== null &&
-            isset($extraOptions[PDO::SQLSRV_ATTR_ENCODING]) &&
-            $extraOptions[PDO::SQLSRV_ATTR_ENCODING] == PDO::SQLSRV_ENCODING_BINARY
-        ) {
-            $sqlSrvBinaryEncoding = true;
-            unset($option[PDO::SQLSRV_ATTR_ENCODING]);
-        }
-
         $pdo = new PDO(
             $this->getDSN($config),
             $config['user_name'],
             $config['user_password'],
-            $sqlSrvBinaryEncoding ?
-            [
-                PDO::SQLSRV_ATTR_ENCODING => PDO::SQLSRV_ENCODING_BINARY
-            ] : $option
+            $option
         );
-
-        if (is_string($extraOptions)) {
+        $extraOptions = $this->getExtraOptions($config);
+        if ($extraOptions !== null) {
             $pdo->prepare($extraOptions)->execute();
         }
-
         return $pdo;
     }
 }
