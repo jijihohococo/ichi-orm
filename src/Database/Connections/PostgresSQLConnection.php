@@ -37,17 +37,19 @@ class PostgresSQLConnection extends Connection
 
         if (isset($config['time_zone']) && $config['time_zone'] !== null) {
             $time_zone = true;
-            $sql = "time_zone = '{$config['time_zone']}'";
+            $sql = "timezone = '{$config['time_zone']}'";
             $option .= $charset == true ? ", " . $sql : "set " . $sql;
         }
 
         if (isset($config['application_name']) && $config['application_name'] !== null) {
             $application_name = true;
-            $option .= $charset == true && $time_zone == true ? ', application_name to ' . $config['application_name'] : 'set application_name to ' . $config['application_name'];
+            $sql = "application_name = '{$config['application_name']}'";
+            $option .= $charset == true && $time_zone == true ? ', ' . $sql : 'set ' . $sql;
         }
 
         if (isset($config['synchronous_commit']) && $config['synchronous_commit'] !== null) {
-            $option .= $charset == true && $time_zone == true && $application_name == true ? ', set synchronous_commit to ' . $config['synchronous_commit'] : 'set synchronous_commit to ' . $config['synchronous_commit'];
+            $sql = "set synchronous_commit = '{$config['synchronous_commit']}'";
+            $option .= $charset == true && $time_zone == true && $application_name == true ? ', ' . $sql : $sql;
         }
 
         return $option;

@@ -14,18 +14,12 @@ return [
     // Uses TCP port + charset + standard options
     'port_standard' => array_merge($base, [
         'port'          => 5432,
-        'charset'       => 'UTF8',
+        'charset'       => 'utf8',
     ]),
 
     // Minimal connection: host + port only
     'port_minimal' => array_merge($base, [
         'port'          => 5432,
-    ]),
-
-    // Connection with UTF-8 charset
-    'charset_utf8' => array_merge($base, [
-        'port'          => 5432,
-        'charset'       => 'utf8',
     ]),
 
     // Connection with time zone
