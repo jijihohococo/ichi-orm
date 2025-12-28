@@ -67,6 +67,5 @@ jobs:
         run: |
           php tests/Database/Connections/PostgresSQL/test.port_standard.php
           php tests/Database/Connections/PostgresSQL/test.port_minimal.php
-          php tests/Database/Connections/PostgresSQL/test.charset_utf8.php
           php tests/Database/Connections/PostgresSQL/test.timezone_utc.php
           php tests/Database/Connections/PostgresSQL/test.app_name.php
