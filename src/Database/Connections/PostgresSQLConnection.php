@@ -29,7 +29,7 @@ class PostgresSQLConnection extends Connection
     protected function getExtraOptions(array $config)
     {
         $option = null;
-        $charset = $time_zone = $application_name = $synchronous_commit = false;
+        $charset = $time_zone = $application_name = false;
         if (isset($config['charset']) && $config['charset'] !== null) {
             $charset = true;
             $option .= 'set names ' . $config['charset'];
@@ -47,7 +47,6 @@ class PostgresSQLConnection extends Connection
         }
 
         if (isset($config['synchronous_commit']) && $config['synchronous_commit'] !== null) {
-            $synchronous_commit = true;
             $option .= $charset == true && $time_zone == true && $application_name == true ? ', set synchronous_commit to ' . $config['synchronous_commit'] : 'set synchronous_commit to ' . $config['synchronous_commit'];
         }
 

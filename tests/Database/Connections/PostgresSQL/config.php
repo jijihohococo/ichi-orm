@@ -14,7 +14,7 @@ return [
     // Uses TCP port + charset + standard options
     'port_standard' => array_merge($base, [
         'port'          => 5432,
-        'charset'       => 'utf8',
+        'charset'       => 'UTF8',
     ]),
 
     // Minimal connection: host + port only
