@@ -66,7 +66,7 @@ abstract class Connection
             $this->getDSN($config),
             $config['user_name'],
             $config['user_password'],
-            $sqlSrvBinaryEncoding ? 
+            $sqlSrvBinaryEncoding ?
             [
                 PDO::SQLSRV_ATTR_ENCODING => PDO::SQLSRV_ENCODING_BINARY
             ] : $option
