@@ -44,7 +44,8 @@ class MySQLConnection extends Connection
 
         if (isset($config['charset']) && $config['charset'] !== null && $mode == true) {
             $charset = true;
-            $option .= $mode == true ? ', names ' . $config['charset'] : 'set names ' . $config['charset'];
+            $sql = "names '{$config['charset']}'";
+            $option .= $mode == true ? ", $sql" : "set $sql";
             $option .= $this->getCollation($config);
         }
 
