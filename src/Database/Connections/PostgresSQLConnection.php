@@ -32,7 +32,7 @@ class PostgresSQLConnection extends Connection
         $charset = $time_zone = $application_name = false;
         if (isset($config['charset']) && $config['charset'] !== null) {
             $charset = true;
-            $option .= 'set names ' . $config['charset'];
+            $option .= "set names '{$config['charset']}'";
         }
 
         if (isset($config['time_zone']) && $config['time_zone'] !== null) {
