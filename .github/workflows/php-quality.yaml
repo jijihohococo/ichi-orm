@@ -9,6 +9,14 @@ on:
     branches:
       - master
 
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: php-quality-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # 🔧 Auto-fix coding standards (only once, PHP 8.1)
   phpcbf-fix:
@@ -52,6 +60,7 @@ jobs:
         if: env.PHPCBF_CHANGED == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WORKFLOW_PUSH_TOKEN: ${{ secrets.WORKFLOW_PUSH_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -69,8 +78,12 @@ jobs:
           git fetch origin $BRANCH
           git rebase origin/$BRANCH
 
-          # Push PHPCBF fixes
-          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:$BRANCH
+          # Choose token: prefer PAT (WORKFLOW_PUSH_TOKEN) to allow triggering workflows on push
+          TOKEN="${WORKFLOW_PUSH_TOKEN}"
+          if [ -z "$TOKEN" ]; then TOKEN="${GITHUB_TOKEN}"; fi
+
+          # Push PHPCBF fixes (using chosen token)
+          git push https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:$BRANCH
 
   # 🧪 Run PHPCS + PHPStan on multiple PHP versions
   php-quality:
