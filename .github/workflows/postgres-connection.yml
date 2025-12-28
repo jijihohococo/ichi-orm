@@ -1,0 +1,72 @@
+name: Test PostgreSQL Connection
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  postgres-connection:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.3', '7.4', '8.0', '8.1', '8.2', '8.3']
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: P@ssw0rd12345!
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    name: PHP ${{ matrix.php-version }} + PostgreSQL 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: pgsql, pdo_pgsql
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-scripts
+
+      - name: Wait for PostgreSQL
+        run: |
+          echo "Waiting for PostgreSQL..."
+          for i in {1..30}; do
+            if pg_isready -h 127.0.0.1 -U postgres -d test &>/dev/null; then
+              echo "✅ PostgreSQL is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "PostgreSQL did not become ready"
+          exit 1
+        env:
+          PGPASSWORD: P@ssw0rd12345!
+
+      - name: Run PostgreSQL connection tests
+        run: |
+          php tests/Database/Connections/PostgresSQL/test.port_standard.php
+          php tests/Database/Connections/PostgresSQL/test.port_minimal.php
+          php tests/Database/Connections/PostgresSQL/test.charset_utf8.php
+          php tests/Database/Connections/PostgresSQL/test.timezone_utc.php
+          php tests/Database/Connections/PostgresSQL/test.app_name.php
