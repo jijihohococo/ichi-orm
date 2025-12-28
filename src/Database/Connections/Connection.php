@@ -54,6 +54,12 @@ abstract class Connection
         );
         $extraOptions = $this->getExtraOptions($config);
         if ($extraOptions !== null) {
+            if (is_array($extraOptions)) {
+                // Handle the case where extra options are an array
+                // Convert to a string or handle as needed
+                // For example, you might want to join the array into a string
+                $extraOptions = implode(', ', $extraOptions);
+            }
             $pdo->prepare($extraOptions)->execute();
         }
         return $pdo;
