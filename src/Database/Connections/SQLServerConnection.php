@@ -28,20 +28,24 @@ class SQLServerConnection extends Connection
     {
         $options = [];
 
-        if (isset($config['charset'])) {
-            if (!defined('\\PDO::SQLSRV_ATTR_ENCODING')) {
-                throw new Exception('pdo_sqlsrv extension is required to set charset options');
+        // Only apply SQLSRV attribute encoding if using pdo_sqlsrv driver
+        // (not ODBC driver) and the extension is available
+        if (isset($config['charset']) && extension_loaded('pdo_sqlsrv')) {
+            if (!defined('PDO::SQLSRV_ATTR_ENCODING')) {
+                return null;
             }
 
             $charset = strtolower($config['charset']);
             if (in_array($charset, ['utf8', 'utf-8'], true)) {
-                $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_UTF8;
-            } elseif ($charset == 'binary') {
-                $options[PDO::SQLSRV_ATTR_ENCODING] = 2;
-            } elseif ($charset == 'system') {
-                $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_SYSTEM;
-            } else {
-                throw new Exception("Unsupported SQL Server charset: {$config['charset']}");
+                if (defined('PDO::SQLSRV_ENCODING_UTF8')) {
+                    $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_UTF8;
+                }
+            } elseif ($charset === 'binary') {
+                $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_BINARY;
+            } elseif ($charset === 'system') {
+                if (defined('PDO::SQLSRV_ENCODING_SYSTEM')) {
+                    $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_SYSTEM;
+                }
             }
         }
 
@@ -58,6 +62,19 @@ class SQLServerConnection extends Connection
         }
 
         $dsn .= ';Database=' . $config['dbname'];
+
+        // Add charset/encoding to DSN if specified
+        if (isset($config['charset'])) {
+            $charset = strtolower($config['charset']);
+            if (in_array($charset, ['utf8', 'utf-8'], true)) {
+                $dsn .= ';Charset=UTF-8';
+            } elseif ($charset === 'binary') {
+                // Binary doesn't need explicit DSN setting for ODBC
+                // but can be handled via connection attributes
+            } elseif ($charset === 'system') {
+                // System encoding doesn't need explicit DSN setting
+            }
+        }
 
         if (isset($config['readOnly']) && $config['readOnly'] == true) {
             $dsn .= ';ApplicationIntent=ReadOnly';
