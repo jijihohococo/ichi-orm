@@ -42,13 +42,12 @@ jobs:
           extensions: sqlsrv, pdo_sqlsrv
           coverage: none
 
-      - name: Install ODBC driver and sqlcmd
+      - name: Install sqlcmd
         run: |
           curl -s https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
           curl -s https://packages.microsoft.com/config/ubuntu/22.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
           sudo apt-get update
-          # msodbcsql17 is the most stable for cross-PHP version testing
-          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql17 mssql-tools unixodbc-dev
+          sudo ACCEPT_EULA=Y apt-get install -y mssql-tools
           echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
           echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.profile
           export PATH="$PATH:/opt/mssql-tools/bin"
