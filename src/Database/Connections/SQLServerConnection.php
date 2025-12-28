@@ -28,24 +28,26 @@ class SQLServerConnection extends Connection
     {
         $options = [];
 
-        // Only apply SQLSRV attribute encoding if using pdo_sqlsrv driver
-        // (not ODBC driver) and the extension is available
         if (isset($config['charset']) && extension_loaded('pdo_sqlsrv')) {
             if (!defined('PDO::SQLSRV_ATTR_ENCODING')) {
                 return null;
             }
 
             $charset = strtolower($config['charset']);
-            if (in_array($charset, ['utf8', 'utf-8'], true)) {
-                if (defined('PDO::SQLSRV_ENCODING_UTF8')) {
-                    $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_UTF8;
-                }
-            } elseif ($charset === 'binary') {
+            if (
+                in_array($charset, ['utf8', 'utf-8'], true) &&
+                defined('PDO::SQLSRV_ENCODING_UTF8')
+            ) {
+                $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_UTF8;
+            }
+            if ($charset === 'binary' && PHP_MAJOR_VERSION >= 8) {
+                $options[PDO::SQLSRV_ATTR_ENCODING] = 3;
+            }
+            if ($charset === 'binary' && PHP_MAJOR_VERSION < 8) {
                 $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_BINARY;
-            } elseif ($charset === 'system') {
-                if (defined('PDO::SQLSRV_ENCODING_SYSTEM')) {
-                    $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_SYSTEM;
-                }
+            }
+            if ($charset === 'system' && defined('PDO::SQLSRV_ENCODING_SYSTEM')) {
+                $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_SYSTEM;
             }
         }
 
