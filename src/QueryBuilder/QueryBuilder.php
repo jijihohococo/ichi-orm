@@ -1,5 +1,4 @@
 <?php
-// filepath: /home/linlin/projects/watch-business-investment-management/vendor/jijihohococo/ichi-orm/src/QueryBuilder/QueryBuilder.php
 
 namespace JiJiHoHoCoCo\IchiORM\QueryBuilder;
 
@@ -284,6 +283,13 @@ class QueryBuilder
             }
         }
         return $string;
+    }
+
+    private function getSubQueryGroupBy($where)
+    {
+        if (isset($this->{$where}[$this->currentField . $this->currentSubQueryNumber]['groupBy'])) {
+            return $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['groupBy'];
+        }
     }
 
     public function bulkUpdate(array $attributes)
@@ -784,7 +790,9 @@ class QueryBuilder
         $previousCheck = $this->currentSubQueryNumber !== null ? $this->showCurrentSubQuery() : null;
         $previousField = $previousCheck !== null ? $this->{$previousCheck}[$this->currentField . $this->currentSubQueryNumber] : null;
         $this->currentSubQueryNumber = $this->numberOfSubQueries;
-        $this->currentField = $field;
+        $uniqueKey = $field . '__' . $this->whereKeyCounter;
+        $this->whereKeyCounter++;
+        $this->currentField = $uniqueKey;
         $this->{$where}[$this->currentField . $this->currentSubQueryNumber] = $this->makeSubQueryAttributes($previousField);
     }
 
