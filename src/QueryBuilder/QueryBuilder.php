@@ -1,4 +1,5 @@
 <?php
+
 // filepath: /home/linlin/projects/watch-business-investment-management/vendor/jijihohococo/ichi-orm/src/QueryBuilder/QueryBuilder.php
 
 namespace JiJiHoHoCoCo\IchiORM\QueryBuilder;
@@ -912,7 +913,7 @@ class QueryBuilder
             $this->checkInstance();
             $countParameters = count($parameters);
             $value = $operator = $field = null;
-            
+
             if ($countParameters == 2 || $countParameters == 3) {
                 $field = $parameters[0];
 
@@ -935,7 +936,7 @@ class QueryBuilder
                 if (is_array($value)) {
                     throw new Exception("You can add single value or sub query function in {$where} function", 1);
                 }
-                
+
                 if ($value == null && $operator == '=') {
                     $operator = ' IS ';
                 }
@@ -946,19 +947,19 @@ class QueryBuilder
                 if (!is_callable($value) && $this->currentSubQueryNumber == null) {
                     $this->checkUnionQuery();
                     $this->boot();
-                    
+
                     // Create unique key for same field multiple times
                     $uniqueKey = $field . '__' . $this->whereKeyCounter;
                     $this->whereKeyCounter++;
-                    
+
                     $this->{$where}[$uniqueKey] = $value;
                     $this->operators[$uniqueKey . $where] = makeOperator($operator);
-                    
+
                     if ($value !== null && $where !== 'whereColumn') {
                         $this->fields[] = $value;
                     }
                 }
-                
+
                 if (is_callable($value) && $this->currentSubQueryNumber == null) {
                     $this->checkUnionQuery();
                     $this->boot();
@@ -969,7 +970,7 @@ class QueryBuilder
                     $value($query);
                     $this->makeDefaultSubQueryData();
                 }
-                
+
                 if (!is_callable($value) && $this->currentSubQueryNumber !== null) {
                     $currentQuery = $this->showCurrentSubQuery();
                     $this->checkSubQueryUnionQuery($currentQuery);
@@ -978,7 +979,7 @@ class QueryBuilder
                         $this->fields[] = $value;
                     }
                 }
-                
+
                 if (is_callable($value) && $this->currentSubQueryNumber !== null) {
                     $check = $this->showCurrentSubQuery();
                     $this->checkSubQueryUnionQuery($check);
@@ -1134,7 +1135,7 @@ class QueryBuilder
             foreach ($this->where as $uniqueKey => $value) {
                 // Extract original field name from unique key (remove __counter suffix)
                 $field = preg_replace('/__\d+$/', '', $uniqueKey);
-                
+
                 if (isset($this->whereSubQuery[$uniqueKey . 'where'])) {
                     $string .= $i == 0 ? $uniqueKey . $this->operators[$uniqueKey . 'where'] . $value : ' AND ' . $uniqueKey . $this->operators[$uniqueKey . 'where'] . $value;
                 } else {
