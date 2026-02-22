@@ -1,4 +1,5 @@
 <?php
+// filepath: /home/linlin/projects/watch-business-investment-management/vendor/jijihohococo/ichi-orm/src/QueryBuilder/QueryBuilder.php
 
 namespace JiJiHoHoCoCo\IchiORM\QueryBuilder;
 
@@ -14,7 +15,7 @@ class QueryBuilder
     private $instance;
     private $getID;
     private $table;
-    private $fields;
+    private $fields = [];
     private $where;
     private $whereColumn;
     private $orWhere;
@@ -56,6 +57,7 @@ class QueryBuilder
     private $unableUnionQuery = [];
     private $caller = [];
     private $calledClass;
+    private $whereKeyCounter = 0;
 
     public function setCalledClass(string $calledClass)
     {
@@ -282,13 +284,6 @@ class QueryBuilder
             }
         }
         return $string;
-    }
-
-    private function getSubQueryGroupBy($where)
-    {
-        if (isset($this->{$where}[$this->currentField . $this->currentSubQueryNumber]['groupBy'])) {
-            return $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['groupBy'];
-        }
     }
 
     public function bulkUpdate(array $attributes)
@@ -641,7 +636,6 @@ class QueryBuilder
         }
     }
 
-
     public function select(array $fields)
     {
         try {
@@ -649,7 +643,6 @@ class QueryBuilder
             $this->checkInstance();
             if ($this->currentSubQueryNumber == null) {
                 $this->checkUnionQuery();
-                // If addSelect was used after using addOnlySelect function
                 if ($this->select == null && $this->addSelect == true) {
                     throw new Exception("You must not use addOnlySelect function before", 1);
                 }
@@ -821,17 +814,23 @@ class QueryBuilder
         }
     }
 
+    private function normalizeParameters(array $parameters)
+    {
+        if (count($parameters) === 1 && is_array($parameters[0])) {
+            return $parameters[0];
+        }
+        return $parameters;
+    }
 
-    public function where(array $parameters)
+    public function where(...$parameters)
     {
         $this->caller = getCallerInfo();
-        $this->makeWhereQuery($parameters, 'where');
+        $this->makeWhereQuery($this->normalizeParameters($parameters), 'where');
         return $this;
     }
 
     private function makeSubQueryInSubQuery($whereSelect, $value, $field, $check)
     {
-        // if there is sub query function in sub query //
         $previousField = $this->currentField;
         $previousSubQueryNumber = $this->currentSubQueryNumber;
         $query = $this;
@@ -840,17 +839,12 @@ class QueryBuilder
         $value($query);
 
         if ($whereSelect !== 'selectQuery') {
-            // put the subquery result in the "where" OR "whereColumn" OR "whereIn" OR "whereNotIn" OR "orWhere" array of previous subquery//
             $this->{$check}[$previousField . $previousSubQueryNumber][$whereSelect] = $this->subQuery;
-            // put the subquery result in the "where" OR "whereColumn" OR "whereIn" OR "whereNotIn" OR "orWhere" array of previous subquery//
         }
 
         if ($whereSelect == 'selectQuery') {
-            // put the subquery result in the "where" OR "whereColumn" OR "whereIn" OR "whereNotIn" OR "orWhere" array of previous subquery//
             $this->{$check}[$previousField . $previousSubQueryNumber][$whereSelect][$field] = $this->subQuery;
-            // put the subquery result in the "where" OR "whereColumn" OR "whereIn" OR "whereNotIn" OR "orWhere" array of previous subquery//
         }
-
 
         $this->currentField = $previousField;
         $this->currentSubQueryNumber = $previousSubQueryNumber;
@@ -858,12 +852,9 @@ class QueryBuilder
 
     public function from(string $className)
     {
-
         try {
             $this->caller = getCallerInfo();
-
             checkClass($className);
-
             $this->checkInstance();
             if ($this->currentSubQueryNumber !== null) {
                 $currentQuery = $this->showCurrentSubQuery();
@@ -901,25 +892,27 @@ class QueryBuilder
         }
     }
 
-    public function whereColumn(array $parameters)
+    public function whereColumn(...$parameters)
     {
         $this->caller = getCallerInfo();
-        $this->makeWhereQuery($parameters, 'whereColumn');
+        $this->makeWhereQuery($this->normalizeParameters($parameters), 'whereColumn');
         return $this;
     }
 
-    public function orWhere(array $parameters)
+    public function orWhere(...$parameters)
     {
         $this->caller = getCallerInfo();
-        $this->makeWhereQuery($parameters, 'orWhere');
+        $this->makeWhereQuery($this->normalizeParameters($parameters), 'orWhere');
         return $this;
     }
+
     private function makeWhereQuery(array $parameters, $where)
     {
         try {
             $this->checkInstance();
             $countParameters = count($parameters);
             $value = $operator = $field = null;
+            
             if ($countParameters == 2 || $countParameters == 3) {
                 $field = $parameters[0];
 
@@ -942,6 +935,7 @@ class QueryBuilder
                 if (is_array($value)) {
                     throw new Exception("You can add single value or sub query function in {$where} function", 1);
                 }
+                
                 if ($value == null && $operator == '=') {
                     $operator = ' IS ';
                 }
@@ -949,16 +943,22 @@ class QueryBuilder
                     $operator = ' IS NOT ';
                 }
 
-
                 if (!is_callable($value) && $this->currentSubQueryNumber == null) {
                     $this->checkUnionQuery();
                     $this->boot();
-                    $this->{$where}[$field] = $value;
-                    $this->operators[$field . $where] = makeOperator($operator);
+                    
+                    // Create unique key for same field multiple times
+                    $uniqueKey = $field . '__' . $this->whereKeyCounter;
+                    $this->whereKeyCounter++;
+                    
+                    $this->{$where}[$uniqueKey] = $value;
+                    $this->operators[$uniqueKey . $where] = makeOperator($operator);
+                    
                     if ($value !== null && $where !== 'whereColumn') {
                         $this->fields[] = $value;
                     }
                 }
+                
                 if (is_callable($value) && $this->currentSubQueryNumber == null) {
                     $this->checkUnionQuery();
                     $this->boot();
@@ -969,6 +969,7 @@ class QueryBuilder
                     $value($query);
                     $this->makeDefaultSubQueryData();
                 }
+                
                 if (!is_callable($value) && $this->currentSubQueryNumber !== null) {
                     $currentQuery = $this->showCurrentSubQuery();
                     $this->checkSubQueryUnionQuery($currentQuery);
@@ -977,6 +978,7 @@ class QueryBuilder
                         $this->fields[] = $value;
                     }
                 }
+                
                 if (is_callable($value) && $this->currentSubQueryNumber !== null) {
                     $check = $this->showCurrentSubQuery();
                     $this->checkSubQueryUnionQuery($check);
@@ -993,7 +995,6 @@ class QueryBuilder
 
     private function makeInQuery($whereIn, $field, $value)
     {
-
         try {
             $this->checkInstance();
 
@@ -1059,6 +1060,7 @@ class QueryBuilder
     {
         return $this->offset;
     }
+
     private function getSubQueryLimit($where)
     {
         if (isset($this->{$where}[$this->currentField . $this->currentSubQueryNumber])) {
@@ -1087,11 +1089,8 @@ class QueryBuilder
 
     private function checkSubQueryTrashed($where)
     {
-
         $subClassName = $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['className'];
-
         $className = $subClassName == null ? $this->getCalledClass() : $subClassName;
-
         return property_exists($className, 'deleted_at') && $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['withTrashed'] == false;
     }
 
@@ -1132,18 +1131,17 @@ class QueryBuilder
         if ($this->where !== null) {
             $string = ' WHERE ';
 
-            foreach ($this->where as $key => $value) {
-                if (isset($this->whereSubQuery[$key . 'where'])) {
-                    // WHERE SUBQUERY //
-
-                    $string .= $i == 0 ? $key . $this->operators[$key . 'where'] . $value : ' AND ' . $key . $this->operators[$key . 'where'] . $value;
+            foreach ($this->where as $uniqueKey => $value) {
+                // Extract original field name from unique key (remove __counter suffix)
+                $field = preg_replace('/__\d+$/', '', $uniqueKey);
+                
+                if (isset($this->whereSubQuery[$uniqueKey . 'where'])) {
+                    $string .= $i == 0 ? $uniqueKey . $this->operators[$uniqueKey . 'where'] . $value : ' AND ' . $uniqueKey . $this->operators[$uniqueKey . 'where'] . $value;
                 } else {
-                    // WHERE //
                     if ($value == null) {
-                        $string .= $i == 0 ? $key . $this->operators[$key . 'where'] . 'NULL' : ' AND ' . $key . $this->operators[$key . 'where'] . 'NULL';
+                        $string .= $i == 0 ? $field . $this->operators[$uniqueKey . 'where'] . 'NULL' : ' AND ' . $field . $this->operators[$uniqueKey . 'where'] . 'NULL';
                     } else {
-                        $string .= $i == 0 ?
-                            $key . $this->operators[$key . 'where'] . '?' : ' AND ' . $key . $this->operators[$key . 'where'] . '?';
+                        $string .= $i == 0 ? $field . $this->operators[$uniqueKey . 'where'] . '?' : ' AND ' . $field . $this->operators[$uniqueKey . 'where'] . '?';
                     }
                 }
                 $i++;
@@ -1163,9 +1161,11 @@ class QueryBuilder
         $string = null;
         $i = 0;
         if ($this->whereColumn !== null) {
-            foreach ($this->whereColumn as $key => $value) {
-                $result = $key . $this->operators[$key . 'whereColumn'] . $value;
+            foreach ($this->whereColumn as $uniqueKey => $value) {
+                $field = preg_replace('/__\d+$/', '', $uniqueKey);
+                $result = $field . $this->operators[$uniqueKey . 'whereColumn'] . $value;
                 $string .= $i == 0 && $this->where == null && $this->addTrashed == false ? ' WHERE ' . $result : ' AND ' . $result;
+                $i++;
             }
         }
         return $string;
@@ -1197,14 +1197,12 @@ class QueryBuilder
     {
         $string = null;
         if ($this->orWhere !== null) {
-            foreach ($this->orWhere as $key => $value) {
-                if (isset($this->whereSubQuery[$key . 'orWhere'])) {
-                    // OR WHERE SUBQUERY //
-                    $string .= ' OR ' . $key . $this->operators[$key . 'orWhere'] . $value;
+            foreach ($this->orWhere as $uniqueKey => $value) {
+                $field = preg_replace('/__\d+$/', '', $uniqueKey);
+                if (isset($this->whereSubQuery[$uniqueKey . 'orWhere'])) {
+                    $string .= ' OR ' . $uniqueKey . $this->operators[$uniqueKey . 'orWhere'] . $value;
                 } else {
-                    // OR WHERE QUERY //
-
-                    $string .= ' OR ' . $key . $this->operators[$key . 'orWhere'] . '?';
+                    $string .= ' OR ' . $field . $this->operators[$uniqueKey . 'orWhere'] . '?';
                 }
             }
         }
@@ -1267,7 +1265,6 @@ class QueryBuilder
                 }
             } elseif ($current['whereIn'] !== null && !is_array($current['whereIn'])) {
                 $currentField = getCurrentField($this->subQueries, $this->currentField, $this->currentSubQueryNumber);
-
                 $string .= $current['where'] == null && $current['whereColumn'] == null && $current['addTrashed'] == false ? ' WHERE ' . $currentField . ' IN (' . $current['whereIn'] . ')' : ' AND ' . $currentField . ' IN (' . $current['whereIn'] . ')';
             }
         }
@@ -1314,7 +1311,6 @@ class QueryBuilder
                 }
             } elseif ($current['whereNotIn'] !== null && !is_array($current['whereNotIn'])) {
                 $currentField = getCurrentField($this->subQueries, $this->currentField, $this->currentSubQueryNumber);
-
                 $string .= $current['where'] == null && $current['whereColumn'] && $current['whereIn'] == null && $current['addTrashed'] == false ? ' WHERE ' . $currentField . ' NOT IN (' . $current['whereNotIn'] . ')' : ' AND ' . $currentField . ' NOT IN (' . $current['whereNotIn'] . ')';
             }
         }
@@ -1414,6 +1410,7 @@ class QueryBuilder
         $this->selectQuery = null;
         $this->subQueries = [];
         $this->subQueryLimitNumber = 0;
+        $this->whereKeyCounter = 0;
 
         $this->useUnionQuery = [0 => true];
         $this->unionQuery = [0 => null];
@@ -1454,6 +1451,7 @@ class QueryBuilder
         $this->subQueries = [];
         $this->toSQL = false;
         $this->subQueryLimitNumber = 0;
+        $this->whereKeyCounter = 0;
 
         $this->useUnionQuery = [0 => true];
         $this->unionQuery = [0 => null];
@@ -1609,7 +1607,6 @@ class QueryBuilder
     {
         $class = $this->getCalledClass();
         if (!empty($this->selectedFields) && isset($this->selectedFields[$class]) && $this->select !== $this->table . '.*' && $this->select !== null) {
-            // FOR ADD SELECT WITH OR WITHOUT SELECT
             foreach (get_object_vars($this) as $key => $value) {
                 if (!isset($this->selectedFields[$class][$key])) {
                     unset($this->{$key});
@@ -1617,7 +1614,6 @@ class QueryBuilder
             }
         }
         if ($this->select == null && !empty($this->selectedFields) && isset($this->selectedFields[$class])) {
-            // FOR ADD ONLY SELECT
             foreach (get_object_vars($this) as $key => $value) {
                 if (isset($this->selectedFields[$class][$key])) {
                     $this->{$key} = $value;
@@ -1802,7 +1798,6 @@ class QueryBuilder
             $this->checkInstance();
             if ($this->currentSubQueryNumber == null) {
                 $this->checkUnionQuery();
-                // If addSelect was used after using addOnlySelect function
                 if ($this->select == null && $this->addSelect == true) {
                     throw new Exception("You must not use addOnlySelect function before", 1);
                 }
@@ -1843,7 +1838,6 @@ class QueryBuilder
             $this->checkInstance();
             if ($this->currentSubQueryNumber == null) {
                 $this->checkUnionQuery();
-                // If addOnlySelect function was used after using select or addSelect function //
                 if ($this->select !== $this->table . '.*') {
                     throw new Exception("You need to use only addOnlySelect function to select the data", 1);
                 }
@@ -1855,11 +1849,9 @@ class QueryBuilder
             if ($this->currentSubQueryNumber !== null) {
                 $check = $this->showCurrentSubQuery();
                 $this->checkSubQueryUnionQuery($check);
-                // If addOnlySelect function was used after using select or addSelect function //
                 if ($this->{$check}[$this->currentField . $this->currentSubQueryNumber]['select'] !== $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['table'] . '.*') {
                     throw new Exception("You need to use only addOnlySelect function to select the data", 1);
                 }
-
 
                 $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['select'] = null;
                 $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['addSelect'] = true;
@@ -1983,22 +1975,22 @@ class QueryBuilder
         $this->getJoin($sqlArray, $join);
     }
 
-    public function innerJoin(array $parameters)
+    public function innerJoin(...$parameters)
     {
         $this->caller = getCallerInfo();
-        return $this->sqlJoin($parameters, ' INNER JOIN ');
+        return $this->sqlJoin($this->normalizeParameters($parameters), ' INNER JOIN ');
     }
 
-    public function leftJoin(array $parameters)
+    public function leftJoin(...$parameters)
     {
         $this->caller = getCallerInfo();
-        return $this->sqlJoin($parameters, ' LEFT JOIN ');
+        return $this->sqlJoin($this->normalizeParameters($parameters), ' LEFT JOIN ');
     }
 
-    public function rightJoin(array $parameters)
+    public function rightJoin(...$parameters)
     {
         $this->caller = getCallerInfo();
-        return $this->sqlJoin($parameters, ' RIGHT JOIN ');
+        return $this->sqlJoin($this->normalizeParameters($parameters), ' RIGHT JOIN ');
     }
 
     private function sqlJoin(array $parameters, string $join)

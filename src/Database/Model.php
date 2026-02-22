@@ -114,9 +114,9 @@ abstract class Model
         return self::getQueryBuilder()->offset($offset);
     }
 
-    public static function where()
+    public static function where(...$parameters)
     {
-        return self::getQueryBuilder()->where(func_get_args());
+        return self::getQueryBuilder()->where($parameters);
     }
 
     public static function from(string $className)
@@ -124,14 +124,14 @@ abstract class Model
         return self::getQueryBuilder()->from($className);
     }
 
-    public static function whereColumn()
+    public static function whereColumn(...$parameters)
     {
-        return self::getQueryBuilder()->whereColumn(func_get_args());
+        return self::getQueryBuilder()->whereColumn($parameters);
     }
 
-    public static function orWhere()
+    public static function orWhere(...$parameters)
     {
-        return self::getQueryBuilder()->orWhere(func_get_args());
+        return self::getQueryBuilder()->orWhere($parameters);
     }
 
     public static function whereIn(string $field, $value)
@@ -199,19 +199,19 @@ abstract class Model
         return self::getQueryBuilder()->paginate($per_page);
     }
 
-    public static function innerJoin()
+    public static function innerJoin(...$parameters)
     {
-        return self::getQueryBuilder()->innerJoin(func_get_args());
+        return self::getQueryBuilder()->innerJoin($parameters);
     }
 
-    public static function leftJoin()
+    public static function leftJoin(...$parameters)
     {
-        return self::getQueryBuilder()->leftJoin(func_get_args());
+        return self::getQueryBuilder()->leftJoin($parameters);
     }
 
-    public static function rightJoin()
+    public static function rightJoin(...$parameters)
     {
-        return self::getQueryBuilder()->rightJoin(func_get_args());
+        return self::getQueryBuilder()->rightJoin($parameters);
     }
 
     protected function refersTo(string $class, string $field, string $referField = 'id')
@@ -229,7 +229,7 @@ abstract class Model
         self::getQueryBuilder()->observe($modelObserver);
     }
 
-    protected static function getObserverSubect()
+    protected static function getObserverSubject()
     {
         return self::getQueryBuilder()->getObserverSubject();
     }
