@@ -1940,15 +1940,29 @@ class QueryBuilder
     private function getJoin($sqlArray, $joinSQL)
     {
         foreach ($sqlArray as $table => $related) {
-            $this->joinSQL .= $joinSQL . $table . " ON " . $related[1] . $related[2] . $related[0];
+            $this->joinSQL .= $joinSQL . $table . " ON " . $related[1] . " " . $related[2] . " " . $related[0];
         }
     }
 
     private function getSubQueryJoin($where, $sqlArray, $joinSQL)
     {
         foreach ($sqlArray as $table => $related) {
-            $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['joinSQL'] .= $joinSQL . $table . " ON " . $related[1] . $related[2] . $related[0];
+            $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['joinSQL'] .= $joinSQL . $table . " ON " . $related[1] . " " . $related[2] . " " . $related[0];
         }
+    }
+
+    private function parseJoinParameters(array $parameters): array
+    {
+        $table = $parameters[0];
+        $ownField = $parameters[1];
+        $third = $parameters[2];
+        $fourth = $parameters[3];
+
+        if (in_array($third, databaseOperators(), true)) {
+            return [$table, $ownField, $fourth, $third];
+        }
+
+        return [$table, $ownField, $third, $fourth];
     }
 
     private function getJoinSQL()
@@ -1963,10 +1977,7 @@ class QueryBuilder
 
     private function makeSubQueryJoin(array $parameters, string $join)
     {
-        $table = $parameters[0];
-        $ownField = $parameters[1];
-        $field = $parameters[2];
-        $operator = $parameters[3];
+        [$table, $ownField, $field, $operator] = $this->parseJoinParameters($parameters);
         $sqlArray = [];
         $sqlArray[$table] = [$ownField, $field, $operator];
         $this->getSubQueryJoin($this->showCurrentSubQuery(), $sqlArray, $join);
@@ -1974,10 +1985,7 @@ class QueryBuilder
 
     private function makeJoin(array $parameters, string $join)
     {
-        $table = $parameters[0];
-        $ownField = $parameters[1];
-        $field = $parameters[2];
-        $operator = $parameters[3];
+        [$table, $ownField, $field, $operator] = $this->parseJoinParameters($parameters);
         $sqlArray = [];
         $sqlArray[$table] = [$ownField, $field, $operator];
         $this->getJoin($sqlArray, $join);
