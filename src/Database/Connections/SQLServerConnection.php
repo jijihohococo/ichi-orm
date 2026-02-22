@@ -26,7 +26,32 @@ class SQLServerConnection extends Connection
 
     protected function getExtraOptions(array $config)
     {
-        return null;
+        $options = [];
+
+        if (isset($config['charset']) && extension_loaded('pdo_sqlsrv')) {
+            if (!defined('PDO::SQLSRV_ATTR_ENCODING')) {
+                return null;
+            }
+
+            $charset = strtolower($config['charset']);
+            if (
+                in_array($charset, ['utf8', 'utf-8'], true) &&
+                defined('PDO::SQLSRV_ENCODING_UTF8')
+            ) {
+                $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_UTF8;
+            }
+            if ($charset === 'binary' && PHP_MAJOR_VERSION >= 8) {
+                $options[PDO::SQLSRV_ATTR_ENCODING] = 3;
+            }
+            if ($charset === 'binary' && PHP_MAJOR_VERSION < 8) {
+                $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_BINARY;
+            }
+            if ($charset === 'system' && defined('PDO::SQLSRV_ENCODING_SYSTEM')) {
+                $options[PDO::SQLSRV_ATTR_ENCODING] = PDO::SQLSRV_ENCODING_SYSTEM;
+            }
+        }
+
+        return $options ?: null;
     }
 
     private function getSqlSrvDsn(array $config)
@@ -39,10 +64,6 @@ class SQLServerConnection extends Connection
         }
 
         $dsn .= ';Database=' . $config['dbname'];
-
-        if (isset($config['charset'])) {
-            $dsn .= ';CharacterSet=' . $config['charset'];
-        }
 
         if (isset($config['readOnly']) && $config['readOnly'] == true) {
             $dsn .= ';ApplicationIntent=ReadOnly';
@@ -58,10 +79,14 @@ class SQLServerConnection extends Connection
 
         if (isset($config['encrypt'])) {
             $dsn .= ';Encrypt=' . $config['encrypt'];
+        } else {
+            $dsn .= ';Encrypt=false';
         }
 
         if (isset($config['trust_server_certificate'])) {
             $dsn .= ';TrustServerCertificate=' . $config['trust_server_certificate'];
+        } else {
+            $dsn .= ';TrustServerCertificate=true';
         }
 
         if (isset($config['multiple_active_result_sets']) && $config['multiple_active_result_sets'] == false) {

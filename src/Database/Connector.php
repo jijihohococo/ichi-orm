@@ -67,6 +67,9 @@ class Connector
             $this->connections['sqlsrv'] = [
                 'driver' => 'sqlsrv'
             ];
+            $this->connections['sqlite'] = [
+                'driver' => 'sqlite'
+            ];
         }
     }
 

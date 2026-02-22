@@ -256,3 +256,19 @@ if (!function_exists('showCallerInfo')) {
         return null;
     }
 }
+
+if (!function_exists('getallheaders')) {
+    function getallheaders()
+    {
+        $headers = [];
+
+        foreach ($_SERVER as $key => $value) {
+            if (strpos($key, 'HTTP_') === 0) {
+                $name = str_replace('_', '-', substr($key, 5));
+                $headers[$name] = $value;
+            }
+        }
+
+        return $headers;
+    }
+}
