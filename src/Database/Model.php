@@ -70,7 +70,10 @@ abstract class Model
 
     public function update(array $attribute)
     {
-        return self::getQueryBuilder()->update($attribute);
+        $queryBuilder = self::getQueryBuilder();
+        $getID = $queryBuilder->getID();
+        $queryBuilder->{$getID} = $this->{$getID};
+        return $queryBuilder->update($attribute);
     }
 
     public static function find($id)
