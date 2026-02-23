@@ -58,6 +58,16 @@ class QueryBuilder
     private $calledClass;
     private $whereKeyCounter = 0;
 
+    private function getModelArrayKeys()
+    {
+        $className = $this->getCalledClass();
+        if ($className === null || !class_exists($className)) {
+            return [];
+        }
+        $model = new $className();
+        return get_object_vars($model);
+    }
+
     public function setCalledClass(string $calledClass)
     {
         $this->calledClass = $calledClass;
@@ -302,7 +312,7 @@ class QueryBuilder
             }
             $this->boot();
             $instance = $this;
-            $arrayKeys = get_object_vars($instance);
+            $arrayKeys = $this->getModelArrayKeys();
             if (empty($arrayKeys)) {
                 throw new Exception("You need to add column data", 1);
             }
@@ -367,7 +377,7 @@ class QueryBuilder
             }
             $this->boot();
             $instance = $this;
-            $arrayKeys = get_object_vars($instance);
+            $arrayKeys = $this->getModelArrayKeys();
             if (empty($arrayKeys)) {
                 throw new Exception("You need to add column data", 1);
             }
@@ -426,7 +436,7 @@ class QueryBuilder
             }
             $this->boot();
             $instance = $this;
-            $arrayKeys = get_object_vars($instance);
+            $arrayKeys = $this->getModelArrayKeys();
             if (empty($arrayKeys)) {
                 throw new Exception("You need to add column data", 1);
             }
@@ -461,7 +471,7 @@ class QueryBuilder
             $object = mappingModelData([
                 $getID => $pdo->lastInsertId()
             ], $insertedData, $instance);
-            $className = $this->className;
+            $className = $this->className ?? $this->getCalledClass();
             $this->disableBooting();
 
             $this->makeObserver($className, 'create', $object);
@@ -472,9 +482,9 @@ class QueryBuilder
         }
     }
 
-    private function makeObserver(string $className, string $method, $parameters)
+    private function makeObserver(?string $className, string $method, $parameters)
     {
-        if ($this->observerSubject !== null && $this->observerSubject->check($className)) {
+        if ($className !== null && $this->observerSubject !== null && $this->observerSubject->check($className)) {
             $this->observerSubject->use($className, $method, $parameters);
         }
     }
@@ -487,7 +497,7 @@ class QueryBuilder
                 throw new Exception("You need to put non-empty array data", 1);
             }
             $getID = $this->getID();
-            $arrayKeys = get_object_vars($this);
+            $arrayKeys = $this->getModelArrayKeys();
             if (empty($arrayKeys)) {
                 throw new Exception("You need to add column data", 1);
             }
