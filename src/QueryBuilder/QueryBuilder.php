@@ -505,20 +505,49 @@ class QueryBuilder
             $updatedBindValues = [];
             $updatedFields = null;
             $insertedData = [];
-            foreach ($arrayKeys as $key => $value) {
-                $updatedFields .= $key . '=?,';
-                if (isset($attribute[$key])) {
-                    $insertedData[$key] = $attribute[$key];
-                } elseif ($key == 'updated_at') {
-                    $insertedData[$key] = isset($attribute[$key]) ? $attribute[$key] : now();
-                } else {
+
+            foreach ($attribute as $key => $value) {
+                if ($key === $getID) {
+                    continue;
+                }
+                if (array_key_exists($key, $arrayKeys)) {
                     $insertedData[$key] = $value;
                 }
             }
+
+            if (array_key_exists('updated_at', $arrayKeys) && !array_key_exists('updated_at', $insertedData)) {
+                $insertedData['updated_at'] = now();
+            }
+
+            if (empty($insertedData)) {
+                throw new Exception("You need to add available column data", 1);
+            }
+
+            foreach ($insertedData as $key => $value) {
+                $updatedFields .= $key . '=?,';
+            }
+
             $insertedArrayValues = array_values($insertedData);
             $updatedBindValues = array_merge($updatedBindValues, $insertedArrayValues);
             $updatedFields = substr($updatedFields, 0, -1);
-            $stmt = $this->connectDatabase()->prepare("UPDATE " . $this->getTable() . " SET " . $updatedFields . " WHERE " . $getID . "=" . $this->{$getID});
+
+            $whereQuery = null;
+            $idValue = isset($this->{$getID}) ? $this->{$getID} : null;
+
+            if ($idValue !== null && $idValue !== '') {
+                $whereQuery = " WHERE " . $getID . " = ?";
+                $updatedBindValues[] = $idValue;
+            } elseif ($this->where !== null || $this->whereColumn !== null || $this->whereIn !== null || $this->whereNotIn !== null) {
+                $whereQuery = $this->getWhere() . $this->getWhereColumn() . $this->getWhereIn() . $this->getWhereNotIn();
+                $fields = $this->getFields();
+                if (!empty($fields)) {
+                    $updatedBindValues = array_merge($updatedBindValues, $fields);
+                }
+            } else {
+                throw new Exception("Model id or where condition is required for update", 1);
+            }
+
+            $stmt = $this->connectDatabase()->prepare("UPDATE " . $this->getTable() . " SET " . $updatedFields . $whereQuery);
             bindValues($stmt, $updatedBindValues);
             $stmt->execute();
             $object = mappingModelData([
