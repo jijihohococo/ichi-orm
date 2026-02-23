@@ -13,8 +13,8 @@ abstract class Model
     {
         if (self::$queryBuilder == null) {
             self::$queryBuilder = new QueryBuilder();
-            self::$queryBuilder->setCalledClass(get_called_class());
         }
+        self::$queryBuilder->setCalledClass(get_called_class());
         return clone self::$queryBuilder;
     }
 
