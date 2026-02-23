@@ -200,6 +200,8 @@ class QueryBuilder
     {
         $this->getID = $this->getID();
         $this->table = $this->getTable();
+        $calledClass = $this->getCalledClass();
+        $this->className = $calledClass !== null && class_exists($calledClass) ? $calledClass : null;
         $this->select = $this->select ?? $this->table . '.*';
         $this->addSelect = $this->addSelect ?? false;
         $this->withTrashed = $this->withTrashed ?? false;
