@@ -702,18 +702,7 @@ class QueryBuilder
                 }
 
                 foreach ($fields as $key => $field) {
-                    if (strpos($field, '(') == false && strpos($field, ')') == false && !isset($this->selectedFields[$this->className][$field])) {
-                        $selectedField = function () use ($field) {
-                            if (strpos($field, '.') !== false) {
-                                $getField = explode('.', $field);
-                                return $getField[1];
-                            } else {
-                                return $field;
-                            }
-                        };
-                        $newSelectedField = $selectedField();
-                        $this->selectedFields[$this->className][$newSelectedField] = $newSelectedField;
-                    }
+                    $this->trackSelectedField((string) $field);
                     $this->select .= $key + 1 == count($fields) ? $field : $field . ',';
                 }
             } else {
@@ -1637,6 +1626,9 @@ class QueryBuilder
                 $stmt->execute();
                 $this->disableBooting();
                 $object = $stmt->fetchAll(PDO::FETCH_CLASS, $class);
+                if ($this->shouldFilterSelectedFields($class)) {
+                    $object = $this->filterSelectedFields($object, $class);
+                }
                 $this->selectedFields = [];
                 $this->select = $this->table = null;
                 if ($this->unionQuery !== null) {
@@ -1671,6 +1663,77 @@ class QueryBuilder
                 }
             }
         }
+    }
+
+    private function shouldFilterSelectedFields(?string $class): bool
+    {
+        return $class !== null &&
+            !empty($this->selectedFields) &&
+            isset($this->selectedFields[$class]) &&
+            !isset($this->selectedFields[$class]['*']) &&
+            $this->select !== null &&
+            $this->table !== null &&
+            $this->select !== $this->table . '.*';
+    }
+
+    private function trackSelectedField(string $field): void
+    {
+        $class = $this->className ?? $this->getCalledClass();
+        if ($class === null) {
+            return;
+        }
+
+        $normalizedField = trim($field);
+        if ($normalizedField === '*') {
+            $this->selectedFields[$class]['*'] = '*';
+            return;
+        }
+
+        if (str_ends_with($normalizedField, '.*')) {
+            $this->selectedFields[$class]['*'] = '*';
+            return;
+        }
+
+        $parts = preg_split('/\s+as\s+/i', $normalizedField);
+        if (is_array($parts) && count($parts) === 2) {
+            $alias = trim($parts[1], "` \t\n\r\0\x0B");
+            if ($alias !== '') {
+                $this->selectedFields[$class][$alias] = $alias;
+            }
+            return;
+        }
+
+        if (strpos($normalizedField, '(') !== false || strpos($normalizedField, ')') !== false) {
+            return;
+        }
+
+        if (strpos($normalizedField, '.') !== false) {
+            $segments = explode('.', $normalizedField);
+            $normalizedField = end($segments);
+        }
+
+        $column = trim($normalizedField, "` \t\n\r\0\x0B");
+        if ($column !== '') {
+            $this->selectedFields[$class][$column] = $column;
+        }
+    }
+
+    private function filterSelectedFields(array $objects, string $class): array
+    {
+        $allowedFields = $this->selectedFields[$class] ?? [];
+        if (empty($allowedFields)) {
+            return $objects;
+        }
+
+        foreach ($objects as $object) {
+            foreach (get_object_vars($object) as $field => $value) {
+                if (!isset($allowedFields[$field])) {
+                    unset($object->{$field});
+                }
+            }
+        }
+
+        return $objects;
     }
 
     private function checkSubQuery($where)
@@ -1965,6 +2028,10 @@ class QueryBuilder
             $countStmt->execute($fields);
 
             $objectArray = $stmt->fetchAll(PDO::FETCH_CLASS, $this->getCalledClass());
+            $class = $this->getCalledClass();
+            if ($this->shouldFilterSelectedFields($class)) {
+                $objectArray = $this->filterSelectedFields($objectArray, $class);
+            }
             $this->selectedFields = [];
             $this->select = $this->table = null;
             $this->disableBooting();
