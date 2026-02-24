@@ -702,18 +702,7 @@ class QueryBuilder
                 }
 
                 foreach ($fields as $key => $field) {
-                    if (strpos($field, '(') == false && strpos($field, ')') == false && !isset($this->selectedFields[$this->className][$field])) {
-                        $selectedField = function () use ($field) {
-                            if (strpos($field, '.') !== false) {
-                                $getField = explode('.', $field);
-                                return $getField[1];
-                            } else {
-                                return $field;
-                            }
-                        };
-                        $newSelectedField = $selectedField();
-                        $this->selectedFields[$this->className][$newSelectedField] = $newSelectedField;
-                    }
+                    $this->trackSelectedField((string) $field);
                     $this->select .= $key + 1 == count($fields) ? $field : $field . ',';
                 }
             } else {
@@ -1681,9 +1670,52 @@ class QueryBuilder
         return $class !== null &&
             !empty($this->selectedFields) &&
             isset($this->selectedFields[$class]) &&
+            !isset($this->selectedFields[$class]['*']) &&
             $this->select !== null &&
             $this->table !== null &&
             $this->select !== $this->table . '.*';
+    }
+
+    private function trackSelectedField(string $field): void
+    {
+        $class = $this->className ?? $this->getCalledClass();
+        if ($class === null) {
+            return;
+        }
+
+        $normalizedField = trim($field);
+        if ($normalizedField === '*') {
+            $this->selectedFields[$class]['*'] = '*';
+            return;
+        }
+
+        if (str_ends_with($normalizedField, '.*')) {
+            $this->selectedFields[$class]['*'] = '*';
+            return;
+        }
+
+        $parts = preg_split('/\s+as\s+/i', $normalizedField);
+        if (is_array($parts) && count($parts) === 2) {
+            $alias = trim($parts[1], "` \t\n\r\0\x0B");
+            if ($alias !== '') {
+                $this->selectedFields[$class][$alias] = $alias;
+            }
+            return;
+        }
+
+        if (strpos($normalizedField, '(') !== false || strpos($normalizedField, ')') !== false) {
+            return;
+        }
+
+        if (strpos($normalizedField, '.') !== false) {
+            $segments = explode('.', $normalizedField);
+            $normalizedField = end($segments);
+        }
+
+        $column = trim($normalizedField, "` \t\n\r\0\x0B");
+        if ($column !== '') {
+            $this->selectedFields[$class][$column] = $column;
+        }
     }
 
     private function filterSelectedFields(array $objects, string $class): array
