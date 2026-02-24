@@ -1637,6 +1637,9 @@ class QueryBuilder
                 $stmt->execute();
                 $this->disableBooting();
                 $object = $stmt->fetchAll(PDO::FETCH_CLASS, $class);
+                if ($this->shouldFilterSelectedFields($class)) {
+                    $object = $this->filterSelectedFields($object, $class);
+                }
                 $this->selectedFields = [];
                 $this->select = $this->table = null;
                 if ($this->unionQuery !== null) {
@@ -1671,6 +1674,34 @@ class QueryBuilder
                 }
             }
         }
+    }
+
+    private function shouldFilterSelectedFields(?string $class): bool
+    {
+        return $class !== null &&
+            !empty($this->selectedFields) &&
+            isset($this->selectedFields[$class]) &&
+            $this->select !== null &&
+            $this->table !== null &&
+            $this->select !== $this->table . '.*';
+    }
+
+    private function filterSelectedFields(array $objects, string $class): array
+    {
+        $allowedFields = $this->selectedFields[$class] ?? [];
+        if (empty($allowedFields)) {
+            return $objects;
+        }
+
+        foreach ($objects as $object) {
+            foreach (get_object_vars($object) as $field => $value) {
+                if (!isset($allowedFields[$field])) {
+                    unset($object->{$field});
+                }
+            }
+        }
+
+        return $objects;
     }
 
     private function checkSubQuery($where)
@@ -1965,6 +1996,10 @@ class QueryBuilder
             $countStmt->execute($fields);
 
             $objectArray = $stmt->fetchAll(PDO::FETCH_CLASS, $this->getCalledClass());
+            $class = $this->getCalledClass();
+            if ($this->shouldFilterSelectedFields($class)) {
+                $objectArray = $this->filterSelectedFields($objectArray, $class);
+            }
             $this->selectedFields = [];
             $this->select = $this->table = null;
             $this->disableBooting();
