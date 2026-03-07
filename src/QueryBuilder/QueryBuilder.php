@@ -974,10 +974,10 @@ class QueryBuilder
                     throw new Exception("You can add single value or sub query function in {$where} function", 1);
                 }
 
-                if ($value == null && $operator == '=') {
+                if ($value === null && $operator == '=') {
                     $operator = ' IS ';
                 }
-                if ($value == null && ($operator == '!=' || $operator == '<>')) {
+                if ($value === null && ($operator == '!=' || $operator == '<>')) {
                     $operator = ' IS NOT ';
                 }
 
@@ -1040,7 +1040,7 @@ class QueryBuilder
                 throw new Exception("You can add only array values or sub query in {$whereIn} function", 1);
             }
 
-            if ((is_array($value) || $value == null) && $this->currentSubQueryNumber == null) {
+            if ((is_array($value) || $value === null) && $this->currentSubQueryNumber == null) {
                 $this->checkUnionQuery();
                 $this->boot();
                 $this->{$whereIn}[$field] = $value;
@@ -1057,7 +1057,7 @@ class QueryBuilder
                 $value($query);
                 $this->makeDefaultSubQueryData();
             }
-            if ((is_array($value) || $value == null) && $this->currentSubQueryNumber !== null) {
+            if ((is_array($value) || $value === null) && $this->currentSubQueryNumber !== null) {
                 $currentQuery = $this->showCurrentSubQuery();
                 $this->checkSubQueryUnionQuery($currentQuery);
                 $this->setSubWhereIn($currentQuery, $value, $field, $whereIn);
@@ -1142,7 +1142,7 @@ class QueryBuilder
                 $string = ' WHERE ';
                 foreach ($current['where'] as $key => $value) {
                     $operator = $current['operators'][$key . 'where'];
-                    if ($value == null) {
+                    if ($value === null) {
                         $string .= $i == 0 ? $key . $operator . 'NULL' : ' AND ' . $key . $operator . 'NULL';
                     } else {
                         $string .= $i == 0 ? $key . $operator . '?' : ' AND ' . $key . $operator . '?';
@@ -1176,7 +1176,7 @@ class QueryBuilder
                 if (isset($this->whereSubQuery[$uniqueKey . 'where'])) {
                     $string .= $i == 0 ? $uniqueKey . $this->operators[$uniqueKey . 'where'] . $value : ' AND ' . $uniqueKey . $this->operators[$uniqueKey . 'where'] . $value;
                 } else {
-                    if ($value == null) {
+                    if ($value === null) {
                         $string .= $i == 0 ? $field . $this->operators[$uniqueKey . 'where'] . 'NULL' : ' AND ' . $field . $this->operators[$uniqueKey . 'where'] . 'NULL';
                     } else {
                         $string .= $i == 0 ? $field . $this->operators[$uniqueKey . 'where'] . '?' : ' AND ' . $field . $this->operators[$uniqueKey . 'where'] . '?';
