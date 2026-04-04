@@ -79,7 +79,7 @@ class " . $createdFile . " extends Model
 namespace " . $this->getNamespace($defaulFolder) . ";
 use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 
-class " . $createdFile . " implements Observer
+class " . $createdFile . " implements ModelObserver
 {
 
 	public function create(" . $variable . ")
@@ -248,7 +248,7 @@ class " . $createdFile . " extends ResourceCollection
                 if ($count == 1 && $inputFile[0] !== null && !file_exists($baseDir . '/' . $inputFile[0] . '.php')) {
                     $this->createdFile = $inputFile[0];
                     $filename = $baseDir . '/' . $this->createdFile . '.php';
-                    if (!fopen($filename, 'w')) {
+                    if (!@touch($filename)) {
                         die('Unable to create ' . $createdOption);
                     }
                     $createdFileContent = $this->checkContent($command, $defaulFolder, $this->createdFile);
@@ -278,11 +278,11 @@ class " . $createdFile . " extends ResourceCollection
                     }
 
                     $filename = $currentFolder . '/' . $this->createdFile . '.php';
-                    if (!fopen($filename, 'w')) {
+                    if (!@touch($filename)) {
                         die('Unable to create ' . $createdOption);
                     }
                     $createdFileContent = $this->checkContent($command, $newCreatedFolder, $this->createdFile);
-                    file_put_contents($currentFolder . '/' . $this->createdFile . '.php', $createdFileContent, LOCK_EX);
+                    file_put_contents($filename, $createdFileContent, LOCK_EX);
                     return $this->success($this->createdFile, $createdOption);
                 }
             } catch (Exception $e) {
