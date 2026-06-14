@@ -11,7 +11,6 @@ use JiJiHoHoCoCo\IchiORM\Database\NullModel;
 class QueryBuilder
 {
     private $limitOne = " LIMIT 1";
-    private $instance;
     private $getID;
     private $table;
     private $fields = [];
