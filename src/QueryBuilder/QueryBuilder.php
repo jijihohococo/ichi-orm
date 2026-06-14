@@ -356,8 +356,8 @@ class QueryBuilder
             $updateString = 'UPDATE ' . $this->table . ' SET ' . substr(implode('', $updatedFields), 0, -2);
             $stmt = $instance->connectDatabase()->prepare($updateString);
             $i = 0;
-            foreach ($updatedBindValues as $fieldNumber => $fields) {
-                foreach ($fields as $key => $value) {
+            foreach ($updatedBindValues as $fields) {
+                foreach ($fields as $value) {
                     $i++;
                     $stmt->bindValue($i, $value, getPDOBindDataType($value));
                 }
