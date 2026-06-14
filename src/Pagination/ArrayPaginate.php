@@ -12,8 +12,7 @@ class ArrayPaginate
         $objectArray = [];
         $dataArray = array_values($dataArray);
 
-        foreach (range($start + 1, $start + $per_page) as $key => $value) {
-            // code...
+        foreach (range($start + 1, $start + $per_page) as $value) {
             if (isset($dataArray[$value - 1])) {
                 $objectArray[] = $dataArray[$value - 1];
             }
