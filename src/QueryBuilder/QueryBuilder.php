@@ -1979,7 +1979,7 @@ class QueryBuilder
         }
     }
 
-    public function paginate(int $per_page = 10)
+    public function paginate(int $perPage = 10)
     {
         try {
             $this->caller = getCallerInfo();
@@ -1992,7 +1992,7 @@ class QueryBuilder
             }
             $this->boot();
             $paginate = new Paginate();
-            $paginate->setPaginateData($per_page);
+            $paginate->setPaginateData($perPage);
 
             $selectData = $this->getSelect();
             $getWhere = $this->getWhere();
@@ -2013,7 +2013,7 @@ class QueryBuilder
                 $getGroupBy .
                 $getHaving;
 
-            $sql = "SELECT * FROM (" . $mainSQL . ") AS paginate_data LIMIT " . $per_page . " OFFSET " . $paginate->getStart();
+            $sql = "SELECT * FROM (" . $mainSQL . ") AS paginate_data LIMIT " . $perPage . " OFFSET " . $paginate->getStart();
 
             $fields = $this->getFields();
             $pdo = $this->connectDatabase();
