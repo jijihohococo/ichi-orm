@@ -4,17 +4,17 @@ namespace JiJiHoHoCoCo\IchiORM\Pagination;
 
 class Paginate
 {
-    private $per_page;
+    private $perPage;
     private $pageCheck;
-    private $current_page;
+    private $currentPage;
     private $start;
 
-    public function setPaginateData(int $per_page)
+    public function setPaginateData(int $perPage)
     {
-        $this->per_page = $per_page;
+        $this->perPage = $perPage;
         $this->pageCheck = pageCheck();
-        $this->current_page = $this->pageCheck ? intval($_GET['page']) : 1;
-        $this->start = ($this->current_page > 1) ? ($this->per_page * ($this->current_page - 1)) : 0;
+        $this->currentPage = $this->pageCheck ? intval($_GET['page']) : 1;
+        $this->start = ($this->currentPage > 1) ? ($this->perPage * ($this->currentPage - 1)) : 0;
     }
 
     public function getStart()
@@ -24,9 +24,9 @@ class Paginate
 
     public function paginate($total, $objectArray)
     {
-        $total_pages = ceil($total / $this->per_page);
-        $next_page = $this->current_page + 1;
-        $previous_page = $this->pageCheck && $_GET['page'] - 1 >= 1 ? $_GET['page'] - 1 : null;
+        $totalPages = ceil($total / $this->perPage);
+        $nextPage = $this->currentPage + 1;
+        $previousPage = $this->pageCheck && $_GET['page'] - 1 >= 1 ? $_GET['page'] - 1 : null;
         $from = $this->start + 1;
 
         $domainName = getDomainName();
@@ -34,16 +34,16 @@ class Paginate
         $to = ($from + $totalPerPage) - 1;
 
         return [
-            'current_page' => $this->current_page,
+            'current_page' => $this->currentPage,
             'data' => $objectArray,
             'first_page_url' => makePaginateLink($domainName, '1'),
-            'from' => $from > $total_pages ? null : $from,
-            'last_page' => $total_pages,
-            'last_page_url' => makePaginateLink($domainName, $total_pages),
-            'next_page_url' => $next_page <= $total_pages ? makePaginateLink($domainName, $next_page) : null,
+            'from' => $from > $totalPages ? null : $from,
+            'last_page' => $totalPages,
+            'last_page_url' => makePaginateLink($domainName, $totalPages),
+            'next_page_url' => $nextPage <= $totalPages ? makePaginateLink($domainName, $nextPage) : null,
             'path' => $domainName,
-            'per_page' => $this->per_page,
-            'prev_page_url' => $previous_page !== null ? makePaginateLink($domainName, $previous_page) : null,
+            'per_page' => $this->perPage,
+            'prev_page_url' => $previousPage !== null ? makePaginateLink($domainName, $previousPage) : null,
             'to' => $to <= 0 || $to > $total ? null : $to,
             'total' => $totalPerPage
         ];

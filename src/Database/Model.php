@@ -9,6 +9,11 @@ abstract class Model
 {
     private static $queryBuilder;
 
+    public function __construct()
+    {
+        self::getQueryBuilder()->new();
+    }
+
     private static function getQueryBuilder()
     {
         if (self::$queryBuilder == null) {
@@ -170,11 +175,6 @@ abstract class Model
     public static function get()
     {
         return self::getQueryBuilder()->get();
-    }
-
-    public function __construct()
-    {
-        self::getQueryBuilder()->new();
     }
 
     public static function toArray()

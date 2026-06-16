@@ -11,7 +11,6 @@ use JiJiHoHoCoCo\IchiORM\Database\NullModel;
 class QueryBuilder
 {
     private $limitOne = " LIMIT 1";
-    private $instance;
     private $getID;
     private $table;
     private $fields = [];
@@ -357,8 +356,8 @@ class QueryBuilder
             $updateString = 'UPDATE ' . $this->table . ' SET ' . substr(implode('', $updatedFields), 0, -2);
             $stmt = $instance->connectDatabase()->prepare($updateString);
             $i = 0;
-            foreach ($updatedBindValues as $fieldNumber => $fields) {
-                foreach ($fields as $key => $value) {
+            foreach ($updatedBindValues as $fields) {
+                foreach ($fields as $value) {
                     $i++;
                     $stmt->bindValue($i, $value, getPDOBindDataType($value));
                 }
@@ -1980,7 +1979,7 @@ class QueryBuilder
         }
     }
 
-    public function paginate(int $per_page = 10)
+    public function paginate(int $perPage = 10)
     {
         try {
             $this->caller = getCallerInfo();
@@ -1993,7 +1992,7 @@ class QueryBuilder
             }
             $this->boot();
             $paginate = new Paginate();
-            $paginate->setPaginateData($per_page);
+            $paginate->setPaginateData($perPage);
 
             $selectData = $this->getSelect();
             $getWhere = $this->getWhere();
@@ -2014,7 +2013,7 @@ class QueryBuilder
                 $getGroupBy .
                 $getHaving;
 
-            $sql = "SELECT * FROM (" . $mainSQL . ") AS paginate_data LIMIT " . $per_page . " OFFSET " . $paginate->getStart();
+            $sql = "SELECT * FROM (" . $mainSQL . ") AS paginate_data LIMIT " . $perPage . " OFFSET " . $paginate->getStart();
 
             $fields = $this->getFields();
             $pdo = $this->connectDatabase();
