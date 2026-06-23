@@ -50,16 +50,16 @@ class ModelCommand
         return $this->resourcePath;
     }
 
-    private function getNamespace(string $defaulFolder)
+    private function getNamespace(string $defaultFolder)
     {
-        return str_replace('/', '\\', ucfirst($defaulFolder));
+        return str_replace('/', '\\', ucfirst($defaultFolder));
     }
 
-    private function makeModelContent(string $defaulFolder, string $createdFile)
+    private function makeModelContent(string $defaultFolder, string $createdFile)
     {
         return "<?php
 
-namespace " . $this->getNamespace($defaulFolder) . ";
+namespace " . $this->getNamespace($defaultFolder) . ";
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
 class " . $createdFile . " extends Model
@@ -69,14 +69,14 @@ class " . $createdFile . " extends Model
 ";
     }
 
-    private function makeObserverContent(string $defaulFolder, string $createdFile)
+    private function makeObserverContent(string $defaultFolder, string $createdFile)
     {
 
         $variable = '$' . strtolower(str_replace('Observer', '', $createdFile));
 
         return "<?php
 
-namespace " . $this->getNamespace($defaulFolder) . ";
+namespace " . $this->getNamespace($defaultFolder) . ";
 use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 
 class " . $createdFile . " implements ModelObserver
@@ -110,12 +110,12 @@ class " . $createdFile . " implements ModelObserver
 ";
     }
 
-    private function makeResourceContent(string $defaulFolder, string $createdFile)
+    private function makeResourceContent(string $defaultFolder, string $createdFile)
     {
         $variable = '$data';
         return "<?php
 
-namespace " . $this->getNamespace($defaulFolder) . ";
+namespace " . $this->getNamespace($defaultFolder) . ";
 use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
 
 class " . $createdFile . " extends ResourceCollection
@@ -162,19 +162,19 @@ class " . $createdFile . " extends ResourceCollection
         }
     }
 
-    private function checkContent(string $command, string $defaulFolder, string $createdFile)
+    private function checkContent(string $command, string $defaultFolder, string $createdFile)
     {
         switch ($command) {
             case $this->modelCommandLine:
-                return $this->makeModelContent($defaulFolder, $createdFile);
+                return $this->makeModelContent($defaultFolder, $createdFile);
                 break;
 
             case $this->observerCommandLine:
-                return $this->makeObserverContent($defaulFolder, $createdFile);
+                return $this->makeObserverContent($defaultFolder, $createdFile);
                 break;
 
             case $this->resourceCommandLine:
-                return $this->makeResourceContent($defaulFolder, $createdFile);
+                return $this->makeResourceContent($defaultFolder, $createdFile);
                 break;
         }
     }
@@ -226,15 +226,15 @@ class " . $createdFile . " extends ResourceCollection
         ) {
             $command = $argv[1];
             $createdOption = $this->checkOption($command);
-            $defaulFolder = $this->checkPath($command);
-            $baseDir = $dir . '/' . $defaulFolder;
+            $defaultFolder = $this->checkPath($command);
+            $baseDir = $dir . '/' . $defaultFolder;
             if (substr($argv[2], -1) == '/') {
                 return $this->wrongCommand();
             }
             try {
                 if (!is_dir($baseDir)) {
                     $createdFolder = null;
-                    $basefolder = explode('/', $defaulFolder);
+                    $basefolder = explode('/', $defaultFolder);
                     foreach ($basefolder as $key => $folder) {
                         $createdFolder .= $key == 0 ? $dir . '/' . $folder : '/' . $folder;
                         if (!is_dir($createdFolder)) {
@@ -251,7 +251,7 @@ class " . $createdFile . " extends ResourceCollection
                     if (!@touch($filename)) {
                         die('Unable to create ' . $createdOption);
                     }
-                    $createdFileContent = $this->checkContent($command, $defaulFolder, $this->createdFile);
+                    $createdFileContent = $this->checkContent($command, $defaultFolder, $this->createdFile);
                     file_put_contents($filename, $createdFileContent, LOCK_EX);
                     return $this->success($this->createdFile, $createdOption);
                 }
@@ -271,7 +271,7 @@ class " . $createdFile . " extends ResourceCollection
                     $newCreatedFolder = null;
                     foreach ($inputFile as $key => $folder) {
                         $currentFolder .= $key == 0 ? $baseDir . '/' . $folder : '/' . $folder;
-                        $newCreatedFolder .= $key == 0 ? $defaulFolder . '/' . $folder : '/' . $folder;
+                        $newCreatedFolder .= $key == 0 ? $defaultFolder . '/' . $folder : '/' . $folder;
                         if (!is_dir($currentFolder)) {
                             mkdir($currentFolder);
                         }
