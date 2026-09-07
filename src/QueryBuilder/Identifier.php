@@ -2,6 +2,8 @@
 
 namespace JiJiHoHoCoCo\IchiORM\QueryBuilder;
 
+use InvalidArgumentException;
+
 final class Identifier
 {
     public static function column(string $column): string
