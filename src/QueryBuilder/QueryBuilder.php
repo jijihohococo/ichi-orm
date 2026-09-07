@@ -1690,7 +1690,7 @@ class QueryBuilder
             return;
         }
 
-        if (str_ends_with($normalizedField, '.*')) {
+        if (substr($normalizedField, -2) === '.*') {
             $this->selectedFields[$class]['*'] = '*';
             return;
         }
