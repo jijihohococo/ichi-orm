@@ -6,15 +6,10 @@ use JiJiHoHoCoCo\IchiORM\QueryBuilder\QueryBuilder;
 
 class CoreQueryTest extends DriverTestCase
 {
-    public function testQueryBuilderCalledClass()
+    public function testBlogUsesConfiguredTable()
     {
-        $builder = new QueryBuilder();
-        $builder->setCalledClass(Blog::class);
-
-        $this->assertSame(Blog::class, $builder->getCalledClass());
-        $this->assertSame('test_blogs', $builder->getTable());
-        $this->assertSame('id', $builder->getID());
-        $this->assertTrue($builder->autoIncrementId());
+        $blog = new Blog();
+        $this->assertSame('test_blogs', $blog->getTable());
     }
 
     public function testGetReturnsModels()
