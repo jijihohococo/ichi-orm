@@ -399,7 +399,9 @@ class QueryBuilder
                     throw new Exception("You need to put non-empty array data", 1);
                 }
                 $insertedData = [];
-                unset($attribute[$getID]);
+                if ($instance->autoIncrementId() == true) {
+                    unset($attribute[$getID]);
+                }
                 unset($attribute['deleted_at']);
                 foreach ($arrayKeys as $key => $value) {
                     if (!isset($insertedFields[$key . ','])) {
@@ -502,15 +504,11 @@ class QueryBuilder
             if (empty($arrayKeys)) {
                 throw new Exception("You need to add column data", 1);
             }
-            unset($arrayKeys[$getID]);
             $updatedBindValues = [];
             $updatedFields = null;
             $insertedData = [];
 
             foreach ($attribute as $key => $value) {
-                if ($key === $getID) {
-                    continue;
-                }
                 if (array_key_exists($key, $arrayKeys)) {
                     $insertedData[$key] = $value;
                 }
@@ -594,6 +592,10 @@ class QueryBuilder
             $this->caller = getCallerInfo();
             $this->boot();
             $pdo = $this->connectDatabase();
+            $arrayKeys = $this->getModelArrayKeys();
+            if (!array_key_exists($field, $arrayKeys)) {
+                throw new Exception("You need to put the available column data to findBy", 1);
+            }
             $stmt = $pdo->prepare($this->getSelect() . " WHERE " . $field . " = ? " . $this->limitOne);
             bindValues($stmt, [
                 0 => $value
@@ -992,7 +994,7 @@ class QueryBuilder
                     $this->operators[$uniqueKey . $where] = makeOperator($operator);
 
                     if ($value !== null && $where !== 'whereColumn') {
-                        $this->fields[] = $value;
+                        $this->fields[] = Identifier::column($value);
                     }
                 }
 
@@ -1012,7 +1014,7 @@ class QueryBuilder
                     $this->checkSubQueryUnionQuery($currentQuery);
                     $this->setSubWhere($currentQuery, $value, $field, $operator, $where);
                     if ($value !== null && $where !== 'whereColumn') {
-                        $this->fields[] = $value;
+                        $this->fields[] = Identifier::column($value);
                     }
                 }
 
@@ -1044,7 +1046,7 @@ class QueryBuilder
                 $this->boot();
                 $this->{$whereIn}[$field] = $value;
                 if ($value !== null) {
-                    $this->fields[] = $value;
+                    $this->fields[] = Identifier::column($value);
                 }
             }
             if (is_callable($value) && $this->currentSubQueryNumber == null) {
@@ -1061,7 +1063,7 @@ class QueryBuilder
                 $this->checkSubQueryUnionQuery($currentQuery);
                 $this->setSubWhereIn($currentQuery, $value, $field, $whereIn);
                 if ($value !== null) {
-                    $this->fields[] = $value;
+                    $this->fields[] = Identifier::column($value);
                 }
             }
             if (is_callable($value) && $this->currentSubQueryNumber !== null) {
