@@ -76,3 +76,6 @@ jobs:
           php tests/Database/Connections/MySQL/test.host_only.php
           php tests/Database/Connections/MySQL/test.port_timezone_only.php
           php tests/Database/Connections/MySQL/test.socket_modes_full.php
+
+      - name: Run MySQL query and ORM tests
+        run: php tests/Database/Queries/run.php mysql

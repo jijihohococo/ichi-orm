@@ -69,3 +69,6 @@ jobs:
           php tests/Database/Connections/PostgresSQL/test.port_minimal.php
           php tests/Database/Connections/PostgresSQL/test.timezone_utc.php
           php tests/Database/Connections/PostgresSQL/test.app_name.php
+
+      - name: Run PostgreSQL query and ORM tests
+        run: php tests/Database/Queries/run.php pgsql
