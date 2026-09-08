@@ -925,6 +925,10 @@ class QueryBuilder
     {
         try {
             $obj = $this->getSubQueryClassObject($where, $className);
+            $reflectionMethod = new ReflectionMethod($obj, 'getTable');
+            if ($reflectionMethod->getDeclaringClass()->getName() !== self::class) {
+                $reflectionMethod->setAccessible(true);
+            }
             $table = $obj->getTable();
             if ($this->{$where}[$this->currentField . $this->currentSubQueryNumber]['select'] !== $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['table'] . '.*') {
                 throw new Exception("You must use from function before selecting the data", 1);
