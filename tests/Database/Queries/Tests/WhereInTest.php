@@ -50,7 +50,10 @@ class WhereInTest extends DriverTestCase
     public function testWhereInSubquery()
     {
         $rows = Blog::whereIn('author_id', function ($query) {
-            return $query->select(['id'])->where('name', 'John')->get();
+            return $query->from(Author::class)
+                ->select(['id'])
+                ->where('name', 'John')
+                ->get();
         })->get();
 
         $this->assertCount(2, $rows);
@@ -59,7 +62,10 @@ class WhereInTest extends DriverTestCase
     public function testWhereNotInSubquery()
     {
         $rows = Blog::whereNotIn('author_id', function ($query) {
-            return $query->select(['id'])->where('name', 'John')->get();
+            return $query->from(Author::class)
+                ->select(['id'])
+                ->where('name', 'John')
+                ->get();
         })->get();
 
         $this->assertCount(4, $rows);

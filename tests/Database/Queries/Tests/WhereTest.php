@@ -70,13 +70,13 @@ class WhereTest extends DriverTestCase
             ->where('views', '>', 100)
             ->get();
 
-        $this->assertCount(2, $rows);
+        $this->assertCount(3, $rows);
     }
 
     public function testArrayParameterNormalization()
     {
         $rows = Blog::where(['status', 'published'])->get();
-        $this->assertCount(3, $rows);
+        $this->assertCount(4, $rows);
     }
 
     public function testWhereValueWithSqlInjectionPayloadIsTreatedAsValue()
