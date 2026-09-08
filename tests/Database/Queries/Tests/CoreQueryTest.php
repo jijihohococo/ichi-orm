@@ -99,9 +99,8 @@ class CoreQueryTest extends DriverTestCase
         };
         $sql = $query->toSQL()->get();
         $rows = $query->get();
-        echo $sql;
-
-        echo "\n";
+        echo "\nSQL:\n";
+        echo $sql . "\n";
         echo 'Actual count: ' . count($rows) . "\n";
         foreach ($rows as $row) {
             echo 'Blog ID: ' . $row->id . ', Author ID: ' . $row->author_id . "\n";
