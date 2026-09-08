@@ -1762,8 +1762,9 @@ class QueryBuilder
         $currentField = $this->currentField;
         $currentSubQueryNumber = $this->currentSubQueryNumber;
         if ($this->currentField . $this->currentSubQueryNumber == array_key_first($this->subQueries)) {
-            $this->{$where}[$this->currentField] = $mainSQL;
-            if ($where == 'where' || $where == 'whereColumn' || $where == 'orWhere' || $where == 'whereIn' || $where == 'whereNotIn') {
+            $targetField = preg_replace('/__\d+$/', '', $this->currentField);
+            $this->{$where}[$where === 'whereIn' || $where === 'whereNotIn' ? $targetField : $this->currentField] = $mainSQL;
+            if ($where == 'where' || $where == 'whereColumn' || $where == 'orWhere') {
                 $this->whereSubQuery[$this->currentField . $where] = 'whereSubQuery';
             }
             $this->subQueries = [];
