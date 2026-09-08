@@ -2,12 +2,13 @@
 
 namespace JiJiHoHoCoCo\IchiORM\QueryBuilder;
 
-use PDO;
-use Exception;
 use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 use JiJiHoHoCoCo\IchiORM\Observer\ObserverSubject;
 use JiJiHoHoCoCo\IchiORM\Pagination\Paginate;
 use JiJiHoHoCoCo\IchiORM\Database\NullModel;
+use PDO;
+use Exception;
+use ReflectionMethod;
 
 class QueryBuilder
 {
@@ -929,7 +930,7 @@ class QueryBuilder
             if ($reflectionMethod->getDeclaringClass()->getName() !== self::class) {
                 $reflectionMethod->setAccessible(true);
             }
-            $table = $obj->getTable();
+            $table = $reflectionMethod->invoke($obj);
             if ($this->{$where}[$this->currentField . $this->currentSubQueryNumber]['select'] !== $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['table'] . '.*') {
                 throw new Exception("You must use from function before selecting the data", 1);
             }
