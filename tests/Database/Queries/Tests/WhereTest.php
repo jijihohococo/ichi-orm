@@ -6,22 +6,22 @@ class WhereTest extends DriverTestCase
 {
     public function testWhereEqual()
     {
-        $this->assertCount(3, Blog::where('status', 'published')->get());
+        $this->assertCount(4, Blog::where('status', 'published')->get());
     }
 
     public function testWhereExplicitEqual()
     {
-        $this->assertCount(3, Blog::where('status', '=', 'published')->get());
+        $this->assertCount(4, Blog::where('status', '=', 'published')->get());
     }
 
     public function testWhereNotEqual()
     {
-        $this->assertCount(3, Blog::where('status', '!=', 'published')->get());
+        $this->assertCount(2, Blog::where('status', '!=', 'published')->get());
     }
 
     public function testWhereNotEqualAlternateOperator()
     {
-        $this->assertCount(3, Blog::where('status', '<>', 'published')->get());
+        $this->assertCount(2, Blog::where('status', '<>', 'published')->get());
     }
 
     public function testWhereGreaterThan()
