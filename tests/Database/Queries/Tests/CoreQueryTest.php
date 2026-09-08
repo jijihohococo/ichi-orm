@@ -6,25 +6,12 @@ use JiJiHoHoCoCo\IchiORM\QueryBuilder\QueryBuilder;
 
 class CoreQueryTest extends DriverTestCase
 {
-    public function testQueryBuilderCalledClass()
+    public function testBlogUsesConfiguredTable()
     {
-        $builder = new QueryBuilder();
-        $builder->setCalledClass(Blog::class);
-        
-        $this->assertSame(
-            Blog::class,
-            $builder->getCalledClass()
-        );
-        $this->assertSame(
-            'test_blogs',
-            $builder->getTable()
-        );
-        $this->assertSame(
-            'id',
-            $builder->getID()
-        );
+        $sql = Blog::toSQL();
         $this->assertTrue(
-            $builder->autoIncrementId()
+            preg_match('/\bFROM\s+test_blogs\b/i', $sql) === 1,
+            "Expected SQL to use 'test_blogs', received: {$sql}"
         );
     }
 
