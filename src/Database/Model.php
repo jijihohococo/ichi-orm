@@ -19,17 +19,17 @@ abstract class Model
         if (self::$queryBuilder == null) {
             self::$queryBuilder = new QueryBuilder();
         }
-        
+
         $calledClass = get_called_class();
         self::$queryBuilder->setCalledClass($calledClass);
-        
+
         $model = (new ReflectionClass($calledClass))->newInstanceWithoutConstructor();
-        
+
         $reflectionMethod = new ReflectionMethod($calledClass, 'getTable');
-        
+
         if ($reflectionMethod->getDeclaringClass()->getName() !== self::class) {
             $reflectionMethod->setAccessible(true);
-            
+
             self::$queryBuilder->setTable(
                 $reflectionMethod->invoke($model)
             );
@@ -38,7 +38,7 @@ abstract class Model
                 getTableName($calledClass)
             );
         }
-        
+
         return clone self::$queryBuilder;
     }
 
