@@ -97,8 +97,8 @@ class CoreQueryTest extends DriverTestCase
                     ->get();
             });
         };
-        $sql = $query->toSQL()->get();
-        $rows = $query->get();
+        $sql = $query()->toSQL()->get();
+        $rows = $query()->get();
         echo "\nSQL:\n";
         echo $sql . "\n";
         echo 'Actual count: ' . count($rows) . "\n";
