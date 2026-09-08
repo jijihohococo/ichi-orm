@@ -8,7 +8,8 @@ class CoreQueryTest extends DriverTestCase
 {
     public function testBlogUsesConfiguredTable()
     {
-        $sql = Blog::toSQL();
+        $query = Blog::toSQL();
+        $sql = $query->getSql();
         $this->assertTrue(
             preg_match('/\bFROM\s+test_blogs\b/i', $sql) === 1,
             "Expected SQL to use 'test_blogs', received: {$sql}"
