@@ -1763,7 +1763,7 @@ class QueryBuilder
         $currentSubQueryNumber = $this->currentSubQueryNumber;
         if ($this->currentField . $this->currentSubQueryNumber == array_key_first($this->subQueries)) {
             $this->{$where}[$this->currentField] = $mainSQL;
-            if ($where == 'where' || $where == 'whereColumn' || $where == 'orWhere') {
+            if ($where == 'where' || $where == 'whereColumn' || $where == 'orWhere' || $where == 'whereIn' || $where == 'whereNotIn') {
                 $this->whereSubQuery[$this->currentField . $where] = 'whereSubQuery';
             }
             $this->subQueries = [];
