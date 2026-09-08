@@ -964,6 +964,7 @@ class QueryBuilder
                 if (!is_string($parameters[0])) {
                     throw new Exception("You must add field name in string", 1);
                 }
+                $field = Identifier::column($field);
 
                 if ($countParameters == 3 && !in_array($parameters[1], databaseOperators())) {
                     throw new Exception("You can add only database operators in {$where} function", 1);
@@ -1000,7 +1001,7 @@ class QueryBuilder
                     $this->operators[$uniqueKey . $where] = makeOperator($operator);
 
                     if ($value !== null && $where !== 'whereColumn') {
-                        $this->fields[] = Identifier::column($value);
+                        $this->fields[] = $value;
                     }
                 }
 
@@ -1020,7 +1021,7 @@ class QueryBuilder
                     $this->checkSubQueryUnionQuery($currentQuery);
                     $this->setSubWhere($currentQuery, $value, $field, $operator, $where);
                     if ($value !== null && $where !== 'whereColumn') {
-                        $this->fields[] = Identifier::column($value);
+                        $this->fields[] = $value;
                     }
                 }
 
@@ -1043,6 +1044,8 @@ class QueryBuilder
         try {
             $this->checkInstance();
 
+            $field = Identifier::column($field);
+
             if (!is_array($value) && !is_callable($value) && $value !== null) {
                 throw new Exception("You can add only array values or sub query in {$whereIn} function", 1);
             }
@@ -1052,7 +1055,7 @@ class QueryBuilder
                 $this->boot();
                 $this->{$whereIn}[$field] = $value;
                 if ($value !== null) {
-                    $this->fields[] = Identifier::column($value);
+                    $this->fields[] = $value;
                 }
             }
             if (is_callable($value) && $this->currentSubQueryNumber == null) {
@@ -1069,7 +1072,7 @@ class QueryBuilder
                 $this->checkSubQueryUnionQuery($currentQuery);
                 $this->setSubWhereIn($currentQuery, $value, $field, $whereIn);
                 if ($value !== null) {
-                    $this->fields[] = Identifier::column($value);
+                    $this->fields[] = $value;
                 }
             }
             if (is_callable($value) && $this->currentSubQueryNumber !== null) {
