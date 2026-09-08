@@ -89,12 +89,15 @@ class CoreQueryTest extends DriverTestCase
 
     public function testFromIsAvailableInsideSubquery()
     {
-        $rows = Blog::whereIn('author_id', function ($query) {
+        $query = Blog::whereIn('author_id', function ($query) {
             return $query->from(Author::class)
                 ->select(['id'])
                 ->where('name', 'John')
                 ->get();
-        })->get();
+        });
+        $sql = $query->toSQL()->get();
+        $rows = $query->get();
+        echo $sql;
 
         echo "\n";
         echo 'Actual count: ' . count($rows) . "\n";
