@@ -96,6 +96,12 @@ class CoreQueryTest extends DriverTestCase
                 ->get();
         })->get();
 
+        echo "\n";
+        echo 'Actual count: ' . count($rows) . "\n";
+        foreach ($rows as $row) {
+            echo 'Blog ID: ' . $row->id . ', Author ID: ' . $row->author_id . "\n";
+        }
+
         $this->assertCount(2, $rows);
     }
 }
