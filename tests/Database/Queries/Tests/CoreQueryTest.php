@@ -89,12 +89,14 @@ class CoreQueryTest extends DriverTestCase
 
     public function testFromIsAvailableInsideSubquery()
     {
-        $query = Blog::whereIn('author_id', function ($query) {
-            return $query->from(Author::class)
-                ->select(['id'])
-                ->where('name', 'John')
-                ->get();
-        });
+        $query = function () {
+            return Blog::whereIn('author_id', function ($query) {
+                return $query->from(Author::class)
+                    ->select(['id'])
+                    ->where('name', 'John')
+                    ->get();
+            });
+        };
         $sql = $query->toSQL()->get();
         $rows = $query->get();
         echo $sql;
