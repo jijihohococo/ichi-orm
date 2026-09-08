@@ -19,7 +19,26 @@ abstract class Model
         if (self::$queryBuilder == null) {
             self::$queryBuilder = new QueryBuilder();
         }
-        self::$queryBuilder->setCalledClass(get_called_class());
+        
+        $calledClass = get_called_class();
+        self::$queryBuilder->setCalledClass($calledClass);
+        
+        $model = (new ReflectionClass($calledClass))->newInstanceWithoutConstructor();
+        
+        $reflectionMethod = new ReflectionMethod($calledClass, 'getTable');
+        
+        if ($reflectionMethod->getDeclaringClass()->getName() !== self::class) {
+            $reflectionMethod->setAccessible(true);
+            
+            self::$queryBuilder->setTable(
+                $reflectionMethod->invoke($model)
+            );
+        } else {
+            self::$queryBuilder->setTable(
+                getTableName($calledClass)
+            );
+        }
+        
         return clone self::$queryBuilder;
     }
 
