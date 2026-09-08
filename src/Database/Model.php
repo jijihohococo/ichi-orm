@@ -4,6 +4,8 @@ namespace JiJiHoHoCoCo\IchiORM\Database;
 
 use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 use JiJiHoHoCoCo\IchiORM\QueryBuilder\QueryBuilder;
+use ReflectionClass;
+use ReflectionMethod;
 
 abstract class Model
 {

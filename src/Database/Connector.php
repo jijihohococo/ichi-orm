@@ -2,7 +2,10 @@
 
 namespace JiJiHoHoCoCo\IchiORM\Database;
 
-use JiJiHoHoCoCo\IchiORM\Database\Connections\{MySQLConnection, PostgresSQLConnection, SQLServerConnection, SQLiteConnection};
+use JiJiHoHoCoCo\IchiORM\Database\Connections\MySQLConnection;
+use JiJiHoHoCoCo\IchiORM\Database\Connections\PostgresSQLConnection;
+use JiJiHoHoCoCo\IchiORM\Database\Connections\SQLServerConnection;
+use JiJiHoHoCoCo\IchiORM\Database\Connections\SQLiteConnection;
 use PDO,
 
 Exception;
