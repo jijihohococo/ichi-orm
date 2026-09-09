@@ -1218,7 +1218,7 @@ class QueryBuilder
                 $field = preg_replace('/__\d+$/', '', $uniqueKey);
 
                 if (isset($this->whereSubQuery[$uniqueKey . 'where'])) {
-                    $string .= $i == 0 ? $uniqueKey . $this->operators[$uniqueKey . 'where'] . $value : ' AND ' . $uniqueKey . $this->operators[$uniqueKey . 'where'] . $value;
+                    $string .= $i == 0 ? $field . $this->operators[$uniqueKey . 'where'] . $value : ' AND ' . $field . $this->operators[$uniqueKey . 'where'] . $value;
                 } else {
                     if ($value === null) {
                         $string .= $i == 0 ? $field . $this->operators[$uniqueKey . 'where'] . 'NULL' : ' AND ' . $field . $this->operators[$uniqueKey . 'where'] . 'NULL';
@@ -1288,7 +1288,7 @@ class QueryBuilder
             foreach ($this->orWhere as $uniqueKey => $value) {
                 $field = preg_replace('/__\d+$/', '', $uniqueKey);
                 if (isset($this->whereSubQuery[$uniqueKey . 'orWhere'])) {
-                    $string .= ' OR ' . $uniqueKey . $this->operators[$uniqueKey . 'orWhere'] . $value;
+                    $string .= ' OR ' . $field . $this->operators[$uniqueKey . 'orWhere'] . $value;
                 } else {
                     $string .= ' OR ' . $field . $this->operators[$uniqueKey . 'orWhere'] . '?';
                 }
