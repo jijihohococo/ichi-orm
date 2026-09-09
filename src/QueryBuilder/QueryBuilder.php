@@ -138,7 +138,7 @@ class QueryBuilder
             }
         }
         $from = ' FROM ' . $this->table . $this->getJoinSQL();
-        if ($driver === 'sqlsrv' && $this->limit !== null) {
+        if ($driver === 'sqlsrv' && $this->limit !== null && $this->offset === null) {
             return "SELECT TOP " . $this->limit . " " . $select . $from;
         }
         return "SELECT " . $select . $from;
@@ -781,11 +781,12 @@ class QueryBuilder
     {
         $this->caller = getCallerInfo();
         $this->checkInstance();
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $offset = $driver === 'sqlsrv' ? ' OFFSET ' . $offset . ' ROWS ' : ' OFFSET ' . $offset;
         if ($this->currentSubQueryNumber == null) {
             $this->checkUnionQuery();
             $this->boot();
-            $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
-            $this->offset = $driver === 'sqlsrv' ? ' OFFSET ' . $offset . ' ROWS ' : ' OFFSET ' . $offset;
+            $this->offset = $offset;
         }
         if ($this->currentSubQueryNumber !== null) {
             $check = $this->showCurrentSubQuery();
@@ -1115,6 +1116,10 @@ class QueryBuilder
 
     private function getOffset()
     {
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+        if ($driver === 'sqlsrv' && $this->offset !== null && $this->limit !== null) {
+            return $this->offset . 'FETCH NEXT ' . $this->limit . ' ROWS ONLY ';
+        }
         return $this->offset;
     }
 
@@ -1131,10 +1136,11 @@ class QueryBuilder
         if (isset($this->{$where}[$this->currentField . $this->currentSubQueryNumber])) {
             $offset = $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['offset'];
             $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
-            if ($offset === null) {
-                return $offset;
+            $limit = $this->getSubQueryLimit($where);
+            if ($driver === 'sqlsrv' && $limit !== null) {
+                return $offset . ' ROWS FETCH NEXT ' . $limit . ' ROWS ONLY'; 
             }
-            return $driver === 'sqlsrv' ? ' OFFSET ' . $offset . ' ROWS ' : ' OFFSET ' . $offset;
+            return $offset;
         }
     }
 
