@@ -1646,250 +1646,288 @@ class QueryBuilder
             }
 
             if ($this->currentSubQueryNumber !== null) {
-                $currentQuery = $this->showCurrentSubQuery();
+    $currentQuery = $this->showCurrentSubQuery();
 
-                $currentField = $this->currentField;
-                $currentSubQueryNumber = $this->currentSubQueryNumber;
+    $currentField = $this->currentField;
+    $currentSubQueryNumber = $this->currentSubQueryNumber;
 
-                $subQueryKey = $currentField . $currentSubQueryNumber;
+    $subQueryKey =
+        $currentField . $currentSubQueryNumber;
 
-                if (
-                    isset(
-                        $this->{$currentQuery}[
-                        $subQueryKey . 'unableUnionQuery'
-                        ]
-                    ) &&
-                    $this->{$currentQuery}[
-                    $subQueryKey . 'unableUnionQuery'
-                    ] == true
-                ) {
-                    throw new Exception(
-                        "You are not allowed to use " . $union,
-                        1
-                    );
-                }
+    if (
+        isset(
+            $this->{$currentQuery}[
+                $subQueryKey . 'unableUnionQuery'
+            ]
+        ) &&
+        $this->{$currentQuery}[
+            $subQueryKey . 'unableUnionQuery'
+        ] == true
+    ) {
+        throw new Exception(
+            "You are not allowed to use " . $union,
+            1
+        );
+    }
 
-                $previousUnionQuery = isset(
-                    $this->{$currentQuery}[
-                    $subQueryKey . 'unionQuery'
-                    ]
-                )
-                ? $this->{$currentQuery}[
-                $subQueryKey . 'unionQuery'
-                ]
-                : null;
+    $previousUnionQuery = isset(
+        $this->{$currentQuery}[
+            $subQueryKey . 'unionQuery'
+        ]
+    )
+        ? $this->{$currentQuery}[
+            $subQueryKey . 'unionQuery'
+        ]
+        : null;
 
-                $previousField = $this->{$currentQuery}[$subQueryKey];
+    $previousField =
+        $this->{$currentQuery}[$subQueryKey];
+
+    /*
+     * Keep the original subquery tracking state.
+     */
+    $previousSubQueries = $this->subQueries;
 
     /*
      * First UNION branch.
-     *
-     * Do not call makeSubQuery() here.
-     * For whereIn(), makeSubQuery() changes id__N to id
-     * and resets the current subquery state before UNION
-     * has finished being built.
      */
-                if ($previousUnionQuery === null) {
-                    $previousQuery = $this->getSubQuery($currentQuery);
+    if ($previousUnionQuery === null) {
+        $previousQuery =
+            $this->getSubQuery($currentQuery);
 
-                    /*
-                     * Preserve bindings from the first branch.
-                     */
-                    if (
-                        isset($previousField['fields']) &&
-                        !empty($previousField['fields'])
-                    ) {
-                        $this->fields = array_merge(
-                            $this->fields,
-                            $previousField['fields']
-                        );
-                    }
+        /*
+         * The first branch has not gone through
+         * makeMainSubQuery(), so its bindings must be
+         * copied manually.
+         */
+        if (
+            isset($previousField['fields']) &&
+            !empty($previousField['fields'])
+        ) {
+            $this->fields = array_merge(
+                $this->fields,
+                $previousField['fields']
+            );
+        }
 
-                    /*
-                     * Mark the current UNION branch while the second
-                     * query is being constructed.
-                     */
-                    $this->{$currentQuery}[
-                        $subQueryKey . 'unableUnionQuery'
-                    ] = true;
+        /*
+         * Prevent another UNION while constructing the
+         * second branch.
+         */
+        $this->{$currentQuery}[
+            $subQueryKey . 'unableUnionQuery'
+        ] = true;
 
-                    /*
-                     * Create a temporary subquery for the second UNION
-                     * branch.
-                     */
-                    $query = $this;
+        /*
+         * Create a temporary second branch.
+         */
+        $query = $this;
 
-                    $query->setSubQuery(
-                        $currentField,
-                        $currentQuery,
-                        false
-                    );
+        $query->setSubQuery(
+            $currentField,
+            $currentQuery,
+            false
+        );
 
-                    $secondSubQueryKey =
-                        $this->currentField .
-                        $this->currentSubQueryNumber;
+        $secondField = $this->currentField;
 
-                    /*
-                     * Execute the UNION callback.
-                     */
-                    $value($query);
+        $secondSubQueryKey =
+            $secondField .
+            $this->currentSubQueryNumber;
 
-                    /*
-                     * The callback may call get(), which finalizes the
-                     * temporary whereIn subquery as the original field
-                     * name (for example, "id").
-                     */
-                    $baseField = preg_replace(
-                        '/__\d+$/',
-                        '',
-                        $currentField
-                    );
+        /*
+         * IMPORTANT:
+         *
+         * makeMainSubQuery() only finalizes the current
+         * subquery when its key is the first key in
+         * $this->subQueries.
+         *
+         * Make the temporary branch that first key so
+         * the callback's ->get() stores its SQL correctly.
+         */
+        $this->subQueries = [
+            $secondSubQueryKey =>
+                $this->currentSubQueryNumber
+        ];
 
-                    $secondQuery = null;
+        /*
+         * Build the second UNION branch.
+         *
+         * The user's callback is allowed to call get().
+         */
+        $value($query);
 
-                    if (isset($this->{$currentQuery}[$baseField])) {
-                        $secondQuery = $this->{$currentQuery}[$baseField];
+        /*
+         * get() on the second branch converts:
+         *
+         *     id__1
+         *
+         * into:
+         *
+         *     id
+         *
+         * for whereIn().
+         */
+        $baseField = preg_replace(
+            '/__\d+$/',
+            '',
+            $secondField
+        );
 
-                        /*
-                         * This temporary finalized value belongs only
-                         * to the second UNION branch. Remove it before
-                         * the outer UNION is finalized.
-                         */
-                        unset($this->{$currentQuery}[$baseField]);
-                    } elseif (
-                        isset($this->{$currentQuery}[$secondSubQueryKey])
-                    ) {
-                        $secondQuery =
-                            $this->{$currentQuery}[$secondSubQueryKey];
+        if (!isset($this->{$currentQuery}[$baseField])) {
+            /*
+             * Restore state before reporting the error.
+             */
+            $this->subQueries = $previousSubQueries;
+            $this->currentField = $currentField;
+            $this->currentSubQueryNumber =
+                $currentSubQueryNumber;
 
-                        unset(
-                            $this->{$currentQuery}[$secondSubQueryKey]
-                        );
-                    }
+            throw new Exception(
+                "Unable to build UNION sub query",
+                1
+            );
+        }
 
-                    /*
-                     * Restore the original outer subquery context.
-                     */
-                    $this->currentField = $currentField;
-                    $this->currentSubQueryNumber =
-                        $currentSubQueryNumber;
+        $secondQuery =
+            $this->{$currentQuery}[$baseField];
 
-                    if ($secondQuery === null) {
-                        throw new Exception(
-                            "Unable to build UNION sub query",
-                            1
-                        );
-                    }
+        /*
+         * Remove the temporary finalized branch.
+         */
+        unset($this->{$currentQuery}[$baseField]);
 
-                    /*
-                     * Keep the UNION SQL on the original internal key.
-                     * makeSubQuery() will finalize this key later.
-                     */
-                    $this->{$currentQuery}[
-                        $subQueryKey . 'unionQuery'
-                    ] =
-                        '(' .
-                        $previousQuery .
-                        $union .
-                        $secondQuery .
-                        ')';
+        /*
+         * Restore the original outer context.
+         */
+        $this->currentField = $currentField;
+        $this->currentSubQueryNumber =
+            $currentSubQueryNumber;
 
-                    $this->{$currentQuery}[
-                        $subQueryKey . 'unableUnionQuery'
-                    ] = false;
+        $this->subQueries = $previousSubQueries;
 
-                    /*
-                     * Restore the original subquery attributes.
-                     */
-                    $this->{$currentQuery}[$subQueryKey] =
-                        $previousField;
-                }
+        /*
+         * Store the complete UNION on the original
+         * internal subquery key.
+         */
+        $this->{$currentQuery}[
+            $subQueryKey . 'unionQuery'
+        ] =
+            '(' .
+            $previousQuery .
+            $union .
+            $secondQuery .
+            ')';
+
+        $this->{$currentQuery}[
+            $subQueryKey . 'unableUnionQuery'
+        ] = false;
+
+        /*
+         * Keep the original attributes. They are needed
+         * when makeSubQuery() later finalizes the UNION.
+         */
+        $this->{$currentQuery}[$subQueryKey] =
+            $previousField;
+    }
 
     /*
-     * Additional UNION branches.
+     * Additional UNION / UNION ALL branches.
      */
-                if ($previousUnionQuery !== null) {
-                    $this->{$currentQuery}[
-                        $subQueryKey . 'unableUnionQuery'
-                    ] = true;
+    if ($previousUnionQuery !== null) {
+        $this->{$currentQuery}[
+            $subQueryKey . 'unableUnionQuery'
+        ] = true;
 
-                    $query = $this;
+        /*
+         * Create another temporary branch.
+         */
+        $query = $this;
 
-                    /*
-                     * Create a new temporary branch instead of using
-                     * the original internal key directly.
-                     */
-                    $query->setSubQuery(
-                        $currentField,
-                        $currentQuery,
-                        false
-                    );
+        $query->setSubQuery(
+            $currentField,
+            $currentQuery,
+            false
+        );
 
-                    $secondSubQueryKey =
-                        $this->currentField .
-                        $this->currentSubQueryNumber;
+        $secondField = $this->currentField;
 
-                    /*
-                     * Build the next UNION branch.
-                     */
-                    $value($query);
+        $secondSubQueryKey =
+            $secondField .
+            $this->currentSubQueryNumber;
 
-                    $baseField = preg_replace(
-                        '/__\d+$/',
-                        '',
-                        $currentField
-                    );
+        /*
+         * Make this temporary branch the first tracked
+         * subquery so ->get() finalizes it.
+         */
+        $this->subQueries = [
+            $secondSubQueryKey =>
+                $this->currentSubQueryNumber
+        ];
 
-                    $secondQuery = null;
+        /*
+         * Build the next UNION branch.
+         */
+        $value($query);
 
-                    if (isset($this->{$currentQuery}[$baseField])) {
-                        $secondQuery = $this->{$currentQuery}[$baseField];
+        $baseField = preg_replace(
+            '/__\d+$/',
+            '',
+            $secondField
+        );
 
-                        unset($this->{$currentQuery}[$baseField]);
-                    } elseif (
-                        isset($this->{$currentQuery}[$secondSubQueryKey])
-                    ) {
-                        $secondQuery =
-                            $this->{$currentQuery}[$secondSubQueryKey];
+        if (!isset($this->{$currentQuery}[$baseField])) {
+            $this->subQueries = $previousSubQueries;
+            $this->currentField = $currentField;
+            $this->currentSubQueryNumber =
+                $currentSubQueryNumber;
 
-                        unset(
-                            $this->{$currentQuery}[$secondSubQueryKey]
-                        );
-                    }
+            throw new Exception(
+                "Unable to build UNION sub query",
+                1
+            );
+        }
 
-                    /*
-                     * Restore the original outer subquery context.
-                     */
-                    $this->currentField = $currentField;
-                    $this->currentSubQueryNumber =
-                        $currentSubQueryNumber;
+        $secondQuery =
+            $this->{$currentQuery}[$baseField];
 
-                    if ($secondQuery === null) {
-                        throw new Exception(
-                            "Unable to build UNION sub query",
-                            1
-                        );
-                    }
+        unset($this->{$currentQuery}[$baseField]);
 
-                    $this->{$currentQuery}[
-                        $subQueryKey . 'unionQuery'
-                    ] =
-                        substr($previousUnionQuery, 0, -1) .
-                        $union .
-                        $secondQuery .
-                        ')';
+        /*
+         * Restore the original outer context.
+         */
+        $this->currentField = $currentField;
+        $this->currentSubQueryNumber =
+            $currentSubQueryNumber;
 
-                    $this->{$currentQuery}[
-                        $subQueryKey . 'unableUnionQuery'
-                    ] = false;
+        $this->subQueries = $previousSubQueries;
 
-                    /*
-                     * Keep the original subquery attributes.
-                     */
-                    $this->{$currentQuery}[$subQueryKey] =
-                        $previousField;
-                }
-            }
+        /*
+         * Append the new UNION branch.
+         */
+        $this->{$currentQuery}[
+            $subQueryKey . 'unionQuery'
+        ] =
+            substr(
+                $previousUnionQuery,
+                0,
+                -1
+            ) .
+            $union .
+            $secondQuery .
+            ')';
+
+        $this->{$currentQuery}[
+            $subQueryKey . 'unableUnionQuery'
+        ] = false;
+
+        /*
+         * Preserve the original attributes.
+         */
+        $this->{$currentQuery}[$subQueryKey] =
+            $previousField;
+    }
+}
 
             return $this;
         } catch (Exception $e) {
