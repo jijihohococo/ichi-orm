@@ -1066,7 +1066,8 @@ class QueryBuilder
                 $this->boot();
                 $query = $this;
                 $query->setSubQuery($field, $whereIn, $field);
-                $this->subQueries[$field . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
+                $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
+                $this->subQueries[$subQueryKey] = $this->currentSubQueryNumber;
                 $value($query);
                 $this->makeDefaultSubQueryData();
             }
