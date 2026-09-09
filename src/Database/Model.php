@@ -22,6 +22,8 @@ abstract class Model
             self::$queryBuilder = new QueryBuilder();
         }
 
+        self::$queryBuilder->new();
+
         $calledClass = get_called_class();
         self::$queryBuilder->setCalledClass($calledClass);
 
@@ -145,7 +147,7 @@ abstract class Model
 
     public static function where(...$parameters)
     {
-        return self::getQueryBuilder()->where(...$parameters);
+        return self::getQueryBuilder()->where($parameters);
     }
 
     public static function from(string $className)
@@ -155,12 +157,12 @@ abstract class Model
 
     public static function whereColumn(...$parameters)
     {
-        return self::getQueryBuilder()->whereColumn(...$parameters);
+        return self::getQueryBuilder()->whereColumn($parameters);
     }
 
     public static function orWhere(...$parameters)
     {
-        return self::getQueryBuilder()->orWhere(...$parameters);
+        return self::getQueryBuilder()->orWhere($parameters);
     }
 
     public static function whereIn(string $field, $value)
@@ -225,17 +227,17 @@ abstract class Model
 
     public static function innerJoin(...$parameters)
     {
-        return self::getQueryBuilder()->innerJoin(...$parameters);
+        return self::getQueryBuilder()->innerJoin($parameters);
     }
 
     public static function leftJoin(...$parameters)
     {
-        return self::getQueryBuilder()->leftJoin(...$parameters);
+        return self::getQueryBuilder()->leftJoin($parameters);
     }
 
     public static function rightJoin(...$parameters)
     {
-        return self::getQueryBuilder()->rightJoin(...$parameters);
+        return self::getQueryBuilder()->rightJoin($parameters);
     }
 
     protected function refersTo(string $class, string $field, string $referField = 'id')
