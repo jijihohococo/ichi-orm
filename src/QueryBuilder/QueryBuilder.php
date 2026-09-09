@@ -1289,11 +1289,12 @@ class QueryBuilder
         $i = 0;
         if ($this->whereIn !== null) {
             foreach ($this->whereIn as $key => $value) {
+                $field = preg_replace('/__\d+$/', '', $key);
                 if (is_array($value) && !empty($value)) {
                     $in = addArray($value);
-                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $key . ' IN (' . $in . ') ' : ' AND ' . $key . ' IN (' . $in . ') ';
+                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $field . ' IN (' . $in . ') ' : ' AND ' . $field . ' IN (' . $in . ') ';
                 } elseif ($value !== null && !is_array($value)) {
-                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $key . ' IN ' . $value : ' AND ' . $key . ' IN ' . $value;
+                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $field . ' IN ' . $value : ' AND ' . $field . ' IN ' . $value;
                 } else {
                     $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? $this->whereZero : $this->andZero;
                 }
