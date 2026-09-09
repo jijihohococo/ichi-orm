@@ -128,6 +128,7 @@ class QueryBuilder
     private function getSelect()
     {
         $select = $this->select;
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
         if ($this->selectQuery !== null) {
             $i = 0;
             foreach ($this->selectQuery as $selectAs => $query) {
@@ -136,7 +137,11 @@ class QueryBuilder
                 $i++;
             }
         }
-        return "SELECT " . $select . " FROM " . $this->table . $this->getJoinSQL();
+        $from = ' FROM ' . $this->table . $this->getJoinSQL();
+        if ($driver === 'sqlsrv' && $this->limit !== null) {
+            return "SELECT TOP " . $this->limit . " " . $select . $from;
+        }
+        return "SELECT " . $select . $from;
     }
 
     private function makeDelete()
@@ -761,7 +766,7 @@ class QueryBuilder
         if ($this->currentSubQueryNumber == null) {
             $this->checkUnionQuery();
             $this->boot();
-            $this->limit = ' LIMIT ' . $limit;
+            $this->limit = $limit;
         }
         if ($this->currentSubQueryNumber !== null) {
             $check = $this->showCurrentSubQuery();
@@ -1099,7 +1104,8 @@ class QueryBuilder
 
     private function getLimit()
     {
-        return $this->limit;
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+        return $driver === 'sqlsrv' ? null : ' LIMIT ' . $this->limit;
     }
 
     private function getOffset()
@@ -1111,7 +1117,7 @@ class QueryBuilder
     {
         if (isset($this->{$where}[$this->currentField . $this->currentSubQueryNumber])) {
             $limit = $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['limit'];
-            return $limit == null ? $limit : ' LIMIT ' . $limit;
+            return $limit;
         }
     }
 
@@ -1859,6 +1865,7 @@ class QueryBuilder
 
     private function getSubQuery($where)
     {
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
         $limit = $this->getSubQueryLimit($where);
         $offset = $this->getSubQueryOffset($where);
         $result = $this->getSubQuerySelect($where) .
@@ -1870,6 +1877,9 @@ class QueryBuilder
             $this->getSubQueryOrder($where) .
             $this->getSubQueryGroupBy($where) .
             $this->getSubQueryHaving($where);
+        if ($driver === 'sqlsrv' && $limit !== null) {
+            return preg_replace('/^SELECT\s+/i', "SELECT TOP " . $limit . " ", $result) . $offset;
+        }
         return $limit == null ? $result . $offset : "SELECT * FROM (" . $result . $limit . $offset . ") AS l" . $this->getSubQueryLimitNumber();
     }
 
