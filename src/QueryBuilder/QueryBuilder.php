@@ -1953,54 +1953,54 @@ class QueryBuilder
     }
 
     private function makeMainSubQuery($where, $mainSQL)
-{
-    $this->subQuery = $mainSQL;
+    {
+        $this->subQuery = $mainSQL;
 
-    $currentField = $this->currentField;
-    $currentSubQueryNumber = $this->currentSubQueryNumber;
+        $currentField = $this->currentField;
+        $currentSubQueryNumber = $this->currentSubQueryNumber;
 
-    $subQueryKey = $currentField . $currentSubQueryNumber;
+        $subQueryKey = $currentField . $currentSubQueryNumber;
 
-    if ($subQueryKey == array_key_first($this->subQueries)) {
-        /*
-         * Keep the internal subquery entry.
-         * makeUnionQuery() still needs this key.
-         */
-        $this->{$where}[$currentField] = $mainSQL;
+        if ($subQueryKey == array_key_first($this->subQueries)) {
+            /*
+             * Keep the internal subquery entry.
+             * makeUnionQuery() still needs this key.
+             */
+            $this->{$where}[$currentField] = $mainSQL;
 
-        /*
-         * For whereIn/whereNotIn, also store the final SQL
-         * under the real column name.
-         */
-        if ($where === 'whereIn' || $where === 'whereNotIn') {
-            $targetField = preg_replace(
-                '/__\d+$/',
-                '',
-                $currentField
-            );
+            /*
+             * For whereIn/whereNotIn, also store the final SQL
+             * under the real column name.
+             */
+            if ($where === 'whereIn' || $where === 'whereNotIn') {
+                $targetField = preg_replace(
+                    '/__\d+$/',
+                    '',
+                    $currentField
+                );
 
-            $this->{$where}[$targetField] = $mainSQL;
-        }
+                $this->{$where}[$targetField] = $mainSQL;
+            }
 
-        if (
-            $where === 'where' ||
-            $where === 'whereColumn' ||
-            $where === 'orWhere'
-        ) {
-            $this->whereSubQuery[
+            if (
+                $where === 'where' ||
+                $where === 'whereColumn' ||
+                $where === 'orWhere'
+            ) {
+                $this->whereSubQuery[
                 $currentField . $where
-            ] = 'whereSubQuery';
+                ] = 'whereSubQuery';
+            }
+
+            $this->subQueries = [];
+
+            $this->makeDefaultSubQueryData();
         }
 
-        $this->subQueries = [];
-
-        $this->makeDefaultSubQueryData();
+        if (isset($this->{$where}[$subQueryKey])) {
+            unset($this->{$where}[$subQueryKey]);
+        }
     }
-
-    if (isset($this->{$where}[$subQueryKey])) {
-        unset($this->{$where}[$subQueryKey]);
-    }
-}
 
     private function makeSubQuery($where)
     {
