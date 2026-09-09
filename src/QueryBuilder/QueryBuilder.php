@@ -1052,7 +1052,7 @@ class QueryBuilder
                 if (is_callable($value) && $this->currentSubQueryNumber !== null) {
                     $check = $this->showCurrentSubQuery();
                     $this->checkSubQueryUnionQuery($check);
-                    $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['operators'][$field . $where] = makeOperator($operator);
+                    $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['operators'][$this->currentField . $where] = makeOperator($operator);
                     $this->makeSubQueryInSubQuery($where, $value, $field, $check);
                 }
             } else {
