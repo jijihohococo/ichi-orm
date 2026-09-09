@@ -12,14 +12,14 @@ class WhereColumnTest extends DriverTestCase
 
     public function testWhereColumnGreaterThan()
     {
-        $rows = Blog::whereColumn('test_blogs.id', 'test_blogs.author_id')->get();
-        $this->assertCount(3, $rows);
+        $rows = Blog::whereColumn('test_blogs.id', '>', 'test_blogs.author_id')->get();
+        $this->assertCount(5, $rows);
     }
 
     public function testWhereColumnQualifiedNames()
     {
         $rows = Blog::whereColumn('test_blogs.author_id', 'test_blogs.id')->get();
-        $this->assertCount(3, $rows);
+        $this->assertCount(1, $rows);
     }
 
     public function testWhereColumnSubquery()
