@@ -136,7 +136,12 @@ class QueryBuilder
                 $i++;
             }
         }
-        return "SELECT " . $select . " FROM " . $this->table . $this->getJoinSQL();
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $limit = '';
+        if ($driver === 'sqlsrv' && $this->limit !== null) {
+            $limit = ' TOP ' . $this->limit;
+        }
+        return "SELECT " . $limit . " " . $select . " FROM " . $this->table . $this->getJoinSQL();
     }
 
     private function makeDelete()
@@ -763,7 +768,7 @@ class QueryBuilder
         if ($this->currentSubQueryNumber == null) {
             $this->checkUnionQuery();
             $this->boot();
-            $this->limit = ' LIMIT ' . $limit;
+            $this->limit = $limit;
         }
         if ($this->currentSubQueryNumber !== null) {
             $check = $this->showCurrentSubQuery();
@@ -1106,7 +1111,8 @@ class QueryBuilder
 
     private function getLimit()
     {
-        return $this->limit;
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+        return $driver === 'sqlsrv' || $this->limit == null ? null : ' LIMIT ' . $this->limit;
     }
 
     private function getOffset()
