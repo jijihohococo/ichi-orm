@@ -1569,11 +1569,20 @@ class QueryBuilder
         try {
             if ($this->currentSubQueryNumber == null) {
                 $previousQuery = $this->getQuery();
+                $previousFields = $this->getFields();
                 $this->disableForSQL();
                 $uNumber = $this->currentUnionNumber;
                 $this->useUnionQuery[$uNumber] = false;
                 $this->unionNumber++;
                 $newUnionQuery = $value();
+                if ($newUnionQuery instanceof QueryBuilder) {
+                    $newUnionFields = $newUnionQuery->getFields();
+                    $newUnionQuery = $newUnionQuery->toSQL()->get();
+                } else {
+                    $newUnionFields = [];
+                }
+                $this->fields = array_merge($previousFields, $newUnionFields);
+
                 $this->useUnionQuery[$uNumber] = true;
                 $this->currentUnionNumber = $uNumber;
                 $this->unableUnionQuery[$uNumber] = true;
