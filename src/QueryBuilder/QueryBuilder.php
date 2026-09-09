@@ -1138,7 +1138,7 @@ class QueryBuilder
             $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
             $limit = $this->getSubQueryLimit($where);
             if ($driver === 'sqlsrv' && $limit !== null) {
-                return $offset . ' ROWS FETCH NEXT ' . $limit . ' ROWS ONLY'; 
+                return $offset . ' ROWS FETCH NEXT ' . $limit . ' ROWS ONLY';
             }
             return $offset;
         }
