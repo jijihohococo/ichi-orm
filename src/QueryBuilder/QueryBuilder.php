@@ -784,7 +784,8 @@ class QueryBuilder
         if ($this->currentSubQueryNumber == null) {
             $this->checkUnionQuery();
             $this->boot();
-            $this->offset = ' OFFSET ' . $offset;
+            $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+            $this->offset = $driver === 'sqlsrv' ? ' OFFSET ' . $offset . ' ROWS ' : ' OFFSET ' . $offset;
         }
         if ($this->currentSubQueryNumber !== null) {
             $check = $this->showCurrentSubQuery();
@@ -1129,7 +1130,11 @@ class QueryBuilder
     {
         if (isset($this->{$where}[$this->currentField . $this->currentSubQueryNumber])) {
             $offset = $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['offset'];
-            return $offset == null ? $offset : ' OFFSET ' . $offset;
+            $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+            if ($offset === null) {
+                return $offset;
+            }
+            return $driver === 'sqlsrv' ? ' OFFSET ' . $offset . ' ROWS ' : ' OFFSET ' . $offset;
         }
     }
 
