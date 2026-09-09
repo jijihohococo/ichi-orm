@@ -136,4 +136,57 @@ class UnionTest extends DriverTestCase
         // UNION adds PostgreSQL Guide.
         $this->assertCount(6, $rows);
     }
+
+    public function testMultipleUnions()
+    {
+        $rows = Blog::whereIn('id', function ($query) {
+            return $query
+                ->select(['id'])
+                ->where('id', 1)
+                ->union(function ($query) {
+                    return $query
+                        ->select(['id'])
+                        ->where('id', 2)
+                        ->get();
+                })
+                ->union(function ($query) {
+                    return $query
+                        ->select(['id'])
+                        ->where('id', 3)
+                        ->get();
+                })
+                ->union(function ($query) {
+                    return $query
+                        ->select(['id'])
+                        ->where('id', 4)
+                        ->get();
+                })
+                ->get();
+            })->get();
+        $this->assertCount(4, $rows);
+    }
+
+    public function testMultipleUnionAll()
+    {
+        $rows = Blog::whereIn('id', function ($query) {
+            return $query
+                ->select(['id'])
+                ->where('id', 1)
+                ->unionAll(function ($query) {
+                    return $query
+                        ->select(['id'])
+                        ->where('id', 1)
+                        ->get();
+                })
+                ->unionAll(function ($query) {
+                    return $query
+                        ->select(['id'])
+                        ->where('id', 1)
+                        ->get();
+                })
+                ->get();
+        })->get();
+
+        $this->assertCount(1, $rows);
+    }
 }
