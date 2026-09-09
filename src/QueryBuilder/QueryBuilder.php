@@ -1300,49 +1300,49 @@ class QueryBuilder
     }
 
     private function getWhereIn()
-{
-    $string = null;
-    $i = 0;
+    {
+        $string = null;
+        $i = 0;
 
-    if ($this->whereIn !== null) {
-        foreach ($this->whereIn as $key => $value) {
-            // Remove internal subquery suffix such as "__0".
-            $field = preg_replace('/__\d+$/', '', $key);
+        if ($this->whereIn !== null) {
+            foreach ($this->whereIn as $key => $value) {
+                // Remove internal subquery suffix such as "__0".
+                $field = preg_replace('/__\d+$/', '', $key);
 
-            if (is_array($value) && !empty($value)) {
-                $in = addArray($value);
+                if (is_array($value) && !empty($value)) {
+                    $in = addArray($value);
 
-                $string .=
+                    $string .=
                     $i == 0 &&
                     $this->where == null &&
                     $this->whereColumn == null &&
                     $this->addTrashed == false
                         ? ' WHERE ' . $field . ' IN (' . $in . ') '
                         : ' AND ' . $field . ' IN (' . $in . ') ';
-            } elseif ($value !== null && !is_array($value)) {
-                $string .=
+                } elseif ($value !== null && !is_array($value)) {
+                    $string .=
                     $i == 0 &&
                     $this->where == null &&
                     $this->whereColumn == null &&
                     $this->addTrashed == false
                         ? ' WHERE ' . $field . ' IN ' . $value
                         : ' AND ' . $field . ' IN ' . $value;
-            } else {
-                $string .=
+                } else {
+                    $string .=
                     $i == 0 &&
                     $this->where == null &&
                     $this->whereColumn == null &&
                     $this->addTrashed == false
                         ? $this->whereZero
                         : $this->andZero;
+                }
+
+                $i++;
             }
-
-            $i++;
         }
-    }
 
-    return $string;
-}
+        return $string;
+    }
 
     private function getSubQueryWhereIn($where)
     {
