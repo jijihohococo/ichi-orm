@@ -1785,10 +1785,20 @@ class QueryBuilder
         $this->subQuery = $mainSQL;
         $currentField = $this->currentField;
         $currentSubQueryNumber = $this->currentSubQueryNumber;
-        if ($this->currentField . $this->currentSubQueryNumber == array_key_first($this->subQueries)) {
+        $subQueryKey = $currentField . $currentSubQueryNumber;
+        if ($subQueryKey == array_key_first($this->subQueries)) {
+            if (isset($this->{$where}[$subQueryKey]['operators']) && is_array($this->{$where}[$subQueryKey]['operators'])) {
+                if (!is_array($this->operators)) {
+                    $this->operators = [];
+                }
+                
+                foreach ($this->{$where}[$subQueryKey]['operators'] as $operatorKey => $operator) {
+                    $this->operators[$operatorKey] = $operator;
+                }
+            }
             $this->{$where}[$this->currentField] = $mainSQL;
             if ($where == 'where' || $where == 'whereColumn' || $where == 'orWhere') {
-                $this->whereSubQuery[$this->currentField . $where] = 'whereSubQuery';
+                $this->whereSubQuery[$currentField . $where] = 'whereSubQuery';
             }
             $this->subQueries = [];
             $this->makeDefaultSubQueryData();
