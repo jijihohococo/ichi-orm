@@ -1244,20 +1244,26 @@ class QueryBuilder
     {
         $string = null;
         $i = 0;
-        if (isset($this->{$where}[$this->currentField . $this->currentSubQueryNumber])) {
-            $current = $this->{$where}[$this->currentField . $this->currentSubQueryNumber];
-            if ($current['whereColumn'] !== null && is_array($current['whereColumn'])) {
-                foreach ($current['whereColumn'] as $key => $value) {
-                    $result = $key . $current['operators'][$key . 'whereColumn'] . $value;
-                    $string .= $i == 0 && $current['where'] == null && $current['addTrashed'] == false ? ' WHERE ' . $result : ' AND ' . $result;
-                    $i++;
-                }
+        $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
+        if (!isset($this->{$where}[$subQueryKey])) {
+            return $string;
+        }
+        $current = $this->{$where}[$subQueryKey];
+        if ($current['whereColumn'] !== null && is_array($current['whereColumn'])) {
+            foreach ($current['whereColumn'] as $key => $value) {
+                $operatorKey = $key . 'whereColumn';
+                $operator = isset($current['operators'][$operatorKey]) ? $current['operators'][$operatorKey] : '=';
+                $result = $key . $operator . $value;
+                $string .= $i == 0 && $current['where'] == null && $current['addTrashed'] == false ? ' WHERE ' . $result : ' AND ' . $result;
+                $i++;
             }
-            if ($current['whereColumn'] !== null && !is_array($current['whereColumn'])) {
-                $currentField = getCurrentField($this->subQueries, $this->currentField, $this->currentSubQueryNumber);
-                $result = $currentField . $current['operators'][$currentField . 'whereColumn'] . ' (' . $current['whereColumn'] . ') ';
-                $string .= $current['where'] == null && $current['addTrashed'] == false ? ' WHERE ' . $result : ' AND ' . $result;
-            }
+        }
+        if ($current['whereColumn'] !== null && !is_array($current['whereColumn'])) {
+            $currentField = getCurrentField($this->subQueries, $this->currentField, $this->currentSubQueryNumber);
+            $operator = isset($current['operators'][$operatorKey]) ? $current['operators'][$operatorKey] : '=';
+            $result = $currentField . $operator . ' (' . $current['whereColumn'] . ') ';
+            $string .=
+            $current['where'] == null && $current['addTrashed'] == false ? ' WHERE ' . $result : ' AND ' . $result;
         }
         return $string;
     }
