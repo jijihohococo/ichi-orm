@@ -82,9 +82,14 @@ class QueryBuilder
         return connectPDO();
     }
 
+    public function setTable(string $table)
+    {
+        $this->table = $table;
+    }
+
     public function getTable()
     {
-        return getTableName((string) $this->getCalledClass());
+        return $this->table === null ? getTableName((string) $this->getCalledClass()) : $this->table;
     }
 
     public function getID()
