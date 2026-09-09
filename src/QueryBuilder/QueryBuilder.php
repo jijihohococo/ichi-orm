@@ -1791,7 +1791,7 @@ class QueryBuilder
                 if (!is_array($this->operators)) {
                     $this->operators = [];
                 }
-                
+
                 foreach ($this->{$where}[$subQueryKey]['operators'] as $operatorKey => $operator) {
                     $this->operators[$operatorKey] = $operator;
                 }
