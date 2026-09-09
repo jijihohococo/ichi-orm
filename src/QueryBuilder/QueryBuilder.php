@@ -1030,15 +1030,29 @@ class QueryBuilder
                 }
 
                 if (is_callable($value) && $this->currentSubQueryNumber == null) {
-                    $this->checkUnionQuery();
-                    $this->boot();
-                    $this->operators[$field . $where] = makeOperator($operator);
-                    $query = $this;
-                    $query->setSubQuery($field, $where);
-                    $this->subQueries[$this->currentField . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
-                    $value($query);
-                    $this->makeDefaultSubQueryData();
-                }
+    $this->checkUnionQuery();
+    $this->boot();
+
+    $query = $this;
+
+    $query->setSubQuery($field, $where);
+
+    $this->subQueries[
+        $this->currentField .
+        $this->currentSubQueryNumber
+    ] = $this->currentSubQueryNumber;
+
+    $this->{$where}[
+        $this->currentField .
+        $this->currentSubQueryNumber
+    ]['operators'][
+        $this->currentField . $where
+    ] = makeOperator($operator);
+
+    $value($query);
+
+    $this->makeDefaultSubQueryData();
+}
 
                 if (!is_callable($value) && $this->currentSubQueryNumber !== null) {
                     $currentQuery = $this->showCurrentSubQuery();
@@ -1050,11 +1064,23 @@ class QueryBuilder
                 }
 
                 if (is_callable($value) && $this->currentSubQueryNumber !== null) {
-                    $check = $this->showCurrentSubQuery();
-                    $this->checkSubQueryUnionQuery($check);
-                    $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['operators'][$this->currentField . $where] = makeOperator($operator);
-                    $this->makeSubQueryInSubQuery($where, $value, $field, $check);
-                }
+    $check = $this->showCurrentSubQuery();
+    $this->checkSubQueryUnionQuery($check);
+
+    $this->{$check}[
+        $this->currentField .
+        $this->currentSubQueryNumber
+    ]['operators'][
+        $this->currentField . $where
+    ] = makeOperator($operator);
+
+    $this->makeSubQueryInSubQuery(
+        $where,
+        $value,
+        $field,
+        $check
+    );
+}
             } else {
                 throw new Exception("Invalid Argument Parameter", 1);
             }
