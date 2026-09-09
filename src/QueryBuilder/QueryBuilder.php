@@ -1015,10 +1015,10 @@ class QueryBuilder
                 if (is_callable($value) && $this->currentSubQueryNumber == null) {
                     $this->checkUnionQuery();
                     $this->boot();
+                    $this->operators[$field . $where] = makeOperator($operator);
                     $query = $this;
                     $query->setSubQuery($field, $where);
                     $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
-                    $this->{$where}[$subQueryKey]['operators'][$this->currentField . $where] = makeOperator($operator);
                     $this->subQueries[$subQueryKey] = $this->currentSubQueryNumber;
                     $value($query);
                     $this->makeDefaultSubQueryData();
