@@ -58,6 +58,19 @@ class QueryBuilder
     private $caller = [];
     private $calledClass;
     private $whereKeyCounter = 0;
+    private static $lastSQLFields = [];
+
+    private function setLastSQLFields(array $fields)
+    {
+        self::$lastSQLFields = $fields;
+    }
+
+    private function getLastSQLFields()
+    {
+        $fields = self::$lastSQLFields;
+        self::$lastSQLFields = [];
+        return $fields;
+    }
 
     private function getModelArrayKeys()
     {
@@ -1587,11 +1600,18 @@ class QueryBuilder
         try {
             if ($this->currentSubQueryNumber == null) {
                 $previousQuery = $this->getQuery();
+                $previousFields = $this->getFields();
                 $this->disableForSQL();
                 $uNumber = $this->currentUnionNumber;
                 $this->useUnionQuery[$uNumber] = false;
                 $this->unionNumber++;
                 $newUnionQuery = $value();
+                $newUnionFields = $this->getLastSQLFields();
+                if ($newUnionQuery instanceof QueryBuilder) {
+                    $newUnionFields = $newUnionQuery->getFields();
+                    $newUnionQuery = $newUnionQuery->getQuery();
+                }
+                $this->fields = array_merge($previousFields, $newUnionFields);
                 $this->useUnionQuery[$uNumber] = true;
                 $this->currentUnionNumber = $uNumber;
                 $this->unableUnionQuery[$uNumber] = true;
@@ -1618,12 +1638,13 @@ class QueryBuilder
                     $previousQuery = $this->{$currentQuery}[$currentField];
                     $query = $this;
                     $query->setSubQuery($currentField, $currentQuery, false);
-                    $this->subQueries[$currentField . $currentSubQueryNumber] = $currentSubQueryNumber;
+                    $this->subQueries[$this->currentField . $this->currentSubQueryNumber] = $currentSubQueryNumber;
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = true;
                     $value($query);
                     $this->currentField = $currentField;
                     $this->currentSubQueryNumber = $currentSubQueryNumber;
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = substr($previousQuery, 0, -1) . $union . $this->{$currentQuery}[$currentField] . ')';
+                    $secondQuery = $this->{$currentQuery}[$currentField];
+                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = substr($previousQuery, 0, -1) . $union . $secondQuery . ')';
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = false;
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber] = $this->makeSubQueryAttributes($previousField);
                 }
@@ -1655,6 +1676,7 @@ class QueryBuilder
                 $this->boot();
                 $mainSQL = $this->getQuery();
                 if ($this->toSQL == true) {
+                    this->setLastSQLFields($this->getFields());
                     $this->disableForSQL();
                     return $mainSQL;
                 }
