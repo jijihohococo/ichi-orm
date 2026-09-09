@@ -1676,7 +1676,7 @@ class QueryBuilder
                 $this->boot();
                 $mainSQL = $this->getQuery();
                 if ($this->toSQL == true) {
-                    this->setLastSQLFields($this->getFields());
+                    $this->setLastSQLFields($this->getFields());
                     $this->disableForSQL();
                     return $mainSQL;
                 }
