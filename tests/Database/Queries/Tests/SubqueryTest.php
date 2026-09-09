@@ -49,7 +49,7 @@ class SubqueryTest extends DriverTestCase
     public function testNestedWhereInSubquery()
     {
         $rows = Blog::whereIn('author_id', function ($query) {
-            return $query->whereIn('id', function ($nested) {
+            return $query->from(Author::class)->whereIn('id', function ($nested) {
                 return $nested->select(['id'])->where('name', 'John')->get();
             })->select(['id'])->get();
         })->get();
