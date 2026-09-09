@@ -1031,7 +1031,7 @@ class QueryBuilder
                     $this->checkSubQueryUnionQuery($currentQuery);
                     $this->setSubWhere($currentQuery, $value, $field, $operator, $where);
                     if ($value !== null && $where !== 'whereColumn') {
-                        $this->fields[] = $value;
+                        $this->{$currentQuery}[$this->currentField . $this->currentSubQueryNumber]['fields'][] = $value;
                     }
                 }
 
@@ -1767,8 +1767,12 @@ class QueryBuilder
         $this->subQuery = $mainSQL;
         $currentField = $this->currentField;
         $currentSubQueryNumber = $this->currentSubQueryNumber;
-        if ($this->currentField . $this->currentSubQueryNumber == array_key_first($this->subQueries)) {
+        $subQueryKey = $currentField . $currentSubQueryNumber;
+        if ($subQueryKey == array_key_first($this->subQueries)) {
             $targetField = preg_replace('/__\d+$/', '', $this->currentField);
+            if (isset($this->{$where}[$subQueryKey]['fields']) && !empty($this->{$where}[$subQueryKey]['fields'])) {
+                $this->fields = array_merge($this->fields, $this->{$where}[$subQueryKey]['fields']);
+            }
             $this->{$where}[$where === 'whereIn' || $where === 'whereNotIn' ? $targetField : $this->currentField] = $mainSQL;
             if ($where == 'where' || $where == 'whereColumn' || $where == 'orWhere') {
                 $this->whereSubQuery[$this->currentField . $where] = 'whereSubQuery';
@@ -1777,8 +1781,8 @@ class QueryBuilder
             $this->makeDefaultSubQueryData();
         }
 
-        if (isset($this->{$where}[$currentField . $currentSubQueryNumber])) {
-            unset($this->{$where}[$currentField . $currentSubQueryNumber]);
+        if (isset($this->{$where}[$subQueryKey])) {
+            unset($this->{$where}[$subQueryKey]);
         }
     }
 
