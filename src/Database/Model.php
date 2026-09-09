@@ -25,7 +25,8 @@ abstract class Model
         $calledClass = get_called_class();
         self::$queryBuilder->setCalledClass($calledClass);
 
-        $model = (new ReflectionClass($calledClass))->newInstanceWithoutConstructor();
+        $reflectionClass = new ReflectionClass($calledClass);
+        $model = $reflectionClass->newInstanceWithoutConstructor();
 
         $reflectionMethod = new ReflectionMethod($calledClass, 'getTable');
 
