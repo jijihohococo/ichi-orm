@@ -164,6 +164,15 @@ abstract class TestCase
         throw new Exception("Expected {$expectedException} to be thrown.");
     }
 
+    protected function assertNotEmpty($value, $message = null)
+    {
+        if (empty($value)) {
+            throw new Exception(
+                $message ?? 'Expected value to be non-empty.'
+            );
+        }
+    }
+
     protected function each(array $values, callable $callback)
     {
         foreach ($values as $value) {
