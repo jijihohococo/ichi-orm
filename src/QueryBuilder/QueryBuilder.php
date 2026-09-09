@@ -1353,7 +1353,11 @@ class QueryBuilder
                     $i++;
                 }
             } elseif ($current['whereIn'] !== null && !is_array($current['whereIn'])) {
-                $currentField = getCurrentField($this->subQueries, $this->currentField, $this->currentSubQueryNumber);
+                $currentField = preg_replace(
+                    '/__\d+$/',
+                    '', 
+                    getCurrentField($this->subQueries, $this->currentField, $this->currentSubQueryNumber)
+                );
                 $string .= $current['where'] == null && $current['whereColumn'] == null && $current['addTrashed'] == false ? ' WHERE ' . $currentField . ' IN (' . $current['whereIn'] . ')' : ' AND ' . $currentField . ' IN (' . $current['whereIn'] . ')';
             }
         }
