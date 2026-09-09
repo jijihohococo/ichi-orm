@@ -1,6 +1,7 @@
 <?php
 
 use IchiORMTests\Fixtures\Blog;
+use IchiORMTests\Fixtures\Author;
 
 class WhereInTest extends DriverTestCase
 {
