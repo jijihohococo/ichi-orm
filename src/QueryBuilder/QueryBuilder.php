@@ -1104,9 +1104,11 @@ class QueryBuilder
 
     private function getLimit()
     {
-        return $this->limit;
-        //$driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
-        //return $driver === 'sqlsrv' ? null : ' LIMIT ' . $this->limit;
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+        if ($driver === 'sqlsrv' || $this->limit === null) {
+            return null;
+        }
+        return ' LIMIT ' . $this->limit;
     }
 
     private function getOffset()
