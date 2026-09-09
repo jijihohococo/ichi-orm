@@ -1035,7 +1035,7 @@ class QueryBuilder
                     $this->operators[$field . $where] = makeOperator($operator);
                     $query = $this;
                     $query->setSubQuery($field, $where);
-                    $this->subQueries[$field . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
+                    $this->subQueries[$this->currentField . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
                     $value($query);
                     $this->makeDefaultSubQueryData();
                 }
