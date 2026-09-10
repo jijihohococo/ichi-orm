@@ -900,7 +900,7 @@ class QueryBuilder
         $previousSubQueryNumber = $this->currentSubQueryNumber;
         $query = $this;
         $query->setSubQuery($field, $check);
-        $this->subQueries[$this->currentField . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
+        $this->subQueries[$field . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
         $value($query);
 
         if ($whereSelect !== 'selectQuery') {
