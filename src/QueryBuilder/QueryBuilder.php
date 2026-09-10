@@ -900,7 +900,7 @@ class QueryBuilder
         $previousSubQueryNumber = $this->currentSubQueryNumber;
         $query = $this;
         $query->setSubQuery($field, $check);
-        $this->subQueries[$field . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
+        $this->subQueries[$this->currentField . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
         $value($query);
 
         if ($whereSelect !== 'selectQuery') {
@@ -2026,7 +2026,7 @@ class QueryBuilder
                     throw new Exception("You need to add function in array in addSelect function or addOnlySelect function.", 1);
                 }
                 $query->setSubQuery($select, 'selectQuery');
-                $this->subQueries[$select . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
+                $this->subQueries[$this->currentField . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
                 $value($query);
                 $this->makeDefaultSubQueryData();
                 $this->selectedFields[$this->className][$select] = $select;
