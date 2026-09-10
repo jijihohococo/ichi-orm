@@ -461,13 +461,12 @@ class QueryBuilder
                 throw new Exception("You need to put non-empty array data", 1);
             }
             $this->boot();
-            $instance = $this;
             $arrayKeys = $this->getModelArrayKeys();
             if (empty($arrayKeys)) {
                 throw new Exception("You need to add column data", 1);
             }
-            $getID = $instance->getID();
-            if ($instance->autoIncrementId() == true) {
+            $getID = $this->getID();
+            if ($this->autoIncrementId() == true) {
                 unset($arrayKeys[$getID]);
             }
             unset($arrayKeys['deleted_at']);
@@ -494,11 +493,16 @@ class QueryBuilder
             $stmt = $pdo->prepare("INSERT INTO " . $this->table . " " . $fields . " VALUES " . $insertedValues);
             bindValues($stmt, $insertBindValues);
             $stmt->execute();
-            $object = mappingModelData([
-                $getID => $pdo->lastInsertId()
-            ], $insertedData, $instance);
             $className = $this->className ?? $this->getCalledClass();
             $this->disableBooting();
+            $object = new $className();
+            $object = mappingModelData(
+                [
+                    $getID => $this->connectDatabase()->lastInsertId()
+                ],
+                $insertedData,
+                $object
+            );
 
             $this->makeObserver($className, 'create', $object);
 
