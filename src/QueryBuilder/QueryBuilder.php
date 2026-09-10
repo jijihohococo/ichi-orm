@@ -809,7 +809,7 @@ class QueryBuilder
         return $this;
     }
 
-    private function makeSubQueryAttributes($previousField = null)
+    private function makeSubQueryAttributes($previousField = null, $alias = null)
     {
         return [
             'where' => null,
@@ -834,7 +834,8 @@ class QueryBuilder
             'havingField' => null,
             'havingOperator' => null,
             'havingValue' => null,
-            'selectQuery' => null
+            'selectQuery' => null,
+            'alias' => $alias,
         ];
     }
 
@@ -849,7 +850,7 @@ class QueryBuilder
         $uniqueKey = $field . '__' . $this->whereKeyCounter;
         $this->whereKeyCounter++;
         $this->currentField = $uniqueKey;
-        $this->{$where}[$this->currentField . $this->currentSubQueryNumber] = $this->makeSubQueryAttributes($previousField);
+        $this->{$where}[$this->currentField . $this->currentSubQueryNumber] = $this->makeSubQueryAttributes($previousField, $field);
     }
 
     private function setSubWhere($where, $value, $field, $operator, $whereSelect)
@@ -1831,7 +1832,8 @@ class QueryBuilder
                     $this->operators[$operatorKey] = $operator;
                 }
             }
-            $this->{$where}[$this->currentField] = $mainSQL;
+            $alias = isset($this->{$where}[$subQueryKey]['alias']) ? $this->{$where}[$subQueryKey]['alias'] : $this->currentField;
+            $this->{$where}[$alias] = $mainSQL;
             if ($where == 'where' || $where == 'whereColumn' || $where == 'orWhere') {
                 $this->whereSubQuery[$currentField . $where] = 'whereSubQuery';
             }
@@ -1938,7 +1940,7 @@ class QueryBuilder
         $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
         $limit = $this->getSubQueryLimit($where);
         $offset = $this->getSubQueryOffset($where);
-        $query = $this->getSubQuerySelect($where) .
+        $result = $this->getSubQuerySelect($where) .
             $this->getSubQueryWhere($where) .
             $this->getSubQueryWhereColumn($where) .
             $this->getSubQueryWhereIn($where) .
@@ -1947,29 +1949,10 @@ class QueryBuilder
             $this->getSubQueryOrder($where) .
             $this->getSubQueryGroupBy($where) .
             $this->getSubQueryHaving($where);
-        $query = $this->appendSubQueryLimit($query, $limit, $driver);
-        $query .= $offset;
-        return $where === 'selectQuery' || $limit === null || $driver === 'sqlsrv' ? $query : $this->wrapSubQuery($query);
-    }
-
-    private function appendSubQueryLimit($query, $limit, $driver)
-    {
-        if ($limit === null) {
-            return $query;
+        if ($driver === 'sqlsrv' && $limit !== null) {
+            return preg_replace('/^SELECT\s+/i', "SELECT TOP " . $limit . " ", $result) . $offset;
         }
-        if ($driver === 'sqlsrv') {
-            return preg_replace(
-                '/^SELECT\s+/i',
-                'SELECT TOP ' . $limit . ' ',
-                $query
-            );
-        }
-        return $query . ' LIMIT ' . $limit;
-    }
-
-    private function wrapSubQuery($query)
-    {
-        return 'SELECT * FROM (' . $query . ') AS l' . $this->getSubQueryLimitNumber();
+        return $limit == null ? $result . $offset : "SELECT * FROM (" . $result . " LIMIT " . $limit . $offset . ") AS l" . $this->getSubQueryLimitNumber();
     }
 
     public function toArray()
