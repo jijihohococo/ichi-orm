@@ -534,31 +534,31 @@ class QueryBuilder
             unset($arrayKeys[$getID]);
             $updatedBindValues = [];
             $updatedFields = null;
-            $insertedData = [];
+            $updatedData = [];
 
             foreach ($attribute as $key => $value) {
                 if ($key === $getID) {
                     continue;
                 }
                 if (array_key_exists($key, $arrayKeys)) {
-                    $insertedData[$key] = $value;
+                    $updatedData[$key] = $value;
                 }
             }
 
-            if (array_key_exists('updated_at', $arrayKeys) && !array_key_exists('updated_at', $insertedData)) {
-                $insertedData['updated_at'] = now();
+            if (array_key_exists('updated_at', $arrayKeys) && !array_key_exists('updated_at', $updatedData)) {
+                $updatedData['updated_at'] = now();
             }
 
-            if (empty($insertedData)) {
+            if (empty($updatedData)) {
                 throw new Exception("You need to add available column data", 1);
             }
 
-            foreach ($insertedData as $key => $value) {
+            foreach ($updatedData as $key => $value) {
                 $updatedFields .= $key . '=?,';
             }
 
-            $insertedArrayValues = array_values($insertedData);
-            $updatedBindValues = array_merge($updatedBindValues, $insertedArrayValues);
+            $updatedArrayValues = array_values($updatedData);
+            $updatedBindValues = array_merge($updatedBindValues, $updatedArrayValues);
             $updatedFields = substr($updatedFields, 0, -1);
 
             $whereQuery = null;
@@ -580,10 +580,16 @@ class QueryBuilder
             $stmt = $this->connectDatabase()->prepare("UPDATE " . $this->getTable() . " SET " . $updatedFields . $whereQuery);
             bindValues($stmt, $updatedBindValues);
             $stmt->execute();
-            $object = mappingModelData([
-                $getID => $this->{$getID}
-            ], $insertedData, $this);
-            $this->makeObserver((string) get_class($this), 'update', $object);
+            $className = $this->className ?? get_class($this);
+            $object = new $className();
+            $object = mappingModelData(
+                [
+                    $getID => $idValue
+                ],
+                $updatedData,
+                $object
+            );
+            $this->makeObserver($className, 'update', $object);
             return $object;
         } catch (Exception $e) {
             return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
