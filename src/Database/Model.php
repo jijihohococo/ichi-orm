@@ -248,12 +248,31 @@ abstract class Model
 
     protected function refersTo(string $class, string $field, string $referField = 'id')
     {
-        return self::getQueryBuilder()->refersTo($class, $field, $referField);
+        $caller = getCallerInfo();
+        try {
+            checkClass($class);
+            if (isset($this->{$field})) {
+                return $class::findBy($referField, $this->{$field});
+            }
+            throw new Exception($field . ' is not available', 1);
+        } catch (Exception $e) {
+            return showErrorPage($e->getMessage() . showCallerInfo($caller));
+        }
     }
 
     protected function refersMany(string $class, string $field, string $referField = 'id')
     {
-        return self::getQueryBuilder()->refersMany($class, $field, $referField);
+        $caller = getCallerInfo();
+        try {
+            checkClass($class);
+            if (isset($this->{$referField})) {
+                $classObject = new $class();
+                return $class::where($classObject->getTable() . '.' . $field, $this->{$referField});
+            }
+            throw new Exception($referField . ' is not available', 1);
+        } catch (Exception $e) {
+            return showErrorPage($e->getMessage() . showCallerInfo($caller));
+        }
     }
 
     public static function observe(ModelObserver $modelObserver)

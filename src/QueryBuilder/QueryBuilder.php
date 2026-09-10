@@ -2243,33 +2243,6 @@ class QueryBuilder
         }
     }
 
-    public function refersTo(string $class, string $field, string $referField = 'id')
-    {
-        try {
-            checkClass($class);
-            if (isset($this->{$field})) {
-                return $class::findBy($referField, $this->{$field});
-            }
-            throw new Exception($field . ' is not available', 1);
-        } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
-        }
-    }
-
-    public function refersMany(string $class, string $field, string $referField = 'id')
-    {
-        try {
-            checkClass($class);
-            if (isset($this->{$referField})) {
-                $classObject = new $class();
-                return $class::where($classObject->getTable() . '.' . $field, $this->{$referField});
-            }
-            throw new Exception($referField . ' is not available', 1);
-        } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
-        }
-    }
-
     public function observe(ModelObserver $modelObserver)
     {
         try {
