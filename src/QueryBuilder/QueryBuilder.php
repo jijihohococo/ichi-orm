@@ -466,7 +466,7 @@ class QueryBuilder
                 throw new Exception("You need to add column data", 1);
             }
             $getID = $this->getID();
-            if ($this->autoIncrementId() == true) {
+            if ($this->autoIncrementId() == true && !isset($attribute[$getID])) {
                 unset($arrayKeys[$getID]);
             }
             unset($arrayKeys['deleted_at']);
