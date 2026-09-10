@@ -2044,10 +2044,10 @@ class QueryBuilder
             $this->checkInstance();
             if ($this->currentSubQueryNumber == null) {
                 $this->checkUnionQuery();
+                $this->boot();
                 if ($this->select !== $this->table . '.*') {
                     throw new Exception("You need to use only addOnlySelect function to select the data", 1);
                 }
-                $this->boot();
                 $this->select = null;
                 $this->addSelect = true;
                 return $this->addingSelect($fields);
@@ -2055,12 +2055,13 @@ class QueryBuilder
             if ($this->currentSubQueryNumber !== null) {
                 $check = $this->showCurrentSubQuery();
                 $this->checkSubQueryUnionQuery($check);
-                if ($this->{$check}[$this->currentField . $this->currentSubQueryNumber]['select'] !== $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['table'] . '.*') {
+                $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
+                if ($this->{$check}[$subQueryKey]['select'] !== $this->{$check}[$subQueryKey]['table'] . '.*') {
                     throw new Exception("You need to use only addOnlySelect function to select the data", 1);
                 }
 
-                $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['select'] = null;
-                $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['addSelect'] = true;
+                $this->{$check}[$subQueryKey]['select'] = null;
+                $this->{$check}[$subQueryKey]['addSelect'] = true;
                 foreach ($fields as $select => $value) {
                     if (!is_callable($value)) {
                         throw new Exception("You need to add function in array in addSelect function or addOnlySelect function.", 1);
