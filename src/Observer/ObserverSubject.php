@@ -2,10 +2,8 @@
 
 namespace JiJiHoHoCoCo\IchiORM\Observer;
 
-use ReflectionMethod,
-
-Exception;
-
+use ReflectionMethod;
+use Exception;
 
 class ObserverSubject
 {

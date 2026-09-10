@@ -4,6 +4,9 @@ namespace JiJiHoHoCoCo\IchiORM\Database;
 
 use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 use JiJiHoHoCoCo\IchiORM\QueryBuilder\QueryBuilder;
+use ReflectionClass;
+use ReflectionMethod;
+use Exception;
 
 abstract class Model
 {
@@ -19,7 +22,27 @@ abstract class Model
         if (self::$queryBuilder == null) {
             self::$queryBuilder = new QueryBuilder();
         }
-        self::$queryBuilder->setCalledClass(get_called_class());
+
+        $calledClass = get_called_class();
+        self::$queryBuilder->setCalledClass($calledClass);
+
+        $reflectionClass = new ReflectionClass($calledClass);
+        $model = $reflectionClass->newInstanceWithoutConstructor();
+
+        $reflectionMethod = new ReflectionMethod($calledClass, 'getTable');
+
+        if ($reflectionMethod->getDeclaringClass()->getName() !== self::class) {
+            $reflectionMethod->setAccessible(true);
+
+            self::$queryBuilder->setTable(
+                $reflectionMethod->invoke($model)
+            );
+        } else {
+            self::$queryBuilder->setTable(
+                getTableName($calledClass)
+            );
+        }
+
         return clone self::$queryBuilder;
     }
 
@@ -78,7 +101,14 @@ abstract class Model
         $queryBuilder = self::getQueryBuilder();
         $getID = $queryBuilder->getID();
         $queryBuilder->{$getID} = $this->{$getID};
-        return $queryBuilder->update($attribute);
+        $queryBuilder->update($attribute);
+        foreach ($attribute as $key => $value) {
+            if ($key === $getID) {
+                continue;
+            }
+            $this->{$key} = $value;
+        }
+        return $this;
     }
 
     public static function find($id)
@@ -124,7 +154,7 @@ abstract class Model
 
     public static function where(...$parameters)
     {
-        return self::getQueryBuilder()->where($parameters);
+        return self::getQueryBuilder()->where(...$parameters);
     }
 
     public static function from(string $className)
@@ -134,12 +164,12 @@ abstract class Model
 
     public static function whereColumn(...$parameters)
     {
-        return self::getQueryBuilder()->whereColumn($parameters);
+        return self::getQueryBuilder()->whereColumn(...$parameters);
     }
 
     public static function orWhere(...$parameters)
     {
-        return self::getQueryBuilder()->orWhere($parameters);
+        return self::getQueryBuilder()->orWhere(...$parameters);
     }
 
     public static function whereIn(string $field, $value)
@@ -204,27 +234,46 @@ abstract class Model
 
     public static function innerJoin(...$parameters)
     {
-        return self::getQueryBuilder()->innerJoin($parameters);
+        return self::getQueryBuilder()->innerJoin(...$parameters);
     }
 
     public static function leftJoin(...$parameters)
     {
-        return self::getQueryBuilder()->leftJoin($parameters);
+        return self::getQueryBuilder()->leftJoin(...$parameters);
     }
 
     public static function rightJoin(...$parameters)
     {
-        return self::getQueryBuilder()->rightJoin($parameters);
+        return self::getQueryBuilder()->rightJoin(...$parameters);
     }
 
     protected function refersTo(string $class, string $field, string $referField = 'id')
     {
-        return self::getQueryBuilder()->refersTo($class, $field, $referField);
+        $caller = getCallerInfo();
+        try {
+            checkClass($class);
+            if (isset($this->{$field})) {
+                return $class::findBy($referField, $this->{$field});
+            }
+            throw new Exception($field . ' is not available', 1);
+        } catch (Exception $e) {
+            return showErrorPage($e->getMessage() . showCallerInfo($caller));
+        }
     }
 
     protected function refersMany(string $class, string $field, string $referField = 'id')
     {
-        return self::getQueryBuilder()->refersMany($class, $field, $referField);
+        $caller = getCallerInfo();
+        try {
+            checkClass($class);
+            if (isset($this->{$referField})) {
+                $classObject = new $class();
+                return $class::where($classObject->getTable() . '.' . $field, $this->{$referField});
+            }
+            throw new Exception($referField . ' is not available', 1);
+        } catch (Exception $e) {
+            return showErrorPage($e->getMessage() . showCallerInfo($caller));
+        }
     }
 
     public static function observe(ModelObserver $modelObserver)

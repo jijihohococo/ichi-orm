@@ -36,6 +36,10 @@ jobs:
 
       - name: Install MySQL Server
         run: |
+          sudo find /etc/apt/sources.list.d \
+            -type f \
+            \( -name '*chrome*' -o -name '*google*' \) \
+            -delete
           sudo DEBIAN_FRONTEND=noninteractive apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server
           sudo service mysql start
@@ -76,3 +80,6 @@ jobs:
           php tests/Database/Connections/MySQL/test.host_only.php
           php tests/Database/Connections/MySQL/test.port_timezone_only.php
           php tests/Database/Connections/MySQL/test.socket_modes_full.php
+
+      - name: Run MySQL query and ORM tests
+        run: php tests/Database/Queries/run.php mysql

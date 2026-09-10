@@ -4,7 +4,9 @@ namespace JiJiHoHoCoCo\IchiORM\QueryBuilder;
 
 use PDO;
 use Exception;
-use JiJiHoHoCoCo\IchiORM\Observer\{ModelObserver, ObserverSubject};
+use ReflectionMethod;
+use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
+use JiJiHoHoCoCo\IchiORM\Observer\ObserverSubject;
 use JiJiHoHoCoCo\IchiORM\Pagination\Paginate;
 use JiJiHoHoCoCo\IchiORM\Database\NullModel;
 
@@ -56,6 +58,19 @@ class QueryBuilder
     private $caller = [];
     private $calledClass;
     private $whereKeyCounter = 0;
+    private static $lastSQLFields = [];
+
+    private function setLastSQLFields(array $fields)
+    {
+        self::$lastSQLFields = $fields;
+    }
+
+    private function getLastSQLFields()
+    {
+        $fields = self::$lastSQLFields;
+        self::$lastSQLFields = [];
+        return $fields;
+    }
 
     private function getModelArrayKeys()
     {
@@ -82,9 +97,14 @@ class QueryBuilder
         return connectPDO();
     }
 
+    public function setTable(string $table)
+    {
+        $this->table = $table;
+    }
+
     public function getTable()
     {
-        return getTableName((string) $this->getCalledClass());
+        return $this->table === null ? getTableName((string) $this->getCalledClass()) : $this->table;
     }
 
     public function getID()
@@ -121,6 +141,7 @@ class QueryBuilder
     private function getSelect()
     {
         $select = $this->select;
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
         if ($this->selectQuery !== null) {
             $i = 0;
             foreach ($this->selectQuery as $selectAs => $query) {
@@ -129,7 +150,11 @@ class QueryBuilder
                 $i++;
             }
         }
-        return "SELECT " . $select . " FROM " . $this->table . $this->getJoinSQL();
+        $from = ' FROM ' . $this->table . $this->getJoinSQL();
+        if ($driver === 'sqlsrv' && $this->limit !== null && $this->offset === null) {
+            return "SELECT TOP " . $this->limit . " " . $select . $from;
+        }
+        return "SELECT " . $select . $from;
     }
 
     private function makeDelete()
@@ -436,13 +461,12 @@ class QueryBuilder
                 throw new Exception("You need to put non-empty array data", 1);
             }
             $this->boot();
-            $instance = $this;
             $arrayKeys = $this->getModelArrayKeys();
             if (empty($arrayKeys)) {
                 throw new Exception("You need to add column data", 1);
             }
-            $getID = $instance->getID();
-            if ($instance->autoIncrementId() == true) {
+            $getID = $this->getID();
+            if ($this->autoIncrementId() == true && !isset($attribute[$getID])) {
                 unset($arrayKeys[$getID]);
             }
             unset($arrayKeys['deleted_at']);
@@ -465,15 +489,20 @@ class QueryBuilder
             $insertedValues = substr("(" . addArray($insertedArrayValues) . "),", 0, -1);
             $insertBindValues = array_merge($insertBindValues, $insertedArrayValues);
             $fields = '(' . substr(implode('', array_keys($insertedFields)), 0, -1) . ')';
-            $pdo = $instance->connectDatabase();
+            $pdo = $this->connectDatabase();
             $stmt = $pdo->prepare("INSERT INTO " . $this->table . " " . $fields . " VALUES " . $insertedValues);
             bindValues($stmt, $insertBindValues);
             $stmt->execute();
-            $object = mappingModelData([
-                $getID => $pdo->lastInsertId()
-            ], $insertedData, $instance);
             $className = $this->className ?? $this->getCalledClass();
             $this->disableBooting();
+            $object = new $className();
+            $object = mappingModelData(
+                [
+                    $getID => $this->connectDatabase()->lastInsertId()
+                ],
+                $insertedData,
+                $object
+            );
 
             $this->makeObserver($className, 'create', $object);
 
@@ -505,31 +534,31 @@ class QueryBuilder
             unset($arrayKeys[$getID]);
             $updatedBindValues = [];
             $updatedFields = null;
-            $insertedData = [];
+            $updatedData = [];
 
             foreach ($attribute as $key => $value) {
                 if ($key === $getID) {
                     continue;
                 }
                 if (array_key_exists($key, $arrayKeys)) {
-                    $insertedData[$key] = $value;
+                    $updatedData[$key] = $value;
                 }
             }
 
-            if (array_key_exists('updated_at', $arrayKeys) && !array_key_exists('updated_at', $insertedData)) {
-                $insertedData['updated_at'] = now();
+            if (array_key_exists('updated_at', $arrayKeys) && !array_key_exists('updated_at', $updatedData)) {
+                $updatedData['updated_at'] = now();
             }
 
-            if (empty($insertedData)) {
+            if (empty($updatedData)) {
                 throw new Exception("You need to add available column data", 1);
             }
 
-            foreach ($insertedData as $key => $value) {
+            foreach ($updatedData as $key => $value) {
                 $updatedFields .= $key . '=?,';
             }
 
-            $insertedArrayValues = array_values($insertedData);
-            $updatedBindValues = array_merge($updatedBindValues, $insertedArrayValues);
+            $updatedArrayValues = array_values($updatedData);
+            $updatedBindValues = array_merge($updatedBindValues, $updatedArrayValues);
             $updatedFields = substr($updatedFields, 0, -1);
 
             $whereQuery = null;
@@ -553,7 +582,7 @@ class QueryBuilder
             $stmt->execute();
             $object = mappingModelData([
                 $getID => $this->{$getID}
-            ], $insertedData, $this);
+            ], $updatedData, $this);
             $this->makeObserver((string) get_class($this), 'update', $object);
             return $object;
         } catch (Exception $e) {
@@ -754,7 +783,7 @@ class QueryBuilder
         if ($this->currentSubQueryNumber == null) {
             $this->checkUnionQuery();
             $this->boot();
-            $this->limit = ' LIMIT ' . $limit;
+            $this->limit = $limit;
         }
         if ($this->currentSubQueryNumber !== null) {
             $check = $this->showCurrentSubQuery();
@@ -769,10 +798,12 @@ class QueryBuilder
     {
         $this->caller = getCallerInfo();
         $this->checkInstance();
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $offset = $driver === 'sqlsrv' ? ' OFFSET ' . $offset . ' ROWS ' : ' OFFSET ' . $offset;
         if ($this->currentSubQueryNumber == null) {
             $this->checkUnionQuery();
             $this->boot();
-            $this->offset = ' OFFSET ' . $offset;
+            $this->offset = $offset;
         }
         if ($this->currentSubQueryNumber !== null) {
             $check = $this->showCurrentSubQuery();
@@ -782,7 +813,7 @@ class QueryBuilder
         return $this;
     }
 
-    private function makeSubQueryAttributes($previousField = null)
+    private function makeSubQueryAttributes($previousField = null, $alias = null)
     {
         return [
             'where' => null,
@@ -807,7 +838,8 @@ class QueryBuilder
             'havingField' => null,
             'havingOperator' => null,
             'havingValue' => null,
-            'selectQuery' => null
+            'selectQuery' => null,
+            'alias' => $alias,
         ];
     }
 
@@ -822,7 +854,7 @@ class QueryBuilder
         $uniqueKey = $field . '__' . $this->whereKeyCounter;
         $this->whereKeyCounter++;
         $this->currentField = $uniqueKey;
-        $this->{$where}[$this->currentField . $this->currentSubQueryNumber] = $this->makeSubQueryAttributes($previousField);
+        $this->{$where}[$this->currentField . $this->currentSubQueryNumber] = $this->makeSubQueryAttributes($previousField, $field);
     }
 
     private function setSubWhere($where, $value, $field, $operator, $whereSelect)
@@ -917,7 +949,9 @@ class QueryBuilder
     {
         try {
             $obj = $this->getSubQueryClassObject($where, $className);
-            $table = $obj->getTable();
+            $reflectionMethod = new ReflectionMethod($className, 'getTable');
+            $reflectionMethod->setAccessible(true);
+            $table = $reflectionMethod->invoke($obj);
             if ($this->{$where}[$this->currentField . $this->currentSubQueryNumber]['select'] !== $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['table'] . '.*') {
                 throw new Exception("You must use from function before selecting the data", 1);
             }
@@ -999,10 +1033,11 @@ class QueryBuilder
                 if (is_callable($value) && $this->currentSubQueryNumber == null) {
                     $this->checkUnionQuery();
                     $this->boot();
-                    $this->operators[$field . $where] = makeOperator($operator);
                     $query = $this;
                     $query->setSubQuery($field, $where);
-                    $this->subQueries[$field . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
+                    $this->operators[$this->currentField . $where] = makeOperator($operator);
+                    $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
+                    $this->subQueries[$subQueryKey] = $this->currentSubQueryNumber;
                     $value($query);
                     $this->makeDefaultSubQueryData();
                 }
@@ -1019,7 +1054,8 @@ class QueryBuilder
                 if (is_callable($value) && $this->currentSubQueryNumber !== null) {
                     $check = $this->showCurrentSubQuery();
                     $this->checkSubQueryUnionQuery($check);
-                    $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['operators'][$field . $where] = makeOperator($operator);
+                    $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
+                    $this->{$check}[$subQueryKey]['operators'][$this->currentField . $where] = makeOperator($operator);
                     $this->makeSubQueryInSubQuery($where, $value, $field, $check);
                 }
             } else {
@@ -1052,7 +1088,8 @@ class QueryBuilder
                 $this->boot();
                 $query = $this;
                 $query->setSubQuery($field, $whereIn, $field);
-                $this->subQueries[$field . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
+                $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
+                $this->subQueries[$subQueryKey] = $this->currentSubQueryNumber;
                 $value($query);
                 $this->makeDefaultSubQueryData();
             }
@@ -1090,11 +1127,19 @@ class QueryBuilder
 
     private function getLimit()
     {
-        return $this->limit;
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+        if ($driver === 'sqlsrv' || $this->limit === null) {
+            return null;
+        }
+        return ' LIMIT ' . $this->limit;
     }
 
     private function getOffset()
     {
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+        if ($driver === 'sqlsrv' && $this->offset !== null && $this->limit !== null) {
+            return $this->offset . 'FETCH NEXT ' . $this->limit . ' ROWS ONLY ';
+        }
         return $this->offset;
     }
 
@@ -1102,7 +1147,7 @@ class QueryBuilder
     {
         if (isset($this->{$where}[$this->currentField . $this->currentSubQueryNumber])) {
             $limit = $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['limit'];
-            return $limit == null ? $limit : ' LIMIT ' . $limit;
+            return $limit;
         }
     }
 
@@ -1110,7 +1155,12 @@ class QueryBuilder
     {
         if (isset($this->{$where}[$this->currentField . $this->currentSubQueryNumber])) {
             $offset = $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['offset'];
-            return $offset == null ? $offset : ' OFFSET ' . $offset;
+            $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+            $limit = $this->getSubQueryLimit($where);
+            if ($driver === 'sqlsrv' && $limit !== null) {
+                return $offset . ' ROWS FETCH NEXT ' . $limit . ' ROWS ONLY';
+            }
+            return $offset;
         }
     }
 
@@ -1173,7 +1223,7 @@ class QueryBuilder
                 $field = preg_replace('/__\d+$/', '', $uniqueKey);
 
                 if (isset($this->whereSubQuery[$uniqueKey . 'where'])) {
-                    $string .= $i == 0 ? $uniqueKey . $this->operators[$uniqueKey . 'where'] . $value : ' AND ' . $uniqueKey . $this->operators[$uniqueKey . 'where'] . $value;
+                    $string .= $i == 0 ? $field . $this->operators[$uniqueKey . 'where'] . $value : ' AND ' . $field . $this->operators[$uniqueKey . 'where'] . $value;
                 } else {
                     if ($value === null) {
                         $string .= $i == 0 ? $field . $this->operators[$uniqueKey . 'where'] . 'NULL' : ' AND ' . $field . $this->operators[$uniqueKey . 'where'] . 'NULL';
@@ -1212,20 +1262,26 @@ class QueryBuilder
     {
         $string = null;
         $i = 0;
-        if (isset($this->{$where}[$this->currentField . $this->currentSubQueryNumber])) {
-            $current = $this->{$where}[$this->currentField . $this->currentSubQueryNumber];
-            if ($current['whereColumn'] !== null && is_array($current['whereColumn'])) {
-                foreach ($current['whereColumn'] as $key => $value) {
-                    $result = $key . $current['operators'][$key . 'whereColumn'] . $value;
-                    $string .= $i == 0 && $current['where'] == null && $current['addTrashed'] == false ? ' WHERE ' . $result : ' AND ' . $result;
-                    $i++;
-                }
+        $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
+        if (!isset($this->{$where}[$subQueryKey])) {
+            return $string;
+        }
+        $current = $this->{$where}[$subQueryKey];
+        if ($current['whereColumn'] !== null && is_array($current['whereColumn'])) {
+            foreach ($current['whereColumn'] as $key => $value) {
+                $operatorKey = $key . 'whereColumn';
+                $operator = isset($current['operators'][$operatorKey]) ? $current['operators'][$operatorKey] : '=';
+                $result = $key . $operator . $value;
+                $string .= $i == 0 && $current['where'] == null && $current['addTrashed'] == false ? ' WHERE ' . $result : ' AND ' . $result;
+                $i++;
             }
-            if ($current['whereColumn'] !== null && !is_array($current['whereColumn'])) {
-                $currentField = getCurrentField($this->subQueries, $this->currentField, $this->currentSubQueryNumber);
-                $result = $currentField . $current['operators'][$currentField . 'whereColumn'] . ' (' . $current['whereColumn'] . ') ';
-                $string .= $current['where'] == null && $current['addTrashed'] == false ? ' WHERE ' . $result : ' AND ' . $result;
-            }
+        }
+        if ($current['whereColumn'] !== null && !is_array($current['whereColumn'])) {
+            $currentField = getCurrentField($this->subQueries, $this->currentField, $this->currentSubQueryNumber);
+            $operatorKey = $this->currentField . $where;
+            $operator = isset($current['operators'][$operatorKey]) ? $current['operators'][$operatorKey] : '=';
+            $result = $currentField . $operator . ' (' . $current['whereColumn'] . ') ';
+            $string .= $current['where'] == null && $current['addTrashed'] == false ? ' WHERE ' . $result : ' AND ' . $result;
         }
         return $string;
     }
@@ -1237,7 +1293,7 @@ class QueryBuilder
             foreach ($this->orWhere as $uniqueKey => $value) {
                 $field = preg_replace('/__\d+$/', '', $uniqueKey);
                 if (isset($this->whereSubQuery[$uniqueKey . 'orWhere'])) {
-                    $string .= ' OR ' . $uniqueKey . $this->operators[$uniqueKey . 'orWhere'] . $value;
+                    $string .= ' OR ' . $field . $this->operators[$uniqueKey . 'orWhere'] . $value;
                 } else {
                     $string .= ' OR ' . $field . $this->operators[$uniqueKey . 'orWhere'] . '?';
                 }
@@ -1270,11 +1326,12 @@ class QueryBuilder
         $i = 0;
         if ($this->whereIn !== null) {
             foreach ($this->whereIn as $key => $value) {
+                $field = preg_replace('/__\d+$/', '', $key);
                 if (is_array($value) && !empty($value)) {
                     $in = addArray($value);
-                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $key . ' IN (' . $in . ') ' : ' AND ' . $key . ' IN (' . $in . ') ';
+                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $field . ' IN (' . $in . ') ' : ' AND ' . $field . ' IN (' . $in . ') ';
                 } elseif ($value !== null && !is_array($value)) {
-                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $key . ' IN ' . $value : ' AND ' . $key . ' IN ' . $value;
+                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $field . ' IN ' . $value : ' AND ' . $field . ' IN ' . $value;
                 } else {
                     $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? $this->whereZero : $this->andZero;
                 }
@@ -1314,12 +1371,13 @@ class QueryBuilder
         $i = 0;
         if ($this->whereNotIn !== null) {
             foreach ($this->whereNotIn as $key => $value) {
+                $field = preg_replace('/__\d+$/', '', $key);
                 if (is_array($value) && !empty($value)) {
                     $in = addArray($value);
                     $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->whereIn == null && $this->addTrashed == false ?
-                        ' WHERE ' . $key . ' NOT IN (' . $in . ') ' : ' AND ' . $key . ' NOT IN (' . $in . ') ';
+                        ' WHERE ' . $field . ' NOT IN (' . $in . ') ' : ' AND ' . $field . ' NOT IN (' . $in . ') ';
                 } elseif ($value !== null && !is_array($value)) {
-                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->whereIn == null && $this->addTrashed == false ? ' WHERE ' . $key . ' NOT IN ' . $value : ' AND ' . $key . ' NOT IN ' . $value;
+                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->whereIn == null && $this->addTrashed == false ? ' WHERE ' . $field . ' NOT IN ' . $value : ' AND ' . $field . ' NOT IN ' . $value;
                 } else {
                     $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->whereIn == null && $this->addTrashed == false ? $this->whereZero : $this->andZero;
                 }
@@ -1547,11 +1605,18 @@ class QueryBuilder
         try {
             if ($this->currentSubQueryNumber == null) {
                 $previousQuery = $this->getQuery();
+                $previousFields = $this->getFields();
                 $this->disableForSQL();
                 $uNumber = $this->currentUnionNumber;
                 $this->useUnionQuery[$uNumber] = false;
                 $this->unionNumber++;
                 $newUnionQuery = $value();
+                $newUnionFields = $this->getLastSQLFields();
+                if ($newUnionQuery instanceof QueryBuilder) {
+                    $newUnionFields = $newUnionQuery->getFields();
+                    $newUnionQuery = $newUnionQuery->getQuery();
+                }
+                $this->fields = array_merge($previousFields, $newUnionFields);
                 $this->useUnionQuery[$uNumber] = true;
                 $this->currentUnionNumber = $uNumber;
                 $this->unableUnionQuery[$uNumber] = true;
@@ -1578,24 +1643,38 @@ class QueryBuilder
                     $previousQuery = $this->{$currentQuery}[$currentField];
                     $query = $this;
                     $query->setSubQuery($currentField, $currentQuery, false);
-                    $this->subQueries[$currentField . $currentSubQueryNumber] = $currentSubQueryNumber;
+                    $secondField = $this->currentField;
+                    $secondSubQueryKey = $secondField . $this->currentSubQueryNumber;
+                    $this->subQueries[$secondSubQueryKey] = $currentSubQueryNumber;
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = true;
                     $value($query);
+                    if (!isset($this->{$currentQuery}[$secondField])) {
+                        throw new Exception("Unable to build UNION sub query", 1);
+                    }
+                    $secondQuery = $this->{$currentQuery}[$secondField];
+                    unset($this->{$currentQuery}[$secondField]);
                     $this->currentField = $currentField;
                     $this->currentSubQueryNumber = $currentSubQueryNumber;
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = substr($previousQuery, 0, -1) . $union . $this->{$currentQuery}[$currentField] . ')';
+                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = substr($previousQuery, 0, -1) . $union . $secondQuery . ')';
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = false;
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber] = $this->makeSubQueryAttributes($previousField);
                 }
                 if ($previousUnionQuery !== null) {
                     $this->{$currentQuery}[$this->currentField . $this->currentSubQueryNumber . 'unableUnionQuery'] = true;
-                    unset($this->{$currentQuery}[$this->currentField]);
-                    $this->subQueries[$currentField . $currentSubQueryNumber] = $currentSubQueryNumber;
                     $query = $this;
+                    $query->setSubQuery($currentField, $currentQuery, false);
+                    $secondField = $this->currentField;
+                    $secondSubQueryKey = $secondField . $this->currentSubQueryNumber;
+                    $this->subQueries[$secondSubQueryKey] = $currentSubQueryNumber;
                     $value($query);
+                    if (!isset($this->{$currentQuery}[$secondField])) {
+                        throw new Exception("Unable to build UNION sub query", 1);
+                    }
+                    $secondQuery = $this->{$currentQuery}[$secondField];
+                    unset($this->{$currentQuery}[$secondField]);
                     $this->currentField = $currentField;
                     $this->currentSubQueryNumber = $currentSubQueryNumber;
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = substr($previousUnionQuery, 0, -1) . $union . $this->{$currentQuery}[$currentField] . ')';
+                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = substr($previousUnionQuery, 0, -1) . $union . $secondQuery . ')';
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = false;
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber] = $this->makeSubQueryAttributes($previousField);
                 }
@@ -1615,6 +1694,7 @@ class QueryBuilder
                 $this->boot();
                 $mainSQL = $this->getQuery();
                 if ($this->toSQL == true) {
+                    $this->setLastSQLFields($this->getFields());
                     $this->disableForSQL();
                     return $mainSQL;
                 }
@@ -1688,7 +1768,7 @@ class QueryBuilder
             return;
         }
 
-        if (str_ends_with($normalizedField, '.*')) {
+        if (substr($normalizedField, -2) === '.*') {
             $this->selectedFields[$class]['*'] = '*';
             return;
         }
@@ -1745,10 +1825,25 @@ class QueryBuilder
         $this->subQuery = $mainSQL;
         $currentField = $this->currentField;
         $currentSubQueryNumber = $this->currentSubQueryNumber;
-        if ($this->currentField . $this->currentSubQueryNumber == array_key_first($this->subQueries)) {
-            $this->{$where}[$this->currentField] = $mainSQL;
+        $subQueryKey = $currentField . $currentSubQueryNumber;
+        if ($subQueryKey == array_key_first($this->subQueries)) {
+            if (isset($this->{$where}[$subQueryKey]['operators']) && is_array($this->{$where}[$subQueryKey]['operators'])) {
+                if (!is_array($this->operators)) {
+                    $this->operators = [];
+                }
+
+                foreach ($this->{$where}[$subQueryKey]['operators'] as $operatorKey => $operator) {
+                    $this->operators[$operatorKey] = $operator;
+                }
+            }
+            if ($where === 'selectQuery') {
+                $alias = $this->{$where}[$subQueryKey]['alias'];
+                $this->{$where}[$alias] = $mainSQL;
+            } else {
+                $this->{$where}[$this->currentField] = $mainSQL;
+            }
             if ($where == 'where' || $where == 'whereColumn' || $where == 'orWhere') {
-                $this->whereSubQuery[$this->currentField . $where] = 'whereSubQuery';
+                $this->whereSubQuery[$currentField . $where] = 'whereSubQuery';
             }
             $this->subQueries = [];
             $this->makeDefaultSubQueryData();
@@ -1850,6 +1945,7 @@ class QueryBuilder
 
     private function getSubQuery($where)
     {
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
         $limit = $this->getSubQueryLimit($where);
         $offset = $this->getSubQueryOffset($where);
         $result = $this->getSubQuerySelect($where) .
@@ -1861,7 +1957,10 @@ class QueryBuilder
             $this->getSubQueryOrder($where) .
             $this->getSubQueryGroupBy($where) .
             $this->getSubQueryHaving($where);
-        return $limit == null ? $result . $offset : "SELECT * FROM (" . $result . $limit . $offset . ") AS l" . $this->getSubQueryLimitNumber();
+        if ($driver === 'sqlsrv' && $limit !== null) {
+            return preg_replace('/^SELECT\s+/i', "SELECT TOP " . $limit . " ", $result) . $offset;
+        }
+        return $limit == null ? $result . $offset : "SELECT * FROM (" . $result . " LIMIT " . $limit . $offset . ") AS l" . $this->getSubQueryLimitNumber();
     }
 
     public function toArray()
@@ -1931,7 +2030,7 @@ class QueryBuilder
                     throw new Exception("You need to add function in array in addSelect function or addOnlySelect function.", 1);
                 }
                 $query->setSubQuery($select, 'selectQuery');
-                $this->subQueries[$select . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
+                $this->subQueries[$this->currentField . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
                 $value($query);
                 $this->makeDefaultSubQueryData();
                 $this->selectedFields[$this->className][$select] = $select;
@@ -1949,10 +2048,10 @@ class QueryBuilder
             $this->checkInstance();
             if ($this->currentSubQueryNumber == null) {
                 $this->checkUnionQuery();
+                $this->boot();
                 if ($this->select !== $this->table . '.*') {
                     throw new Exception("You need to use only addOnlySelect function to select the data", 1);
                 }
-                $this->boot();
                 $this->select = null;
                 $this->addSelect = true;
                 return $this->addingSelect($fields);
@@ -1960,12 +2059,13 @@ class QueryBuilder
             if ($this->currentSubQueryNumber !== null) {
                 $check = $this->showCurrentSubQuery();
                 $this->checkSubQueryUnionQuery($check);
-                if ($this->{$check}[$this->currentField . $this->currentSubQueryNumber]['select'] !== $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['table'] . '.*') {
+                $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
+                if ($this->{$check}[$subQueryKey]['select'] !== $this->{$check}[$subQueryKey]['table'] . '.*') {
                     throw new Exception("You need to use only addOnlySelect function to select the data", 1);
                 }
 
-                $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['select'] = null;
-                $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['addSelect'] = true;
+                $this->{$check}[$subQueryKey]['select'] = null;
+                $this->{$check}[$subQueryKey]['addSelect'] = true;
                 foreach ($fields as $select => $value) {
                     if (!is_callable($value)) {
                         throw new Exception("You need to add function in array in addSelect function or addOnlySelect function.", 1);
@@ -2138,33 +2238,6 @@ class QueryBuilder
                 return $this;
             }
             throw new Exception("You need to pass correct parameters");
-        } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
-        }
-    }
-
-    public function refersTo(string $class, string $field, string $referField = 'id')
-    {
-        try {
-            checkClass($class);
-            if (isset($this->{$field})) {
-                return $class::findBy($referField, $this->{$field});
-            }
-            throw new Exception($field . ' is not available', 1);
-        } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
-        }
-    }
-
-    public function refersMany(string $class, string $field, string $referField = 'id')
-    {
-        try {
-            checkClass($class);
-            if (isset($this->{$referField})) {
-                $classObject = new $class();
-                return $class::where($classObject->getTable() . '.' . $field, $this->{$referField});
-            }
-            throw new Exception($referField . ' is not available', 1);
         } catch (Exception $e) {
             return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
         }
