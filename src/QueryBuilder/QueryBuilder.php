@@ -1950,7 +1950,7 @@ class QueryBuilder
         if ($driver === 'sqlsrv' && $limit !== null) {
             return preg_replace('/^SELECT\s+/i', "SELECT TOP " . $limit . " ", $result) . $offset;
         }
-        return $limit == null ? $result . $offset : "SELECT * FROM (" . $result . $limit . $offset . ") AS l" . $this->getSubQueryLimitNumber();
+        return $limit == null ? $result . $offset : "SELECT * FROM (" . $result . " LIMIT " . $limit . $offset . ") AS l" . $this->getSubQueryLimitNumber();
     }
 
     public function toArray()
