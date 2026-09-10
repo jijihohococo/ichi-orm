@@ -2246,6 +2246,9 @@ class QueryBuilder
     public function refersTo(string $class, string $field, string $referField = 'id')
     {
         try {
+            if (!isset($this->{$field})) {
+                return null;
+            }
             checkClass($class);
             if (isset($this->{$field})) {
                 return $class::findBy($referField, $this->{$field});
