@@ -128,7 +128,7 @@ class SubqueryTest extends DriverTestCase
             return $query->withTrashed()->select(['id'])->where('id', 1)->get();
         })->get();
 
-        $this->assertCount(0, $rows);
+        $this->assertCount(1, $rows);
     }
 
     public function testToSQLIsNotAvailableInsideSubqueryContract()
