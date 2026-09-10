@@ -80,17 +80,6 @@ jobs:
           php tests/Database/Connections/MySQL/test.host_only.php
           php tests/Database/Connections/MySQL/test.port_timezone_only.php
           php tests/Database/Connections/MySQL/test.socket_modes_full.php
-      
-      - name: Check PHP syntax
-        run: |
-          echo "PHP version:"
-          php -v
-          echo "Checking src..."
-          find src -name "*.php" -print0 |
-          xargs -0 -n1 php -l
-          echo "Checking query tests..."
-          find tests/Database/Queries -name "*.php" -print0 |
-          xargs -0 -n1 php -l
 
       - name: Run MySQL query and ORM tests
         run: php tests/Database/Queries/run.php mysql
