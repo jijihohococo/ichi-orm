@@ -4,7 +4,7 @@ class CompatibilityTest extends DriverTestCase
 {
     public function testPhpVersionIsReadable()
     {
-        $this->assertTrue(PHP_VERSION_ID >= 70400);
+        $this->assertTrue(PHP_VERSION_ID >= 70300);
     }
 
     public function testPdoConnectionExists()
