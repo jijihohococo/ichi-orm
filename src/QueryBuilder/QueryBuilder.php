@@ -1947,10 +1947,29 @@ class QueryBuilder
             $this->getSubQueryOrder($where) .
             $this->getSubQueryGroupBy($where) .
             $this->getSubQueryHaving($where);
-        if ($driver === 'sqlsrv' && $limit !== null) {
-            return preg_replace('/^SELECT\s+/i', "SELECT TOP " . $limit . " ", $result) . $offset;
+        $query = $this->appendSubQueryLimit($query, $limit, $driver);
+        $query .= $offset;
+        return $where === 'selectQuery' || $limit === null || $driver === 'sqlsrv' ? $query : $this->wrapSubQuery($query);
+    }
+
+    private function appendSubQueryLimit($query, $limit, $driver)
+    {
+        if ($limit === null) {
+            return $query;
         }
-        return $limit == null ? $result . $offset : "SELECT * FROM (" . $result . " LIMIT " . $limit . $offset . ") AS l" . $this->getSubQueryLimitNumber();
+        if ($driver === 'sqlsrv') {
+            return preg_replace(
+                '/^SELECT\s+/i',
+                'SELECT TOP ' . $limit . ' ',
+                $query
+            );
+        }
+        return $query . ' LIMIT ' . $limit;
+    }
+
+    private function wrapSubQuery($query)
+    {
+        return 'SELECT * FROM (' . $query . ') AS l' . $this->getSubQueryLimitNumber();
     }
 
     public function toArray()
