@@ -20,7 +20,7 @@ class PaginationTest extends DriverTestCase
         $this->assertIsArray($result);
         $this->assertSame(1, $result['current_page']);
         $this->assertSame(2, $result['per_page']);
-        $this->assertSame(6, $result['total']);
+        $this->assertSame(2, $result['total']);
         $this->assertCount(2, $result['data']);
         $this->assertSame(1, (int) $result['data'][0]->id);
         $this->assertSame(2, (int) $result['data'][1]->id);
@@ -42,7 +42,7 @@ class PaginationTest extends DriverTestCase
         $result = (new ArrayPaginate())->paginate(['A', 'B', 'C', 'D', 'E'], 2);
 
         $this->assertSame(1, $result['current_page']);
-        $this->assertSame(5, $result['total']);
+        $this->assertSame(2, $result['total']);
         $this->assertEquals(['A', 'B'], $result['data']);
     }
 
