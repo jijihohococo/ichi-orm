@@ -100,7 +100,14 @@ abstract class Model
         $queryBuilder = self::getQueryBuilder();
         $getID = $queryBuilder->getID();
         $queryBuilder->{$getID} = $this->{$getID};
-        return $queryBuilder->update($attribute);
+        $queryBuilder->update($attribute);
+        foreach ($attribute as $key => $value) {
+            if ($key === $getID) {
+                continue;
+            }
+            $this->{$key} = $value;
+        }
+        return $this;
     }
 
     public static function find($id)

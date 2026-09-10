@@ -580,16 +580,10 @@ class QueryBuilder
             $stmt = $this->connectDatabase()->prepare("UPDATE " . $this->getTable() . " SET " . $updatedFields . $whereQuery);
             bindValues($stmt, $updatedBindValues);
             $stmt->execute();
-            $className = $this->className ?? get_class($this);
-            $object = new $className();
-            $object = mappingModelData(
-                [
-                    $getID => $idValue
-                ],
-                $updatedData,
-                $object
-            );
-            $this->makeObserver($className, 'update', $object);
+            $object = mappingModelData([
+                $getID => $this->{$getID}
+            ], $updatedData, $this);
+            $this->makeObserver((string) get_class($this), 'update', $object);
             return $object;
         } catch (Exception $e) {
             return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
