@@ -98,6 +98,7 @@ class SubqueryTest extends DriverTestCase
             ->get();
 
         $this->assertCount(1, $rows);
+        print_r($rows[0]);
         $this->assertSame('John', $rows[0]->author_name);
     }
 
