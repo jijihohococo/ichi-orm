@@ -489,7 +489,7 @@ class QueryBuilder
             $insertedValues = substr("(" . addArray($insertedArrayValues) . "),", 0, -1);
             $insertBindValues = array_merge($insertBindValues, $insertedArrayValues);
             $fields = '(' . substr(implode('', array_keys($insertedFields)), 0, -1) . ')';
-            $pdo = $instance->connectDatabase();
+            $pdo = $this->connectDatabase();
             $stmt = $pdo->prepare("INSERT INTO " . $this->table . " " . $fields . " VALUES " . $insertedValues);
             bindValues($stmt, $insertBindValues);
             $stmt->execute();
