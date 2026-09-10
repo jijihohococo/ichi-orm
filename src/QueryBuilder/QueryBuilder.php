@@ -1832,8 +1832,12 @@ class QueryBuilder
                     $this->operators[$operatorKey] = $operator;
                 }
             }
-            $alias = isset($this->{$where}[$subQueryKey]['alias']) ? $this->{$where}[$subQueryKey]['alias'] : $this->currentField;
-            $this->{$where}[$alias] = $mainSQL;
+            if ($where === 'selectQuery') {
+                $alias = $this->{$where}[$subQueryKey]['alias'];
+                $this->{$where}[$alias] = $mainSQL;
+            } else {
+                $this->{$where}[$this->currentField] = $mainSQL;
+            }
             if ($where == 'where' || $where == 'whereColumn' || $where == 'orWhere') {
                 $this->whereSubQuery[$currentField . $where] = 'whereSubQuery';
             }
