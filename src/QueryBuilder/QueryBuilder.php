@@ -1938,7 +1938,7 @@ class QueryBuilder
         $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
         $limit = $this->getSubQueryLimit($where);
         $offset = $this->getSubQueryOffset($where);
-        $result = $this->getSubQuerySelect($where) .
+        $query = $this->getSubQuerySelect($where) .
             $this->getSubQueryWhere($where) .
             $this->getSubQueryWhereColumn($where) .
             $this->getSubQueryWhereIn($where) .
