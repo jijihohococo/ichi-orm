@@ -6,6 +6,7 @@ use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 use JiJiHoHoCoCo\IchiORM\QueryBuilder\QueryBuilder;
 use ReflectionClass;
 use ReflectionMethod;
+use Exception;
 
 abstract class Model
 {
