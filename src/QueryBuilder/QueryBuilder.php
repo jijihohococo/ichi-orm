@@ -531,15 +531,14 @@ class QueryBuilder
             if (empty($arrayKeys)) {
                 throw new Exception("You need to add column data", 1);
             }
-            unset($arrayKeys[$getID]);
+
             $updatedBindValues = [];
             $updatedFields = null;
             $updatedData = [];
 
+            $idValue = isset($this->{$getID}) ? $this->{$getID} : null;
+
             foreach ($attribute as $key => $value) {
-                if ($key === $getID) {
-                    continue;
-                }
                 if (array_key_exists($key, $arrayKeys)) {
                     $updatedData[$key] = $value;
                 }
@@ -562,7 +561,6 @@ class QueryBuilder
             $updatedFields = substr($updatedFields, 0, -1);
 
             $whereQuery = null;
-            $idValue = isset($this->{$getID}) ? $this->{$getID} : null;
 
             if ($idValue !== null && $idValue !== '') {
                 $whereQuery = " WHERE " . $getID . " = ?";
@@ -581,7 +579,7 @@ class QueryBuilder
             bindValues($stmt, $updatedBindValues);
             $stmt->execute();
             $object = mappingModelData([
-                $getID => $this->{$getID}
+                $getID => array_key_exists($getID, $updatedData) ? $updatedData[$getID] : $idValue
             ], $updatedData, $this);
             $this->makeObserver((string) get_class($this), 'update', $object);
             return $object;
