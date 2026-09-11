@@ -1329,7 +1329,8 @@ class QueryBuilder
                 $field = preg_replace('/__\d+$/', '', $key);
                 if (is_array($value) && !empty($value)) {
                     $in = addArray($value);
-                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE CONCAT(\'\', ' . $field . ') IN (' . $in . ') ' : ' AND CONCAT(\'\', ' . $field . ') IN (' . $in . ') ';
+                    $condition = 'CONCAT(\'\', ' . $key . ') IN (' . $in . ')';
+                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $condition . ' ' : ' AND ' . $condition . ' ';
                 } elseif ($value !== null && !is_array($value)) {
                     $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $field . ' IN ' . $value : ' AND ' . $field . ' IN ' . $value;
                 } else {
@@ -1351,7 +1352,8 @@ class QueryBuilder
                 foreach ($current['whereIn'] as $key => $value) {
                     if (is_array($value) && !empty($value)) {
                         $in = addArray($value);
-                        $string .= $i == 0 && $current['where'] == null && $current['whereColumn'] == null && $current['addTrashed'] == false ? ' WHERE ' . $key . ' IN (' . $in . ') ' : ' AND ' . $key . ' IN (' . $in . ') ';
+                        $condition = 'CONCAT(\'\', ' . $key . ') IN (' . $in . ')';
+                        $string .= $i == 0 && $current['where'] == null && $current['whereColumn'] == null && $current['addTrashed'] == false ? ' WHERE ' . $condition . ' ' : ' AND ' . $condition . ' ';
                     } else {
                         $string .= $i == 0 && $current['where'] == null && $current['whereColumn'] == null && $current['addTrashed'] == false ? $this->whereZero : $this->andZero;
                     }
