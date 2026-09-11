@@ -127,7 +127,7 @@ class CrudTest extends DriverTestCase
         $blog = Blog::find(1);
         $blog->update([
             'id' => 9999,
-            'title' => 'Primary key protected',
+            'title' => 'Primary key updated',
         ]);
 
         $this->assertSame(9999, (int) TestDatabase::scalar('SELECT id FROM test_blogs WHERE title = ?', ['Primary key updated']));
