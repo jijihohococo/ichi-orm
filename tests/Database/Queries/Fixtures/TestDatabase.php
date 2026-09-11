@@ -119,7 +119,7 @@ class TestDatabase
 
     private static function createCommentsSql()
     {
-        return "CREATE TABLE test_comments (\n            id " . self::idDefinition() . ",\n            blog_id INT NOT NULL,\n            content TEXT NOT NULL,\n            deleted_at VARCHAR(40) NULL,\n            created_at VARCHAR(40) NULL,\n            updated_at VARCHAR(40) NULL\n        )";
+        return "CREATE TABLE test_comments (\n            id " . self::idDefinition() . ",\n            blog_id INT NOT NULL,\n            content VARCHAR(MAX) NOT NULL,\n            deleted_at VARCHAR(40) NULL,\n            created_at VARCHAR(40) NULL,\n            updated_at VARCHAR(40) NULL\n        )";
     }
 
     private static function createManualItemsSql()
