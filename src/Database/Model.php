@@ -103,9 +103,6 @@ abstract class Model
         $queryBuilder->{$getID} = $this->{$getID};
         $queryBuilder->update($attribute);
         foreach ($attribute as $key => $value) {
-            if ($key === $getID) {
-                continue;
-            }
             $this->{$key} = $value;
         }
         return $this;
