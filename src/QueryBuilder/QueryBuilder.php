@@ -1078,11 +1078,6 @@ class QueryBuilder
             if ((is_array($value) || $value === null) && $this->currentSubQueryNumber == null) {
                 $this->checkUnionQuery();
                 $this->boot();
-                if (is_array($value)) {
-                    $value = array_values(array_filter($value, function ($item) {
-                        return !is_string($item) || preg_match('/^-?\d+$/', $item);
-                    }));
-                }
                 $this->{$whereIn}[$field] = $value;
                 if ($value !== null) {
                     $this->fields[] = $value;
@@ -1334,7 +1329,7 @@ class QueryBuilder
                 $field = preg_replace('/__\d+$/', '', $key);
                 if (is_array($value) && !empty($value)) {
                     $in = addArray($value);
-                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $field . ' IN (' . $in . ') ' : ' AND ' . $field . ' IN (' . $in . ') ';
+                    $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE CONCAT(\'\', ' . $field . ') IN (' . $in . ') ' : ' AND CONCAT(\'\', ' . $field . ') IN (' . $in . ') ';
                 } elseif ($value !== null && !is_array($value)) {
                     $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $field . ' IN ' . $value : ' AND ' . $field . ' IN ' . $value;
                 } else {
