@@ -408,11 +408,7 @@ class QueryBuilder
                 throw new Exception("You need to add column data", 1);
             }
             $getID = $instance->getID();
-            if ($instance->autoIncrementId() == true) {
-                unset($arrayKeys[$getID]);
-            }
             unset($arrayKeys['deleted_at']);
-            unset($arrayKeys['updated_at']);
             $insertedValues = '';
             $insertBindValues = [];
             $insertedFields = [];
@@ -424,9 +420,10 @@ class QueryBuilder
                     throw new Exception("You need to put non-empty array data", 1);
                 }
                 $insertedData = [];
-                unset($attribute[$getID]);
-                unset($attribute['deleted_at']);
                 foreach ($arrayKeys as $key => $value) {
+                    if ($key === $getID && $instance->autoIncrementId() == true && !array_key_exists($getID, $attribute)) {
+                        continue;
+                    }
                     if (!isset($insertedFields[$key . ','])) {
                         $insertedFields[$key . ','] = null;
                     }
@@ -496,10 +493,15 @@ class QueryBuilder
             $className = $this->className ?? $this->getCalledClass();
             $this->disableBooting();
             $object = new $className();
+            $idData = [];
+            if ($this->autoIncrementId() == true && !array_key_exists($getID, $attribute)) {
+                $idData[$getID] = $pdo->lastInsertId();
+            } elseif (array_key_exists($getID, $insertedData)) {
+                $idData[$getID] = $insertedData[$getID];
+            }
+
             $object = mappingModelData(
-                [
-                    $getID => $this->connectDatabase()->lastInsertId()
-                ],
+                $idData,
                 $insertedData,
                 $object
             );
