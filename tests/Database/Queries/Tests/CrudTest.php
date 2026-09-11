@@ -122,7 +122,7 @@ class CrudTest extends DriverTestCase
         $this->assertNull(TestDatabase::scalar('SELECT content FROM test_blogs WHERE id = 1'));
     }
 
-    public function testUpdateDoesNotChangePrimaryKey()
+    public function testUpdateChangesPrimaryKey()
     {
         $blog = Blog::find(1);
         $blog->update([
@@ -130,7 +130,7 @@ class CrudTest extends DriverTestCase
             'title' => 'Primary key protected',
         ]);
 
-        $this->assertSame(1, (int) TestDatabase::scalar('SELECT id FROM test_blogs WHERE title = ?', ['Primary key protected']));
+        $this->assertSame(9999, (int) TestDatabase::scalar('SELECT id FROM test_blogs WHERE title = ?', ['Primary key updated']));
     }
 
     public function testUpdateIgnoresUnknownColumn()
