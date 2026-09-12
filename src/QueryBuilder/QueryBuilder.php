@@ -2129,17 +2129,24 @@ class QueryBuilder
                 $getWhereIn .
                 $getWhereNotIn .
                 $getOrWhere .
-                $getOrder .
                 $getGroupBy .
                 $getHaving;
+
+            $orderSQL = $getOrder !== null ? $getOrder : ' ORDER BY (SELECT NULL)';
 
             $pdo = $this->connectDatabase();
             $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
 
-            $sql = $driver === 'sqlsrv'
-                ? "SELECT * FROM (" . $mainSQL . ") AS paginate_data ORDER BY (SELECT NULL) OFFSET " . $paginate->getStart() . " ROWS FETCH NEXT " . $perPage . " ROWS ONLY"
-                : "SELECT * FROM (" . $mainSQL . ") AS paginate_data LIMIT " . $perPage . " OFFSET " . $paginate->getStart();
-            print_r($sql);
+            $sql = $driver === 'sqlsrv' 
+                ? "SELECT * FROM (" . $mainSQL . ") AS paginate_data" .
+                $orderSQL .
+                " OFFSET " . $paginate->getStart() .
+                " ROWS FETCH NEXT " . $perPage .
+                " ROWS ONLY"
+                : "SELECT * FROM (" . $mainSQL . ") AS paginate_data" .
+                $orderSQL .
+                " LIMIT " . $perPage .
+                " OFFSET " . $paginate->getStart();
             $fields = $this->getFields();
             $stmt = $pdo->prepare($sql);
             bindValues($stmt, $fields);
