@@ -2132,10 +2132,10 @@ class QueryBuilder
                 $getOrder .
                 $getGroupBy .
                 $getHaving;
-            
+
             $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
 
-            $sql = $driver === 'sqlsrv' 
+            $sql = $driver === 'sqlsrv'
                 ? "SELECT * FROM (" . $mainSQL . ") AS paginate_data OFFSET " . $paginate->getStart() . " ROWS FETCH NEXT " . $perPage . " ROWS ONLY"
                 : "SELECT * FROM (" . $mainSQL . ") AS paginate_data LIMIT " . $perPage . " OFFSET " . $paginate->getStart();
 
