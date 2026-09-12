@@ -2,6 +2,7 @@
 
 use IchiORMTests\Fixtures\Blog;
 use IchiORMTests\Fixtures\ManualItem;
+use IchiORMTests\Fixtures\TestDatabase;
 
 class CrudTest extends DriverTestCase
 {
@@ -124,8 +125,7 @@ class CrudTest extends DriverTestCase
 
     public function testUpdateChangesPrimaryKey()
     {
-        $driver = TestDatabase::connection()->getAttribute(PDO::ATTR_DRIVER_NAME);
-        if ($driver === 'sqlsrv') {
+        if (TestDatabase::$driver === 'sqlsrv') {
             return;
         }
         $blog = Blog::find(1);
