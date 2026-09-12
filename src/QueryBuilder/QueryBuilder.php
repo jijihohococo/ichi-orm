@@ -1157,7 +1157,7 @@ class QueryBuilder
             $offset = $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['offset'];
             $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
             $limit = $this->getSubQueryLimit($where);
-            if ($driver === 'sqlsrv' && $limit !== null) {
+            if ($driver === 'sqlsrv' && $offset !== null && $limit !== null) {
                 return $offset . ' ROWS FETCH NEXT ' . $limit . ' ROWS ONLY';
             }
             return $offset;
