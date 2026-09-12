@@ -2133,6 +2133,7 @@ class QueryBuilder
                 $getGroupBy .
                 $getHaving;
 
+            $pdo = $this->connectDatabase();
             $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
 
             $sql = $driver === 'sqlsrv'
@@ -2140,7 +2141,6 @@ class QueryBuilder
                 : "SELECT * FROM (" . $mainSQL . ") AS paginate_data LIMIT " . $perPage . " OFFSET " . $paginate->getStart();
 
             $fields = $this->getFields();
-            $pdo = $this->connectDatabase();
             $stmt = $pdo->prepare($sql);
             bindValues($stmt, $fields);
             $stmt->execute();
