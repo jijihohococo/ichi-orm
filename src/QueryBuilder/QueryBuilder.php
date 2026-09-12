@@ -599,9 +599,7 @@ class QueryBuilder
             $getId = $this->getID();
             $selectSQL = $this->getSelect();
             $whereSQL = " WHERE " . $getId . " = ? ";
-            $stmt = $pdo->prepare($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlsrv' ?
-                preg_replace('/^SELECT\s+/i', 'SELECT TOP 1 ', $selectSQL) . $whereSQL :
-                $selectSQL . $whereSQL . $this->limitOne);
+            $stmt = $pdo->prepare($this->getFindSQL($selectSQL, $whereSQL));
             bindValues($stmt, [
                 0 => $id
             ]);
@@ -627,7 +625,9 @@ class QueryBuilder
             $this->caller = getCallerInfo();
             $this->boot();
             $pdo = $this->connectDatabase();
-            $stmt = $pdo->prepare($this->getSelect() . " WHERE " . $field . " = ? " . $this->limitOne);
+            $selectSQL = $this->getSelect();
+            $whereSQL = " WHERE " . $field . " = ? ";
+            $stmt = $pdo->prepare($this->getFindSQL($selectSQL, $whereSQL));
             bindValues($stmt, [
                 0 => $value
             ]);
@@ -640,6 +640,19 @@ class QueryBuilder
         } catch (Exception $e) {
             return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
         }
+    }
+
+    private function getFindSQL($selectSQL, $whereSQL)
+    {
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+        if ($driver === 'sqlsrv') {
+            return preg_replace(
+                '/^SELECT\s+/i',
+                'SELECT TOP 1 ',
+                $selectSQL
+            ) . $whereSQL;
+        }
+        return $selectSQL . $whereSQL . $this->limitOne;
     }
 
     public function delete()
