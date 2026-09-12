@@ -597,7 +597,11 @@ class QueryBuilder
             $this->boot();
             $pdo = $this->connectDatabase();
             $getId = $this->getID();
-            $stmt = $pdo->prepare($this->getSelect() . " WHERE " . $getId . " = ? " . $this->limitOne);
+            $selectSQL = $this->getSelect();
+            $whereSQL = " WHERE " . $getId . " = ? ";
+            $stmt = $pdo->prepare($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlsrv' ? 
+                preg_replace('/^SELECT\s+/i', 'SELECT TOP 1 ', $selectSQL) . $whereSQL : 
+                $selectSQL . $whereSQL . $this->limitOne);
             bindValues($stmt, [
                 0 => $id
             ]);
