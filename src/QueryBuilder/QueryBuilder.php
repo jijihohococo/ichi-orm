@@ -1959,8 +1959,8 @@ class QueryBuilder
             $this->getSubQueryOrder($where) .
             $this->getSubQueryGroupBy($where) .
             $this->getSubQueryHaving($where);
-        if ($driver === 'sqlsrv' && $limit !== null) {
-            return preg_replace('/^SELECT\s+/i', "SELECT TOP " . $limit . " ", $result) . $offset;
+        if ($driver === 'sqlsrv' && $limit !== null && $offset === null) {
+            return preg_replace('/^SELECT\s+/i', "SELECT TOP " . $limit . " ", $result);
         }
         return $limit == null ? $result . $offset : "SELECT * FROM (" . $result . " LIMIT " . $limit . $offset . ") AS l" . $this->getSubQueryLimitNumber();
     }
