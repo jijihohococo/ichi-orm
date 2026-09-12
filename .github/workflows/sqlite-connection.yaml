@@ -1,0 +1,43 @@
+name: Test SQLite Connection
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - master
+
+jobs:
+  sqlite-connection:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.3', '7.4', '8.0', '8.1', '8.2', '8.3']
+
+    name: PHP ${{ matrix.php-version }} + SQLite
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: sqlite3, pdo_sqlite
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-scripts
+
+      - name: Create SQLite database
+        run: |
+          mkdir -p database
+          touch database/test.sqlite
+
+      - name: Run SQLite query and ORM tests
+        run: php tests/Database/Queries/run.php sqlite
