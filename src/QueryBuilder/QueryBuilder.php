@@ -1962,6 +1962,7 @@ class QueryBuilder
         if ($driver === 'sqlsrv' && $limit !== null && $offset === null) {
             return preg_replace('/^SELECT\s+/i', "SELECT TOP " . $limit . " ", $result);
         }
+        print_r("SELECT * FROM (" . $result . " LIMIT " . $limit . $offset . ") AS l" . $this->getSubQueryLimitNumber());
         return $limit == null ? $result . $offset : "SELECT * FROM (" . $result . " LIMIT " . $limit . $offset . ") AS l" . $this->getSubQueryLimitNumber();
     }
 
