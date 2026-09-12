@@ -3,6 +3,6 @@
 return [
     'default' => [
         'driver' => 'sqlite',
-        'database' => ':memory:',
+        'dbname' => ':memory:',
     ],
 ];
