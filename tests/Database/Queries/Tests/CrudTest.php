@@ -2,7 +2,6 @@
 
 use IchiORMTests\Fixtures\Blog;
 use IchiORMTests\Fixtures\ManualItem;
-use IchiORMTests\Fixtures\TestDatabase;
 
 class CrudTest extends DriverTestCase
 {
