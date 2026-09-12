@@ -1155,11 +1155,6 @@ class QueryBuilder
     {
         if (isset($this->{$where}[$this->currentField . $this->currentSubQueryNumber])) {
             $offset = $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['offset'];
-            $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
-            $limit = $this->getSubQueryLimit($where);
-            if ($driver === 'sqlsrv' && $offset !== null && $limit !== null) {
-                return $offset . 'FETCH NEXT ' . $limit . ' ROWS ONLY';
-            }
             return $offset;
         }
     }
@@ -1962,10 +1957,12 @@ class QueryBuilder
         if ($driver === 'sqlsrv' && $limit !== null && $offset === null) {
             return preg_replace('/^SELECT\s+/i', "SELECT TOP " . $limit . " ", $result);
         }
+        if ($driver === 'sqlsrv' && $limit !== null && $offset !== null) {
+            return "SELECT * FROM (" . $result . $offset . "FETCH NEXT " . $limit . " ROWS ONLY) AS l" . $this->getSubQueryLimitNumber();
+        }
         if ($limit === null) {
             return $result . $offset;
         }
-        print_r("SELECT * FROM (" . $result . " LIMIT " . $limit . $offset . ") AS l" . $this->getSubQueryLimitNumber());
         return "SELECT * FROM (" . $result . " LIMIT " . $limit . $offset . ") AS l" . $this->getSubQueryLimitNumber();
     }
 
