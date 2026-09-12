@@ -114,12 +114,12 @@ class TestDatabase
 
     private static function createBlogsSql()
     {
-        return "CREATE TABLE test_blogs (\n            id " . self::idDefinition() . ",\n            author_id INT NOT NULL,\n            title VARCHAR(200) NOT NULL,\n            content TEXT NULL,\n            status VARCHAR(30) NOT NULL,\n            views INT NOT NULL DEFAULT 0,\n            deleted_at VARCHAR(40) NULL,\n            created_at VARCHAR(40) NULL,\n            updated_at VARCHAR(40) NULL\n        )";
+        return "CREATE TABLE test_blogs (\n            id " . self::idDefinition() . ",\n            author_id INT NOT NULL,\n            title VARCHAR(200) NOT NULL,\n            content VARCHAR(200) NULL,\n            status VARCHAR(30) NOT NULL,\n            views INT NOT NULL DEFAULT 0,\n            deleted_at VARCHAR(40) NULL,\n            created_at VARCHAR(40) NULL,\n            updated_at VARCHAR(40) NULL\n        )";
     }
 
     private static function createCommentsSql()
     {
-        return "CREATE TABLE test_comments (\n            id " . self::idDefinition() . ",\n            blog_id INT NOT NULL,\n            content VARCHAR(MAX) NOT NULL,\n            deleted_at VARCHAR(40) NULL,\n            created_at VARCHAR(40) NULL,\n            updated_at VARCHAR(40) NULL\n        )";
+        return "CREATE TABLE test_comments (\n            id " . self::idDefinition() . ",\n            blog_id INT NOT NULL,\n            content VARCHAR(200) NOT NULL,\n            deleted_at VARCHAR(40) NULL,\n            created_at VARCHAR(40) NULL,\n            updated_at VARCHAR(40) NULL\n        )";
     }
 
     private static function createManualItemsSql()
