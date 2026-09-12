@@ -34,10 +34,9 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-scripts
 
-      - name: Create SQLite database
+      - name: Test SQLite Connection
         run: |
-          mkdir -p database
-          touch database/test.sqlite
+          php tests/Database/Connections/SQLite/test.default.php
 
       - name: Run SQLite query and ORM tests
         run: php tests/Database/Queries/run.php sqlite

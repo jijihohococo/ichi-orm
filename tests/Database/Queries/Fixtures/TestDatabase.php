@@ -25,6 +25,10 @@ class TestDatabase
                 'path' => __DIR__ . '/../../Connections/SQLServer/config.php',
                 'scenario' => 'port_standard',
             ],
+            'sqlite' => [
+                'path' => __DIR__ . '/../../Connections/SQLite/config.php',
+                'scenario' => 'default',
+            ],
         ];
 
         if (!isset($configMap[$driver])) {
@@ -103,6 +107,9 @@ class TestDatabase
         }
         if (self::$driver === 'pgsql') {
             return 'SERIAL PRIMARY KEY';
+        }
+        if (self::$driver === 'sqlite') {
+            return 'INTEGER PRIMARY KEY AUTOINCREMENT';
         }
         return 'INT IDENTITY(1,1) PRIMARY KEY';
     }
