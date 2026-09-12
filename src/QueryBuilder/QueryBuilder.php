@@ -2137,7 +2137,7 @@ class QueryBuilder
             $pdo = $this->connectDatabase();
             $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
 
-            $sql = $driver === 'sqlsrv' 
+            $sql = $driver === 'sqlsrv'
                 ? "SELECT * FROM (" . $mainSQL . ") AS paginate_data" .
                 $orderSQL .
                 " OFFSET " . $paginate->getStart() .
