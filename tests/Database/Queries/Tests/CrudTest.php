@@ -124,7 +124,7 @@ class CrudTest extends DriverTestCase
 
     public function testUpdateChangesPrimaryKey()
     {
-        if (TestDatabase::$driver === 'sqlsrv') {
+        if (TestDatabase::driver() === 'sqlsrv') {
             return;
         }
         $blog = Blog::find(1);
