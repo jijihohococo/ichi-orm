@@ -1332,6 +1332,26 @@ class QueryBuilder
         return $string;
     }
 
+    private function getWhereInField(string $field)
+    {
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+        
+        switch ($driver) {
+            case 'mysql':
+                return 'CAST(' . $field . ' AS CHAR)';
+
+            case 'pgsql':
+            case 'sqlite':
+                return 'CAST(' . $field . ' AS TEXT)';
+
+            case 'sqlsrv':
+                return 'CAST(' . $field . ' AS VARCHAR(MAX))';
+
+            default:
+                return $field;
+        }
+    }
+
     private function getWhereIn()
     {
         $string = null;
@@ -1341,7 +1361,7 @@ class QueryBuilder
                 $field = preg_replace('/__\d+$/', '', $key);
                 if (is_array($value) && !empty($value)) {
                     $in = addArray($value);
-                    $condition = 'CONCAT(\'\', ' . $key . ') IN (' . $in . ')';
+                    $condition = $this->getWhereInField($field) . ' IN (' . $in . ')';
                     $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $condition . ' ' : ' AND ' . $condition . ' ';
                 } elseif ($value !== null && !is_array($value)) {
                     $string .= $i == 0 && $this->where == null && $this->whereColumn == null && $this->addTrashed == false ? ' WHERE ' . $field . ' IN ' . $value : ' AND ' . $field . ' IN ' . $value;
@@ -1364,7 +1384,7 @@ class QueryBuilder
                 foreach ($current['whereIn'] as $key => $value) {
                     if (is_array($value) && !empty($value)) {
                         $in = addArray($value);
-                        $condition = 'CONCAT(\'\', ' . $key . ') IN (' . $in . ')';
+                        $condition = $this->getWhereInField($key) . ' IN (' . $in . ')';
                         $string .= $i == 0 && $current['where'] == null && $current['whereColumn'] == null && $current['addTrashed'] == false ? ' WHERE ' . $condition . ' ' : ' AND ' . $condition . ' ';
                     } else {
                         $string .= $i == 0 && $current['where'] == null && $current['whereColumn'] == null && $current['addTrashed'] == false ? $this->whereZero : $this->andZero;
