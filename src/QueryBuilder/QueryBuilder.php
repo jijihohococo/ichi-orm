@@ -1634,6 +1634,24 @@ class QueryBuilder
         return $this->restoreSQL();
     }
 
+    private function formatUnionQuery($firstQuery, $union, $secondQuery)
+    {
+        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+
+        if ($driver === 'sqlite') {
+            return '(' .
+                substr($firstQuery, 1, -1) .
+                $union .
+                substr($secondQuery, 1, -1) .
+                ')';
+        }
+
+        return substr($firstQuery, 0, -1) .
+            $union .
+            $secondQuery .
+            ')';
+    }
+
     private function makeUnionQuery($value, $union)
     {
         try {
@@ -1689,7 +1707,7 @@ class QueryBuilder
                     unset($this->{$currentQuery}[$secondField]);
                     $this->currentField = $currentField;
                     $this->currentSubQueryNumber = $currentSubQueryNumber;
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = substr($previousQuery, 0, -1) . $union . substr($secondQuery, 1, -1);
+                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = $this->formatUnionQuery($previousQuery, $union, $secondQuery);
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = false;
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber] = $this->makeSubQueryAttributes($previousField);
                 }
@@ -1708,7 +1726,7 @@ class QueryBuilder
                     unset($this->{$currentQuery}[$secondField]);
                     $this->currentField = $currentField;
                     $this->currentSubQueryNumber = $currentSubQueryNumber;
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = substr($previousUnionQuery, 0, -1) . $union . substr($secondQuery, 1, -1);
+                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = $this->formatUnionQuery($previousQuery, $union, $secondQuery);
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = false;
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber] = $this->makeSubQueryAttributes($previousField);
                 }
