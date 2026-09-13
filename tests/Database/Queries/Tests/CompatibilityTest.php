@@ -14,6 +14,6 @@ class CompatibilityTest extends DriverTestCase
 
     public function testExpectedDriverIsConnected()
     {
-        $this->assertContains(TestDatabase::driver(), ['mysql', 'pgsql', 'sqlsrv']);
+        $this->assertContains(TestDatabase::driver(), ['mysql', 'pgsql', 'sqlsrv', 'sqlite']);
     }
 }

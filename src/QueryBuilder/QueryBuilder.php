@@ -1639,11 +1639,7 @@ class QueryBuilder
         $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
 
         if ($driver === 'sqlite') {
-            return '(' .
-                substr($previousQuery, 1, -1) .
-                $union .
-                substr($secondQuery, 1, -1) .
-                ')';
+            return '(' . substr($previousQuery, 1, -1) . $union . substr($secondQuery, 1, -1) . ')';
         }
 
         return substr($previousQuery, 0, -1) . $union . $secondQuery . ')';
