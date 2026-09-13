@@ -25,6 +25,7 @@ $files = [
     __DIR__ . '/Tests/SecurityRegressionTest.php',
     __DIR__ . '/Tests/ObserverTest.php',
     __DIR__ . '/Tests/CompatibilityTest.php',
+    __DIR__ . '/Tests/QueryBuilderReuseTest.php',
 ];
 
 foreach ($files as $file) {
@@ -49,6 +50,7 @@ $classes = [
     SecurityRegressionTest::class,
     ObserverTest::class,
     CompatibilityTest::class,
+    QueryBuilderReuseTest::class,
 ];
 
 $drivers = [];
