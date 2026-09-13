@@ -1335,7 +1335,7 @@ class QueryBuilder
     private function getWhereInField(string $field)
     {
         $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
-        
+
         switch ($driver) {
             case 'mysql':
                 return 'CAST(' . $field . ' AS CHAR)';
