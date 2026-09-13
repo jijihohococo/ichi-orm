@@ -1640,7 +1640,7 @@ class QueryBuilder
 
         if ($driver === 'sqlite') {
             return '(' .
-                substr($previousUnionQuery, 1, -1) .
+                substr($previousQuery, 1, -1) .
                 $union .
                 substr($secondQuery, 1, -1) .
                 ')';
