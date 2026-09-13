@@ -736,7 +736,7 @@ class QueryBuilder
         $query = clone $this;
         try {
             $query->caller = getCallerInfo();
-            $query > checkInstance();
+            $query->checkInstance();
             if ($query->currentSubQueryNumber == null) {
                 $query->checkUnionQuery();
                 if ($query->select == null && $query->addSelect == true) {
