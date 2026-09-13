@@ -3,7 +3,7 @@
 use IchiORMTests\Fixtures\Blog;
 use IchiORMTests\Fixtures\Author;
 
-class QueryBuilderReuseTest
+class QueryBuilderReuseTest extends DriverTestCase
 {
     public function testWhereQueryIsReusable()
     {
