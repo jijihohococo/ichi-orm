@@ -991,7 +991,7 @@ class QueryBuilder
     {
         $query = clone $this;
         $query->caller = getCallerInfo();
-        $query->makeWhereQuery($this->normalizeParameters($parameters), 'whereColumn');
+        $query->makeWhereQuery($query->normalizeParameters($parameters), 'whereColumn');
         return $query;
     }
 
