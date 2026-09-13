@@ -119,18 +119,19 @@ class QueryBuilder
 
     public function withTrashed()
     {
-        $this->caller = getCallerInfo();
-        $this->checkInstance();
-        if ($this->currentSubQueryNumber == null) {
-            $this->checkUnionQuery();
-            $this->boot();
-            $this->withTrashed = true;
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        $query->checkInstance();
+        if ($query->currentSubQueryNumber == null) {
+            $query->checkUnionQuery();
+            $query->boot();
+            $query->withTrashed = true;
         } else {
-            $currentQuery = $this->showCurrentSubQuery();
-            $this->checkSubQueryUnionQuery($currentQuery);
-            $this->makeSubQueryTrashTrue($currentQuery);
+            $currentQuery = $query->showCurrentSubQuery();
+            $query->checkSubQueryUnionQuery($currentQuery);
+            $query->makeSubQueryTrashTrue($currentQuery);
         }
-        return $this;
+        return $query;
     }
 
     private function makeSubQueryTrashTrue($where)
@@ -234,42 +235,44 @@ class QueryBuilder
 
     public function groupBy(string $groupBy)
     {
-        $this->caller = getCallerInfo();
-        $this->checkInstance();
-        if ($this->currentSubQueryNumber == null) {
-            $this->checkUnionQuery();
-            $this->boot();
-            $this->groupBy = $this->groupByString . $groupBy;
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        $query->checkInstance();
+        if ($query->currentSubQueryNumber == null) {
+            $query->checkUnionQuery();
+            $query->boot();
+            $query->groupBy = $query->groupByString . $groupBy;
         }
-        if ($this->currentSubQueryNumber !== null) {
-            $currentQuery = $this->showCurrentSubQuery();
-            $this->checkSubQueryUnionQuery($currentQuery);
-            $this->makeSubQueryGroupBy($currentQuery, $groupBy);
+        if ($query->currentSubQueryNumber !== null) {
+            $currentQuery = $query->showCurrentSubQuery();
+            $query->checkSubQueryUnionQuery($currentQuery);
+            $query->makeSubQueryGroupBy($currentQuery, $groupBy);
         }
-        return $this;
+        return $query;
     }
 
     public function having(string $field, string $operator, $value)
     {
-        $this->caller = getCallerInfo();
-        $this->checkInstance();
-        if ($this->currentSubQueryNumber == null) {
-            $this->checkUnionQuery();
-            $this->boot();
-            if ($this->havingNumber == null) {
-                $this->havingNumber = 0;
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        $query->checkInstance();
+        if ($query->currentSubQueryNumber == null) {
+            $query->checkUnionQuery();
+            $query->boot();
+            if ($query->havingNumber == null) {
+                $query->havingNumber = 0;
             }
-            $this->havingField[$this->havingNumber] = $field;
-            $this->havingOperator[$this->havingNumber] = $operator;
-            $this->havingValue[$this->havingNumber] = $value;
-            $this->havingNumber++;
+            $query->havingField[$query->havingNumber] = $field;
+            $query->havingOperator[$query->havingNumber] = $operator;
+            $query->havingValue[$query->havingNumber] = $value;
+            $query->havingNumber++;
         }
-        if ($this->currentSubQueryNumber !== null) {
-            $currentQuery = $this->showCurrentSubQuery();
-            $this->checkSubQueryUnionQuery($currentQuery);
-            $this->makeSubQueryHaving($currentQuery, $field, $operator, $value);
+        if ($query->currentSubQueryNumber !== null) {
+            $currentQuery = $query->showCurrentSubQuery();
+            $query->checkSubQueryUnionQuery($currentQuery);
+            $query->makeSubQueryHaving($currentQuery, $field, $operator, $value);
         }
-        return $this;
+        return $query;
     }
 
     private function makeSubQueryHaving($where, $field, $operator, $value)
@@ -730,51 +733,52 @@ class QueryBuilder
 
     public function select(array $fields)
     {
+        $query = clone $this;
         try {
-            $this->caller = getCallerInfo();
-            $this->checkInstance();
-            if ($this->currentSubQueryNumber == null) {
-                $this->checkUnionQuery();
-                if ($this->select == null && $this->addSelect == true) {
+            $query->caller = getCallerInfo();
+            $query>checkInstance();
+            if ($query->currentSubQueryNumber == null) {
+                $query->checkUnionQuery();
+                if ($query->select == null && $query->addSelect == true) {
                     throw new Exception("You must not use addOnlySelect function before", 1);
                 }
 
-                $this->boot();
-                if ($this->addSelect == false) {
-                    $this->select = null;
+                $query->boot();
+                if ($query->addSelect == false) {
+                    $query->select = null;
                 } else {
-                    $this->select .= ',';
+                    $query->select .= ',';
                 }
 
                 foreach ($fields as $key => $field) {
-                    $this->trackSelectedField((string) $field);
-                    $this->select .= $key + 1 == count($fields) ? $field : $field . ',';
+                    $query->trackSelectedField((string) $field);
+                    $query->select .= $key + 1 == count($fields) ? $field : $field . ',';
                 }
             } else {
-                $check = $this->showCurrentSubQuery();
-                $this->checkSubQueryUnionQuery($check);
-                $addSelectCheck = $this->checkSubQueryAddSelect($check);
+                $check = $query->showCurrentSubQuery();
+                $query->checkSubQueryUnionQuery($check);
+                $addSelectCheck = $query->checkSubQueryAddSelect($check);
                 if (
-                    $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['select'] == null &&
+                    $query->{$check}[$query->currentField . $query->currentSubQueryNumber]['select'] == null &&
                     $addSelectCheck == true
                 ) {
                     throw new Exception("You must not use addOnlySelect function before", 1);
                 }
 
                 if ($addSelectCheck == true) {
-                    $this->addCommaToSubQuerySelect($check);
+                    $query->addCommaToSubQuerySelect($check);
                 }
                 if ($addSelectCheck == false) {
-                    $this->makeNullToSubQuerySelect($check);
+                    $query->makeNullToSubQuerySelect($check);
                 }
 
                 foreach ($fields as $key => $field) {
-                    $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['select'] .= $key + 1 == count($fields) ? $field : $field . ',';
+                    $query->{$check}[$query->currentField . $query->currentSubQueryNumber]['select'] .= $key + 1 == count($fields) ? $field : $field . ',';
                 }
             }
-            return $this;
+            return $query;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -795,39 +799,41 @@ class QueryBuilder
 
     public function limit(int $limit)
     {
-        $this->caller = getCallerInfo();
-        $this->checkInstance();
-        if ($this->currentSubQueryNumber == null) {
-            $this->checkUnionQuery();
-            $this->boot();
-            $this->limit = $limit;
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        $query->checkInstance();
+        if ($query->currentSubQueryNumber == null) {
+            $query->checkUnionQuery();
+            $query->boot();
+            $query->limit = $limit;
         }
-        if ($this->currentSubQueryNumber !== null) {
-            $check = $this->showCurrentSubQuery();
-            $this->checkSubQueryUnionQuery($check);
-            $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['limit'] = $limit;
-            $this->subQueryLimitNumber++;
+        if ($query->currentSubQueryNumber !== null) {
+            $check = $query->showCurrentSubQuery();
+            $query->checkSubQueryUnionQuery($check);
+            $query->{$check}[$query->currentField . $query->currentSubQueryNumber]['limit'] = $limit;
+            $query->subQueryLimitNumber++;
         }
-        return $this;
+        return $query;
     }
 
     public function offset(int $offset)
     {
-        $this->caller = getCallerInfo();
-        $this->checkInstance();
-        $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        $query->checkInstance();
+        $driver = $query->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
         $offset = $driver === 'sqlsrv' ? ' OFFSET ' . $offset . ' ROWS ' : ' OFFSET ' . $offset;
-        if ($this->currentSubQueryNumber == null) {
-            $this->checkUnionQuery();
-            $this->boot();
-            $this->offset = $offset;
+        if ($query->currentSubQueryNumber == null) {
+            $query->checkUnionQuery();
+            $query->boot();
+            $query->offset = $offset;
         }
-        if ($this->currentSubQueryNumber !== null) {
-            $check = $this->showCurrentSubQuery();
-            $this->checkSubQueryUnionQuery($check);
-            $this->{$check}[$this->currentField . $this->currentSubQueryNumber]['offset'] = $offset;
+        if ($query->currentSubQueryNumber !== null) {
+            $check = $query->showCurrentSubQuery();
+            $query->checkSubQueryUnionQuery($check);
+            $query->{$check}[$query->currentField . $query->currentSubQueryNumber]['offset'] = $offset;
         }
-        return $this;
+        return $query;
     }
 
     private function makeSubQueryAttributes($previousField = null, $alias = null)
@@ -910,9 +916,10 @@ class QueryBuilder
 
     public function where(...$parameters)
     {
-        $this->caller = getCallerInfo();
-        $this->makeWhereQuery($this->normalizeParameters($parameters), 'where');
-        return $this;
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        $query->makeWhereQuery($query->normalizeParameters($parameters), 'where');
+        return $query;
     }
 
     private function makeSubQueryInSubQuery($whereSelect, $value, $field, $check)
@@ -982,16 +989,18 @@ class QueryBuilder
 
     public function whereColumn(...$parameters)
     {
-        $this->caller = getCallerInfo();
-        $this->makeWhereQuery($this->normalizeParameters($parameters), 'whereColumn');
-        return $this;
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        $query->makeWhereQuery($this->normalizeParameters($parameters), 'whereColumn');
+        return $query;
     }
 
     public function orWhere(...$parameters)
     {
-        $this->caller = getCallerInfo();
-        $this->makeWhereQuery($this->normalizeParameters($parameters), 'orWhere');
-        return $this;
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        $query->makeWhereQuery($query->normalizeParameters($parameters), 'orWhere');
+        return $query;
     }
 
     private function makeWhereQuery(array $parameters, $where)
@@ -1130,16 +1139,18 @@ class QueryBuilder
 
     public function whereIn(string $field, $value)
     {
-        $this->caller = getCallerInfo();
-        $this->makeInQuery('whereIn', $field, $value);
-        return $this;
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        $query->makeInQuery('whereIn', $field, $value);
+        return $query;
     }
 
     public function whereNotIn(string $field, $value)
     {
-        $this->caller = getCallerInfo();
-        $this->makeInQuery('whereNotIn', $field, $value);
-        return $this;
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        $query->makeInQuery('whereNotIn', $field, $value);
+        return $query;
     }
 
     private function getLimit()
@@ -1453,19 +1464,20 @@ class QueryBuilder
 
     public function orderBy(string $field, string $sort = "ASC")
     {
-        $this->caller = getCallerInfo();
-        $this->checkInstance();
-        if ($this->currentSubQueryNumber == null) {
-            $this->checkUnionQuery();
-            $this->boot();
-            $this->order = " ORDER BY " . $field . " " . $sort;
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        $query->checkInstance();
+        if ($query->currentSubQueryNumber == null) {
+            $query->checkUnionQuery();
+            $query->boot();
+            $query->order = " ORDER BY " . $field . " " . $sort;
         }
-        if ($this->currentSubQueryNumber !== null) {
-            $currentQuery = $this->showCurrentSubQuery();
-            $this->checkSubQueryUnionQuery($currentQuery);
-            $this->makeSubQueryOrderBy($currentQuery, $field, $sort);
+        if ($query->currentSubQueryNumber !== null) {
+            $currentQuery = $query->showCurrentSubQuery();
+            $query->checkSubQueryUnionQuery($currentQuery);
+            $query->makeSubQueryOrderBy($currentQuery, $field, $sort);
         }
-        return $this;
+        return $query;
     }
 
     private function makeSubQueryOrderBy($where, $field, $sort)
@@ -1479,20 +1491,21 @@ class QueryBuilder
 
     public function latest(string $field = null)
     {
-        $this->caller = getCallerInfo();
-        $this->checkInstance();
-        if ($this->currentSubQueryNumber == null) {
-            $this->checkUnionQuery();
-            $this->boot();
-            $field = $field == null ? $this->getID() : $field;
-            $this->order = " ORDER BY " . $this->table . '.' . $field . " DESC";
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        $query->checkInstance();
+        if ($query->currentSubQueryNumber == null) {
+            $query->checkUnionQuery();
+            $query->boot();
+            $field = $field == null ? $query->getID() : $field;
+            $query->order = " ORDER BY " . $query->table . '.' . $field . " DESC";
         }
-        if ($this->currentSubQueryNumber !== null) {
-            $currentQuery = $this->showCurrentSubQuery();
-            $this->checkSubQueryUnionQuery($currentQuery);
-            $this->makeSubQueryOrderBy($currentQuery, $field, " DESC");
+        if ($query->currentSubQueryNumber !== null) {
+            $currentQuery = $query->showCurrentSubQuery();
+            $query->checkSubQueryUnionQuery($currentQuery);
+            $query->makeSubQueryOrderBy($currentQuery, $field, " DESC");
         }
-        return $this;
+        return $query;
     }
 
     private function getOrder()
@@ -1590,14 +1603,16 @@ class QueryBuilder
 
     public function union(callable $value)
     {
-        $this->caller = getCallerInfo();
-        return $this->makeUnionQuery($value, ' UNION ');
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        return $query->makeUnionQuery($value, ' UNION ');
     }
 
     public function unionAll(callable $value)
     {
-        $this->caller = getCallerInfo();
-        return $this->makeUnionQuery($value, ' UNION ALL ');
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        return $query->makeUnionQuery($value, ' UNION ALL ');
     }
 
     private function checkUnion()
@@ -2042,33 +2057,35 @@ class QueryBuilder
 
     public function toSQL()
     {
-        $this->caller = getCallerInfo();
-        $this->checkInstance();
-        if ($this->currentSubQueryNumber !== null) {
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        $query->checkInstance();
+        if ($query->currentSubQueryNumber !== null) {
             throw new Exception("Don't use toSQL() function in sub query", 1);
         }
-        $this->boot();
-        $this->toSQL = true;
-        return $this;
+        $query->boot();
+        $query->toSQL = true;
+        return $query;
     }
 
     public function addSelect(array $fields)
     {
+        $query = clone $this;
         try {
-            $this->caller = getCallerInfo();
-            $this->checkInstance();
-            if ($this->currentSubQueryNumber == null) {
-                $this->checkUnionQuery();
-                if ($this->select == null && $this->addSelect == true) {
+            $query->caller = getCallerInfo();
+            $query->checkInstance();
+            if ($query->currentSubQueryNumber == null) {
+                $query->checkUnionQuery();
+                if ($query->select == null && $query->addSelect == true) {
                     throw new Exception("You must not use addOnlySelect function before", 1);
                 }
-                $this->boot();
-                $this->addSelect = true;
-                return $this->addingSelect($fields);
+                $query->boot();
+                $query->addSelect = true;
+                return $query->addingSelect($fields);
             }
             throw new Exception("You are not allow to use addSelect function in subquery", 1);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -2094,67 +2111,69 @@ class QueryBuilder
 
     public function addOnlySelect(array $fields)
     {
+        $query = clone $this;
         try {
-            $this->caller = getCallerInfo();
-            $this->checkInstance();
-            if ($this->currentSubQueryNumber == null) {
-                $this->checkUnionQuery();
-                $this->boot();
-                if ($this->select !== $this->table . '.*') {
+            $query->caller = getCallerInfo();
+            $query->checkInstance();
+            if ($query->currentSubQueryNumber == null) {
+                $query->checkUnionQuery();
+                $query->boot();
+                if ($query->select !== $query->table . '.*') {
                     throw new Exception("You need to use only addOnlySelect function to select the data", 1);
                 }
-                $this->select = null;
-                $this->addSelect = true;
-                return $this->addingSelect($fields);
+                $query->select = null;
+                $query->addSelect = true;
+                return $query->addingSelect($fields);
             }
-            if ($this->currentSubQueryNumber !== null) {
-                $check = $this->showCurrentSubQuery();
-                $this->checkSubQueryUnionQuery($check);
-                $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
-                if ($this->{$check}[$subQueryKey]['select'] !== $this->{$check}[$subQueryKey]['table'] . '.*') {
+            if ($query->currentSubQueryNumber !== null) {
+                $check = $query->showCurrentSubQuery();
+                $query->checkSubQueryUnionQuery($check);
+                $subQueryKey = $query->currentField . $query->currentSubQueryNumber;
+                if ($query->{$check}[$subQueryKey]['select'] !== $query->{$check}[$subQueryKey]['table'] . '.*') {
                     throw new Exception("You need to use only addOnlySelect function to select the data", 1);
                 }
 
-                $this->{$check}[$subQueryKey]['select'] = null;
-                $this->{$check}[$subQueryKey]['addSelect'] = true;
+                $query->{$check}[$subQueryKey]['select'] = null;
+                $query->{$check}[$subQueryKey]['addSelect'] = true;
                 foreach ($fields as $select => $value) {
                     if (!is_callable($value)) {
                         throw new Exception("You need to add function in array in addSelect function or addOnlySelect function.", 1);
                     }
-                    $this->makeSubQueryInSubQuery('selectQuery', $value, $select, $check);
+                    $query->makeSubQueryInSubQuery('selectQuery', $value, $select, $check);
                 }
             }
-            return $this;
+            return $query;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
     public function paginate(int $perPage = 10)
     {
+        $query = clone $this;
         try {
-            $this->caller = getCallerInfo();
-            $this->checkInstance();
-            if ($this->currentSubQueryNumber !== null) {
+            $query->caller = getCallerInfo();
+            $query->checkInstance();
+            if ($query->currentSubQueryNumber !== null) {
                 throw new Exception("You can't use paginate() function in sub queries.", 1);
             }
-            if ($this->currentUnionNumber !== 0) {
+            if ($query->currentUnionNumber !== 0) {
                 throw new Exception("Please use paginate function in main query", 1);
             }
-            $this->boot();
+            $query->boot();
             $paginate = new Paginate();
             $paginate->setPaginateData($perPage);
 
-            $selectData = $this->getSelect();
-            $getWhere = $this->getWhere();
-            $getWhereIn = $this->getWhereIn();
-            $getWhereNotIn = $this->getWhereNotIn();
-            $getOrWhere = $this->getOrWhere();
-            $getOrder = $this->getOrder();
-            $getGroupBy = $this->getGroupBy();
-            $getHaving = $this->getHaving();
+            $selectData = $query->getSelect();
+            $getWhere = $query->getWhere();
+            $getWhereIn = $query->getWhereIn();
+            $getWhereNotIn = $query->getWhereNotIn();
+            $getOrWhere = $query->getOrWhere();
+            $getOrder = $query->getOrder();
+            $getGroupBy = $query->getGroupBy();
+            $getHaving = $query->getHaving();
 
-            $mainSQL = $this->checkUnion() ? $this->unionQuery[$this->currentUnionNumber] :
+            $mainSQL = $query->checkUnion() ? $query->unionQuery[$query->currentUnionNumber] :
                 $selectData .
                 $getWhere .
                 $getWhereIn .
@@ -2165,7 +2184,7 @@ class QueryBuilder
 
             $orderSQL = $getOrder !== null ? $getOrder : ' ORDER BY (SELECT NULL)';
 
-            $pdo = $this->connectDatabase();
+            $pdo = $query->connectDatabase();
             $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
 
             $sql = $driver === 'sqlsrv'
@@ -2178,7 +2197,7 @@ class QueryBuilder
                 $orderSQL .
                 " LIMIT " . $perPage .
                 " OFFSET " . $paginate->getStart();
-            $fields = $this->getFields();
+            $fields = $query->getFields();
             $stmt = $pdo->prepare($sql);
             bindValues($stmt, $fields);
             $stmt->execute();
@@ -2188,21 +2207,21 @@ class QueryBuilder
             $countStmt = $pdo->prepare($countSQL);
             $countStmt->execute($fields);
 
-            $objectArray = $stmt->fetchAll(PDO::FETCH_CLASS, $this->getCalledClass());
-            $class = $this->getCalledClass();
-            if ($this->shouldFilterSelectedFields($class)) {
-                $objectArray = $this->filterSelectedFields($objectArray, $class);
+            $objectArray = $stmt->fetchAll(PDO::FETCH_CLASS, $query->getCalledClass());
+            $class = $query->getCalledClass();
+            if ($query->shouldFilterSelectedFields($class)) {
+                $objectArray = $query->filterSelectedFields($objectArray, $class);
             }
-            $this->selectedFields = [];
-            $this->select = $this->table = null;
-            $this->disableBooting();
+            $query->selectedFields = [];
+            $query->select = $query->table = null;
+            $query->disableBooting();
 
             return $paginate->paginate(
                 intval($countStmt->fetchColumn()),
                 $objectArray
             );
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -2262,20 +2281,23 @@ class QueryBuilder
 
     public function innerJoin(...$parameters)
     {
-        $this->caller = getCallerInfo();
-        return $this->sqlJoin($this->normalizeParameters($parameters), ' INNER JOIN ');
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        return $query->sqlJoin($query->normalizeParameters($parameters), ' INNER JOIN ');
     }
 
     public function leftJoin(...$parameters)
     {
-        $this->caller = getCallerInfo();
-        return $this->sqlJoin($this->normalizeParameters($parameters), ' LEFT JOIN ');
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        return $query->sqlJoin($query->normalizeParameters($parameters), ' LEFT JOIN ');
     }
 
     public function rightJoin(...$parameters)
     {
-        $this->caller = getCallerInfo();
-        return $this->sqlJoin($this->normalizeParameters($parameters), ' RIGHT JOIN ');
+        $query = clone $this;
+        $query->caller = getCallerInfo();
+        return $query->sqlJoin($query->normalizeParameters($parameters), ' RIGHT JOIN ');
     }
 
     private function sqlJoin(array $parameters, string $join)
