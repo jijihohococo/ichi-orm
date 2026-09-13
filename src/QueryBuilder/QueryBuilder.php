@@ -1748,39 +1748,40 @@ class QueryBuilder
 
     public function get()
     {
+        $query = clone $this;
         try {
-            $this->caller = getCallerInfo();
-            $this->checkInstance();
-            if ($this->currentSubQueryNumber == null) {
-                $this->boot();
-                $mainSQL = $this->getQuery();
-                if ($this->toSQL == true) {
-                    $this->setLastSQLFields($this->getFields());
-                    $this->disableForSQL();
+            $query->caller = getCallerInfo();
+            $query->checkInstance();
+            if ($query->currentSubQueryNumber == null) {
+                $query->boot();
+                $mainSQL = $query->getQuery();
+                if ($query->toSQL == true) {
+                    $query->setLastSQLFields($query->getFields());
+                    $query->disableForSQL();
                     return $mainSQL;
                 }
-                $class = $this->getCalledClass();
-                $fields = $this->getFields();
-                $stmt = $this->connectDatabase()->prepare($mainSQL);
+                $class = $query->getCalledClass();
+                $fields = $query->getFields();
+                $stmt = $query->connectDatabase()->prepare($mainSQL);
                 bindValues($stmt, $fields);
                 $stmt->execute();
-                $this->disableBooting();
+                $query->disableBooting();
                 $object = $stmt->fetchAll(PDO::FETCH_CLASS, $class);
-                if ($this->shouldFilterSelectedFields($class)) {
-                    $object = $this->filterSelectedFields($object, $class);
+                if ($query->shouldFilterSelectedFields($class)) {
+                    $object = $query->filterSelectedFields($object, $class);
                 }
-                $this->selectedFields = [];
-                $this->select = $this->table = null;
-                if ($this->unionQuery !== null) {
-                    $this->unionQuery = null;
+                $query->selectedFields = [];
+                $query->select = $query->table = null;
+                if ($query->unionQuery !== null) {
+                    $query->unionQuery = null;
                 }
                 return $object;
             }
-            if ($this->currentSubQueryNumber !== null) {
-                $this->makeSubQuery($this->showCurrentSubQuery());
+            if ($query->currentSubQueryNumber !== null) {
+                $query->makeSubQuery($query->showCurrentSubQuery());
             }
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
