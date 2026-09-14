@@ -119,7 +119,7 @@ class QueryBuilder
 
     public function withTrashed()
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber == null) {
@@ -235,7 +235,7 @@ class QueryBuilder
 
     public function groupBy(string $groupBy)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber == null) {
@@ -253,7 +253,7 @@ class QueryBuilder
 
     public function having(string $field, string $operator, $value)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber == null) {
@@ -660,7 +660,7 @@ class QueryBuilder
 
     public function delete()
     {
-        $query = clone $this;
+        $query = $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -685,7 +685,7 @@ class QueryBuilder
 
     public function forceDelete()
     {
-        $query = clone $this;
+        $query = $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -710,7 +710,7 @@ class QueryBuilder
 
     public function restore()
     {
-        $query = clone $this;
+        $query = $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -736,7 +736,7 @@ class QueryBuilder
 
     public function select(array $fields)
     {
-        $query = clone $this;
+        $query = $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -802,7 +802,7 @@ class QueryBuilder
 
     public function limit(int $limit)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber == null) {
@@ -821,7 +821,7 @@ class QueryBuilder
 
     public function offset(int $offset)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         $driver = $query->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
@@ -919,7 +919,7 @@ class QueryBuilder
 
     public function where(...$parameters)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         $query->makeWhereQuery($query->normalizeParameters($parameters), 'where');
         return $query;
@@ -948,7 +948,7 @@ class QueryBuilder
 
     public function from(string $className)
     {
-        $query = clone $this;
+        $query = $this;
         try {
             $query->caller = getCallerInfo();
             checkClass($className);
@@ -993,7 +993,7 @@ class QueryBuilder
 
     public function whereColumn(...$parameters)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         $query->makeWhereQuery($query->normalizeParameters($parameters), 'whereColumn');
         return $query;
@@ -1001,7 +1001,7 @@ class QueryBuilder
 
     public function orWhere(...$parameters)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         $query->makeWhereQuery($query->normalizeParameters($parameters), 'orWhere');
         return $query;
@@ -1143,7 +1143,7 @@ class QueryBuilder
 
     public function whereIn(string $field, $value)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         $query->makeInQuery('whereIn', $field, $value);
         return $query;
@@ -1151,7 +1151,7 @@ class QueryBuilder
 
     public function whereNotIn(string $field, $value)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         $query->makeInQuery('whereNotIn', $field, $value);
         return $query;
@@ -1468,7 +1468,7 @@ class QueryBuilder
 
     public function orderBy(string $field, string $sort = "ASC")
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber == null) {
@@ -1495,7 +1495,7 @@ class QueryBuilder
 
     public function latest(string $field = null)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber == null) {
@@ -1607,14 +1607,14 @@ class QueryBuilder
 
     public function union(callable $value)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         return $query->makeUnionQuery($value, ' UNION ');
     }
 
     public function unionAll(callable $value)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         return $query->makeUnionQuery($value, ' UNION ALL ');
     }
@@ -1751,7 +1751,7 @@ class QueryBuilder
 
     public function get()
     {
-        $query = clone $this;
+        $query = $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -2036,7 +2036,7 @@ class QueryBuilder
 
     public function toArray()
     {
-        $query = clone $this;
+        $query = $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -2063,7 +2063,7 @@ class QueryBuilder
 
     public function toSQL()
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber !== null) {
@@ -2076,7 +2076,7 @@ class QueryBuilder
 
     public function addSelect(array $fields)
     {
-        $query = clone $this;
+        $query = $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -2117,7 +2117,7 @@ class QueryBuilder
 
     public function addOnlySelect(array $fields)
     {
-        $query = clone $this;
+        $query = $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -2156,7 +2156,7 @@ class QueryBuilder
 
     public function paginate(int $perPage = 10)
     {
-        $query = clone $this;
+        $query = $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -2287,21 +2287,21 @@ class QueryBuilder
 
     public function innerJoin(...$parameters)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         return $query->sqlJoin($query->normalizeParameters($parameters), ' INNER JOIN ');
     }
 
     public function leftJoin(...$parameters)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         return $query->sqlJoin($query->normalizeParameters($parameters), ' LEFT JOIN ');
     }
 
     public function rightJoin(...$parameters)
     {
-        $query = clone $this;
+        $query = $this;
         $query->caller = getCallerInfo();
         return $query->sqlJoin($query->normalizeParameters($parameters), ' RIGHT JOIN ');
     }
