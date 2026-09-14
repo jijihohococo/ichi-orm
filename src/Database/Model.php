@@ -10,7 +10,6 @@ use Exception;
 
 abstract class Model
 {
-
     public function __construct()
     {
         self::getQueryBuilder()->new();
