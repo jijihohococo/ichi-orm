@@ -10,7 +10,6 @@ use Exception;
 
 abstract class Model
 {
-    private static $queryBuilder;
 
     public function __construct()
     {
@@ -19,12 +18,9 @@ abstract class Model
 
     private static function getQueryBuilder()
     {
-        if (self::$queryBuilder == null) {
-            self::$queryBuilder = new QueryBuilder();
-        }
-
+        $queryBuilder = new QueryBuilder();
         $calledClass = get_called_class();
-        self::$queryBuilder->setCalledClass($calledClass);
+        $queryBuilder->setCalledClass($calledClass);
 
         $reflectionClass = new ReflectionClass($calledClass);
         $model = $reflectionClass->newInstanceWithoutConstructor();
@@ -34,16 +30,16 @@ abstract class Model
         if ($reflectionMethod->getDeclaringClass()->getName() !== self::class) {
             $reflectionMethod->setAccessible(true);
 
-            self::$queryBuilder->setTable(
+            $queryBuilder->setTable(
                 $reflectionMethod->invoke($model)
             );
         } else {
-            self::$queryBuilder->setTable(
+            $queryBuilder->setTable(
                 getTableName($calledClass)
             );
         }
 
-        return clone self::$queryBuilder;
+        return $queryBuilder;
     }
 
     protected function connectDatabase()
