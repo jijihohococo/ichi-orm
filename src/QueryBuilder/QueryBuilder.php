@@ -948,20 +948,19 @@ class QueryBuilder
 
     public function from(string $className)
     {
-        $query = clone $this;
         try {
-            $query->caller = getCallerInfo();
+            $this->caller = getCallerInfo();
             checkClass($className);
-            $query->checkInstance();
-            if ($query->currentSubQueryNumber !== null) {
-                $currentQuery = $query->showCurrentSubQuery();
-                $query->checkSubQueryUnionQuery($currentQuery);
-                $query->addTableToSubQuery($currentQuery, $className);
-                return $query;
+            $this->checkInstance();
+            if ($this->currentSubQueryNumber !== null) {
+                $currentQuery = $this->showCurrentSubQuery();
+                $this->checkSubQueryUnionQuery($currentQuery);
+                $this->addTableToSubQuery($currentQuery, $className);
+                return $this;
             }
             throw new Exception("You can use 'from' function in only sub queries", 1);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 
