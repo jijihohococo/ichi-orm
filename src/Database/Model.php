@@ -66,9 +66,9 @@ abstract class Model
         return self::getQueryBuilder()->withTrashed();
     }
 
-    public static function groupBy(string $groupBy)
+    public static function groupBy(...$groups)
     {
-        return self::getQueryBuilder()->groupBy($groupBy);
+        return self::getQueryBuilder()->groupBy(...$groups);
     }
 
     public static function having(string $field, string $operator, $value)

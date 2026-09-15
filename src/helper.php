@@ -306,3 +306,13 @@ if (!function_exists('getallheaders')) {
         return $headers;
     }
 }
+
+
+if (!function_exists('checkDatabaseOperator')) {
+    function checkDatabaseOperator(string $operator)
+    {
+        if (!in_array($operator, databaseOperators(), true)) {
+            throw new Exception("You can add only database operators in join function", 1);
+        }
+    }
+}

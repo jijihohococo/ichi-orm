@@ -36,4 +36,27 @@ final class Identifier
 
         return $table;
     }
+
+    public static function having(string $field): string
+    {
+        $column = '[a-zA-Z_][a-zA-Z0-9_]*';
+        $qualifiedColumn = "{$column}(\\.{$column})?";
+
+        $columnPattern = "/^{$qualifiedColumn}$/";
+
+        $aggregatePattern =
+            "/^(COUNT|SUM|AVG|MIN|MAX)\\(({$qualifiedColumn}|\\*)\\)$/i";
+
+        if (preg_match($columnPattern, $field)) {
+            return $field;
+        }
+
+        if (preg_match($aggregatePattern, $field)) {
+            return $field;
+        }
+
+        throw new InvalidArgumentException(
+            "Invalid having identifier: {$field}"
+        );
+    }
 }

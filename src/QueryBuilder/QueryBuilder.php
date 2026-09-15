@@ -235,28 +235,45 @@ class QueryBuilder
         $this->addTrashed = false;
     }
 
-    public function groupBy(string $groupBy)
+    private function normalizeGroupByParameters(array $groups): array
     {
-        $groupBy = Identifier::column($groupBy);
+        if (count($groups) === 1 && is_array($groups[0])) {
+            return $groups[0];
+        }
+        return $groups;
+    }
+
+    public function groupBy(...$groups)
+    {
         $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
-        if ($query->currentSubQueryNumber == null) {
-            $query->checkUnionQuery();
-            $query->boot();
-            $query->groupBy = $query->groupByString . $groupBy;
-        }
-        if ($query->currentSubQueryNumber !== null) {
-            $currentQuery = $query->showCurrentSubQuery();
-            $query->checkSubQueryUnionQuery($currentQuery);
-            $query->makeSubQueryGroupBy($currentQuery, $groupBy);
+        $groups = $query->normalizeGroupByParameters($groups);
+        
+        foreach ($groups as $groupBy) {
+            $groupBy = Identifier::column($groupBy);
+            if ($query->currentSubQueryNumber == null) {
+                $query->checkUnionQuery();
+                $query->boot();
+                if ($query->groupBy === null) {
+                    $query->groupBy = $query->groupByString . $groupBy;
+                } else {
+                    $query->groupBy .= ', ' . $groupBy;
+                }
+            }
+            if ($query->currentSubQueryNumber !== null) {
+                $currentQuery = $query->showCurrentSubQuery();
+                $query->checkSubQueryUnionQuery($currentQuery);
+                $query->makeSubQueryGroupBy($currentQuery, $groupBy);
+            }
         }
         return $query;
     }
 
     public function having(string $field, string $operator, $value)
     {
-        //$field = Identifier::column($field);
+        $field = Identifier::having($field);
+        checkDatabaseOperator($operator);
         $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
@@ -293,7 +310,13 @@ class QueryBuilder
 
     private function makeSubQueryGroupBy($where, $groupBy)
     {
-        $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['groupBy'] = $this->groupByString . $groupBy;
+        $key = $this->currentField . $this->currentSubQueryNumber;
+
+        if (!isset($this->{$where}[$key]['groupBy']) || $this->{$where}[$key]['groupBy'] === null) {
+            $this->{$where}[$key]['groupBy'] = $this->groupByString . $groupBy;
+        } else {
+            $this->{$where}[$key]['groupBy'] .= ', ' . $groupBy;
+        }
     }
 
     private function getGroupBy()
@@ -2355,20 +2378,6 @@ class QueryBuilder
         }
     }
 
-    private function parseJoinParameters(array $parameters): array
-    {
-        $table = $parameters[0];
-        $ownField = $parameters[1];
-        $third = $parameters[2];
-        $fourth = $parameters[3];
-
-        if (in_array($third, databaseOperators(), true)) {
-            return [$table, $ownField, $fourth, $third];
-        }
-
-        return [$table, $ownField, $third, $fourth];
-    }
-
     private function getJoinSQL()
     {
         return $this->joinSQL;
@@ -2381,7 +2390,7 @@ class QueryBuilder
 
     private function makeSubQueryJoin(array $parameters, string $join)
     {
-        [$table, $ownField, $field, $operator] = $this->parseJoinParameters($parameters);
+        [$table, $ownField, $field, $operator] = $parameters;
         $sqlArray = [];
         $sqlArray[$table] = [$ownField, $field, $operator];
         $this->getSubQueryJoin($this->showCurrentSubQuery(), $sqlArray, $join);
@@ -2389,7 +2398,7 @@ class QueryBuilder
 
     private function makeJoin(array $parameters, string $join)
     {
-        [$table, $ownField, $field, $operator] = $this->parseJoinParameters($parameters);
+        [$table, $ownField, $field, $operator] = $parameters;
         $sqlArray = [];
         $sqlArray[$table] = [$ownField, $field, $operator];
         $this->getJoin($sqlArray, $join);
@@ -2424,7 +2433,8 @@ class QueryBuilder
             if ($countParameters == 4) {
                 $table = $parameters[0];
                 $firstColumn = Identifier::column($parameters[1]);
-                $operator = makeOperator($parameters[2]);
+                checkDatabaseOperator($parameters[2]);
+                $operator = $parameters[2];
                 $secondColumn = Identifier::column($parameters[3]);
                 $parameters = [
                     $table,
