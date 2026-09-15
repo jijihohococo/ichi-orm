@@ -43,4 +43,22 @@ class GroupingTest extends DriverTestCase
 
         $this->assertNotEmpty($rows);
     }
+
+    public function testMultipleGroupByColumns()
+    {
+        $rows = Blog::select(['status', 'author_id'])
+            ->groupBy('status', 'author_id')
+            ->get();
+
+        $this->assertNotNull($rows);
+    }
+
+    public function testMultipleGroupByColumnsAsArray()
+    {
+        $rows = Blog::select(['status', 'author_id'])
+            ->groupBy(['status', 'author_id'])
+            ->get();
+
+        $this->assertNotNull($rows);
+    }
 }
