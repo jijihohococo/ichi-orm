@@ -71,10 +71,32 @@ if (!function_exists('getTableName')) {
     }
 }
 
+// if (!function_exists('getCurrentField')) {
+//     function getCurrentField($subQueries, $currentField, $currentSubQueryNumber)
+//     {
+//         return substr_replace(array_keys($subQueries)[$subQueries[$currentField . $currentSubQueryNumber]], null, -strlen($currentSubQueryNumber + 1));
+//     }
+// }
+
 if (!function_exists('getCurrentField')) {
     function getCurrentField($subQueries, $currentField, $currentSubQueryNumber)
     {
-        return substr_replace(array_keys($subQueries)[$subQueries[$currentField . $currentSubQueryNumber]], null, -strlen($currentSubQueryNumber + 1));
+        $currentKey = $currentField . $currentSubQueryNumber;
+
+        if (!isset($subQueries[$currentKey])) {
+            return $currentField;
+        }
+
+        $subQueryNumber = $subQueries[$currentKey];
+
+        $keys = array_keys($subQueries);
+        $index = array_search($subQueryNumber, array_values($subQueries), true);
+
+        if ($index === false || !isset($keys[$index])) {
+            return $currentField;
+        }
+
+        return preg_replace('/__\d+$/', '', $keys[$index]);
     }
 }
 
