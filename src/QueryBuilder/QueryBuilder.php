@@ -256,7 +256,7 @@ class QueryBuilder
 
     public function having(string $field, string $operator, $value)
     {
-        $field = Identifier::column($field);
+        //$field = Identifier::column($field);
         $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
