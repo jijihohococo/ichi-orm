@@ -97,18 +97,37 @@ if (!function_exists('getFirstObject')) {
     }
 }
 
+// if (!function_exists('bindValues')) {
+//     function bindValues($stmt, $fields, &$index = 1)
+//     {
+//         if (is_array($fields)) {
+//             foreach ($fields as $key => $field) {
+//                 if (!is_array($field)) {
+//                     $stmt->bindValue($key + 1, $field, getPDOBindDataType($field));
+//                 }
+//                 if (is_array($field)) {
+//                     return bindValues($stmt, $field);
+//                 }
+//             }
+//         }
+//     }
+// }
 if (!function_exists('bindValues')) {
     function bindValues($stmt, $fields, &$index = 1)
     {
-        if (is_array($fields)) {
-            foreach ($fields as $key => $field) {
-                if (!is_array($field)) {
-                    $stmt->bindValue($key + 1, $field, getPDOBindDataType($field));
-                }
-                if (is_array($field)) {
-                    return bindValues($stmt, $field);
-                }
+        foreach ($fields as $field) {
+            if (is_array($field)) {
+                bindValues($stmt, $field, $index);
+                continue;
             }
+
+            $stmt->bindValue(
+                $index,
+                $field,
+                getPDOBindDataType($field)
+            );
+
+            $index++;
         }
     }
 }
