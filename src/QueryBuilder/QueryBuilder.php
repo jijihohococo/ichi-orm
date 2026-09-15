@@ -1796,6 +1796,9 @@ class QueryBuilder
 
     public function get()
     {
+        print_r($this->fields);
+        print_r($this->where);
+        print_r($this->whereIn);
         $query = clone $this;
         try {
             $query->caller = getCallerInfo();
@@ -1803,7 +1806,6 @@ class QueryBuilder
             if ($query->currentSubQueryNumber == null) {
                 $query->boot();
                 $mainSQL = $query->getQuery();
-                print_r($mainSQL);
                 if ($query->toSQL == true) {
                     $query->setLastSQLFields($query->getFields());
                     $query->disableForSQL();
