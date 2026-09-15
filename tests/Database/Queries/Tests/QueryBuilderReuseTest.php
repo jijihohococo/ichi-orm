@@ -215,7 +215,6 @@ class QueryBuilderReuseTest extends DriverTestCase
         $first = $base
             ->unionAll(function ($query) {
                 return $query
-                    ->select(['id'])
                     ->where('id', 5)
                     ->get();
             })
@@ -224,7 +223,6 @@ class QueryBuilderReuseTest extends DriverTestCase
         $second = $base
             ->unionAll(function ($query) {
                 return $query
-                    ->select(['id'])
                     ->where('id', 6)
                     ->get();
             })
