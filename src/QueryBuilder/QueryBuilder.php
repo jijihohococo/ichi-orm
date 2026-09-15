@@ -2422,16 +2422,16 @@ class QueryBuilder
             $this->checkInstance();
             $countParameters = count($parameters);
             if ($countParameters == 4) {
-                // $table = Identifier::table($parameters[0]);
-                // $firstColumn = Identifier::column($parameters[1]);
-                // $operator = makeOperator($parameters[2]);
-                // $secondColumn = Identifier::column($parameters[3]);
-                // $parameters = [
-                //     $table,
-                //     $firstColumn,
-                //     $operator,
-                //     $secondColumn
-                // ];
+                $table = $parameters[0];
+                $firstColumn = Identifier::column($parameters[1]);
+                $operator = makeOperator($parameters[2]);
+                $secondColumn = Identifier::column($parameters[3]);
+                $parameters = [
+                    $table,
+                    $firstColumn,
+                    $operator,
+                    $secondColumn
+                ];
                 if ($this->currentSubQueryNumber == null) {
                     $this->boot();
                     $this->makeJoin($parameters, $join);
