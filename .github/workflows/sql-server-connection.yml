@@ -82,4 +82,6 @@ jobs:
           php tests/Database/Connections/SQLServer/test.trust_certificate.php
           php tests/Database/Connections/SQLServer/test.charset_binary.php
           php tests/Database/Connections/SQLServer/test.charset_system.php
-          
+
+      - name: Run SQL Server connection tests
+        run: php tests/Database/Queries/run.php sqlsrv

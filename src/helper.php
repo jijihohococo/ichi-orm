@@ -74,7 +74,22 @@ if (!function_exists('getTableName')) {
 if (!function_exists('getCurrentField')) {
     function getCurrentField($subQueries, $currentField, $currentSubQueryNumber)
     {
-        return substr_replace(array_keys($subQueries)[$subQueries[$currentField . $currentSubQueryNumber]], null, -strlen($currentSubQueryNumber + 1));
+        $currentKey = $currentField . $currentSubQueryNumber;
+
+        if (!isset($subQueries[$currentKey])) {
+            return $currentField;
+        }
+
+        $subQueryNumber = $subQueries[$currentKey];
+
+        $keys = array_keys($subQueries);
+        $index = array_search($subQueryNumber, array_values($subQueries), true);
+
+        if ($index === false || !isset($keys[$index])) {
+            return $currentField;
+        }
+
+        return preg_replace('/__\d+$/', '', $keys[$index]);
     }
 }
 
@@ -97,18 +112,37 @@ if (!function_exists('getFirstObject')) {
     }
 }
 
+// if (!function_exists('bindValues')) {
+//     function bindValues($stmt, $fields, &$index = 1)
+//     {
+//         if (is_array($fields)) {
+//             foreach ($fields as $key => $field) {
+//                 if (!is_array($field)) {
+//                     $stmt->bindValue($key + 1, $field, getPDOBindDataType($field));
+//                 }
+//                 if (is_array($field)) {
+//                     return bindValues($stmt, $field);
+//                 }
+//             }
+//         }
+//     }
+// }
 if (!function_exists('bindValues')) {
-    function bindValues($stmt, $fields)
+    function bindValues($stmt, $fields, &$index = 1)
     {
-        if (is_array($fields)) {
-            foreach ($fields as $key => $field) {
-                if (!is_array($field)) {
-                    $stmt->bindValue($key + 1, $field, getPDOBindDataType($field));
-                }
-                if (is_array($field)) {
-                    return bindValues($stmt, $field);
-                }
+        foreach ($fields as $field) {
+            if (is_array($field)) {
+                bindValues($stmt, $field, $index);
+                continue;
             }
+
+            $stmt->bindValue(
+                $index,
+                $field,
+                getPDOBindDataType($field)
+            );
+
+            $index++;
         }
     }
 }
@@ -270,5 +304,15 @@ if (!function_exists('getallheaders')) {
         }
 
         return $headers;
+    }
+}
+
+
+if (!function_exists('checkDatabaseOperator')) {
+    function checkDatabaseOperator(string $operator)
+    {
+        if (!in_array($operator, databaseOperators(), true)) {
+            throw new Exception("You can add only database operators in join function", 1);
+        }
     }
 }
