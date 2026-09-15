@@ -29,26 +29,4 @@ class OrderingTest extends DriverTestCase
         $sql = Blog::orderBy('views', 'DESC')->toSQL()->get();
         $this->assertStringContains('ORDER BY views DESC', $sql);
     }
-
-    public function testOrderByQueryIsReusable()
-    {
-        $blog = Blog::where('status', 'published');
-
-        $first = $blog->orderBy('id', 'ASC')->get();
-        $second = $blog->orderBy('title', 'ASC')->get();
-
-        $this->assertCount(4, $first);
-        $this->assertCount(4, $second);
-    }
-
-    public function testLatestQueryIsReusable()
-    {
-        $blog = Blog::where('status', 'published');
-
-        $first = $blog->latest('id')->get();
-        $second = $blog->latest('views')->get();
-
-        $this->assertCount(4, $first);
-        $this->assertCount(4, $second);
-    }
 }

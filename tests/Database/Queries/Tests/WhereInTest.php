@@ -71,26 +71,4 @@ class WhereInTest extends DriverTestCase
 
         $this->assertCount(4, $rows);
     }
-
-    public function testWhereInQueryIsReusable()
-    {
-        $blog = Blog::where('status', 'published');
-
-        $first = $blog->whereIn('id', [1, 2])->get();
-        $second = $blog->whereIn('id', [3, 4])->get();
-
-        $this->assertCount(2, $first);
-        $this->assertCount(1, $second);
-    }
-
-    public function testWhereNotInQueryIsReusable()
-    {
-        $blog = Blog::where('status', 'published');
-
-        $first = $blog->whereNotIn('id', [1, 2])->get();
-        $second = $blog->whereNotIn('id', [3, 4])->get();
-
-        $this->assertNotNull($first);
-        $this->assertNotNull($second);
-    }
 }

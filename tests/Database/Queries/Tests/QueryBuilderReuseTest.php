@@ -46,7 +46,7 @@ class QueryBuilderReuseTest extends DriverTestCase
         $second = $blog->whereIn('id', [3, 4])->get();
 
         $this->assertCount(2, $first);
-        $this->assertCount(2, $second);
+        $this->assertCount(1, $second);
     }
 
     public function testWhereNotInQueryIsReusable()

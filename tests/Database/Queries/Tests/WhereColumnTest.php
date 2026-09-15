@@ -32,24 +32,4 @@ class WhereColumnTest extends DriverTestCase
 
         $this->assertNotNull($rows);
     }
-
-    public function testWhereColumnQueryIsReusable()
-    {
-        $blog = Blog::where('status', 'published');
-
-        $first = $blog->whereColumn(
-            'test_blogs.id',
-            '>',
-            'test_blogs.author_id'
-        )->get();
-
-        $second = $blog->whereColumn(
-            'test_blogs.id',
-            '<=',
-            'test_blogs.author_id'
-        )->get();
-
-        $this->assertNotNull($first);
-        $this->assertNotNull($second);
-    }
 }
