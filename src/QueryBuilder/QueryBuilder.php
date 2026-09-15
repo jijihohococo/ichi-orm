@@ -1806,7 +1806,7 @@ class QueryBuilder
                 return $query;
             }
             if ($query->currentUnionNumber !== null && isset($query->useUnionQuery[$query->currentUnionNumber]) && $query->useUnionQuery[$query->currentUnionNumber] === false) {
-                $query->makeSQL();
+                $query->boot();
                 return $query;
             }
         } catch (Exception $e) {
