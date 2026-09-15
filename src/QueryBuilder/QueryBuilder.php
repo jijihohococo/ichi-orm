@@ -927,11 +927,12 @@ class QueryBuilder
 
     private function makeSubQueryInSubQuery($whereSelect, $value, $field, $check)
     {
+        $previousField = $this->currentField;
+        $previousSubQueryNumber = $this->currentSubQueryNumber;
         $query = $this;
-        $previousField = $query->currentField;
-        $previousSubQueryNumber = $query->currentSubQueryNumber;
         $query->setSubQuery($field, $check);
-        $query->subQueries[$field . $query->currentSubQueryNumber] = $query->currentSubQueryNumber;
+        $subQueryKey = $query->currentField . $query->currentSubQueryNumber;
+        $query->subQueries[$subQueryKey] = $query->currentSubQueryNumber;
         $result = $value($query);
         if ($result instanceof self) {
             $query = $result;
@@ -947,6 +948,7 @@ class QueryBuilder
 
         $query->currentField = $previousField;
         $query->currentSubQueryNumber = $previousSubQueryNumber;
+        return $query;
     }
 
     public function from(string $className)
@@ -1092,7 +1094,7 @@ class QueryBuilder
                     $query->checkSubQueryUnionQuery($check);
                     $subQueryKey = $query->currentField . $query->currentSubQueryNumber;
                     $query->{$check}[$subQueryKey]['operators'][$query->currentField . $where] = makeOperator($operator);
-                    $query->makeSubQueryInSubQuery($where, $value, $field, $check);
+                    $query = $query->makeSubQueryInSubQuery($where, $value, $field, $check);
                 }
             } else {
                 throw new Exception("Invalid Argument Parameter", 1);
@@ -1144,7 +1146,7 @@ class QueryBuilder
             if (is_callable($value) && $query->currentSubQueryNumber !== null) {
                 $currentQuery = $query->showCurrentSubQuery();
                 $query->checkSubQueryUnionQuery($currentQuery);
-                $query->makeSubQueryInSubQuery($whereIn, $value, $field, $currentQuery);
+                $query = $query->makeSubQueryInSubQuery($whereIn, $value, $field, $currentQuery);
             }
             return $query;
         } catch (Exception $e) {
@@ -2165,7 +2167,7 @@ class QueryBuilder
                     if (!is_callable($value)) {
                         throw new Exception("You need to add function in array in addSelect function or addOnlySelect function.", 1);
                     }
-                    $query->makeSubQueryInSubQuery('selectQuery', $value, $select, $check);
+                    $query = $query->makeSubQueryInSubQuery('selectQuery', $value, $select, $check);
                 }
             }
             return $query;
