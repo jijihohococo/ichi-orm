@@ -8,7 +8,6 @@ class WhereInTest extends DriverTestCase
     public function testWhereInMultipleIntegers()
     {
         $rows = Blog::whereIn('id', [1, 2, 3])->get();
-        print_r("count rows: " . count($rows) . "\n");
         $this->assertCount(3, $rows);
     }
 

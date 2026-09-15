@@ -85,4 +85,17 @@ class WhereTest extends DriverTestCase
         $rows = Blog::where('title', $payload)->get();
         $this->assertCount(0, $rows);
     }
+
+    public function testWhereQueryIsReusable()
+    {
+        $blog = Blog::where('status', 'published');
+
+        $first = $blog->where('id', 1)->get();
+        $second = $blog->where('id', 2)->get();
+
+        $this->assertCount(1, $first);
+        $this->assertCount(1, $second);
+        $this->assertSame(1, (int) $first[0]->id);
+        $this->assertSame(2, (int) $second[0]->id);
+    }
 }
