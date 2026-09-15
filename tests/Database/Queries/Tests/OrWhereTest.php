@@ -31,4 +31,15 @@ class OrWhereTest extends DriverTestCase
 
         $this->assertCount(3, $rows);
     }
+
+    public function testOrWhereQueryIsReusable()
+    {
+        $blog = Blog::where('status', 'published');
+
+        $first = $blog->orWhere('id', 1)->get();
+        $second = $blog->orWhere('id', 2)->get();
+
+        $this->assertNotNull($first);
+        $this->assertNotNull($second);
+    }
 }
