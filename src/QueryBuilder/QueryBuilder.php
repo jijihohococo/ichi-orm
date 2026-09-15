@@ -1770,72 +1770,169 @@ class QueryBuilder
         }
     }
 
+    // public function get()
+    // {
+    //     $query = clone $this;
+    //     try {
+    //         $query->caller = getCallerInfo();
+    //         $query->checkInstance();
+    //         //if ($query->currentSubQueryNumber == null) {
+    //             // $query->boot();
+    //             // $mainSQL = $query->getQuery();
+    //             // if ($query->toSQL == true) {
+    //             //     $query->setLastSQLFields($query->getFields());
+    //             //     $query->disableForSQL();
+    //             //     return $mainSQL;
+    //             // }
+    //             // $class = $query->getCalledClass();
+    //             // $fields = $query->getFields();
+    //             // $stmt = $query->connectDatabase()->prepare($mainSQL);
+    //             // bindValues($stmt, $fields);
+    //             // $stmt->execute();
+    //             // $query->disableBooting();
+    //             // $object = $stmt->fetchAll(PDO::FETCH_CLASS, $class);
+    //             // if ($query->shouldFilterSelectedFields($class)) {
+    //             //     $object = $query->filterSelectedFields($object, $class);
+    //             // }
+    //             // $query->selectedFields = [];
+    //             // $query->select = $query->table = null;
+    //             // if ($query->unionQuery !== null) {
+    //             //     $query->unionQuery = null;
+    //             // }
+    //             // return $object;
+    //         //}
+    //         if ($query->currentSubQueryNumber !== null) {
+    //             $query->makeSubQuery($query->showCurrentSubQuery());
+    //             return $query;
+    //         }
+    //         if ($query->currentUnionNumber !== null && isset($query->useUnionQuery[$query->currentUnionNumber]) && $query->useUnionQuery[$query->currentUnionNumber] === false) {
+    //             //$query->boot();
+    //             return $query;
+    //         }
+    //         $query->boot();
+    //             $mainSQL = $query->getQuery();
+    //         if ($query->toSQL == true) {
+    //             $query->setLastSQLFields($query->getFields());
+    //             $query->disableForSQL();
+    //             return $mainSQL;
+    //         }
+    //             $class = $query->getCalledClass();
+    //             $fields = $query->getFields();
+    //             $stmt = $query->connectDatabase()->prepare($mainSQL);
+    //             bindValues($stmt, $fields);
+    //             $stmt->execute();
+    //             $query->disableBooting();
+    //             $object = $stmt->fetchAll(PDO::FETCH_CLASS, $class);
+    //         if ($query->shouldFilterSelectedFields($class)) {
+    //             $object = $query->filterSelectedFields($object, $class);
+    //         }
+    //             $query->selectedFields = [];
+    //             $query->select = $query->table = null;
+    //         if ($query->unionQuery !== null) {
+    //             $query->unionQuery = null;
+    //         }
+    //             return $object;
+    //     } catch (Exception $e) {
+    //         return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+    //     }
+    // }
     public function get()
-    {
-        $query = clone $this;
-        try {
-            $query->caller = getCallerInfo();
-            $query->checkInstance();
-            //if ($query->currentSubQueryNumber == null) {
-                // $query->boot();
-                // $mainSQL = $query->getQuery();
-                // if ($query->toSQL == true) {
-                //     $query->setLastSQLFields($query->getFields());
-                //     $query->disableForSQL();
-                //     return $mainSQL;
-                // }
-                // $class = $query->getCalledClass();
-                // $fields = $query->getFields();
-                // $stmt = $query->connectDatabase()->prepare($mainSQL);
-                // bindValues($stmt, $fields);
-                // $stmt->execute();
-                // $query->disableBooting();
-                // $object = $stmt->fetchAll(PDO::FETCH_CLASS, $class);
-                // if ($query->shouldFilterSelectedFields($class)) {
-                //     $object = $query->filterSelectedFields($object, $class);
-                // }
-                // $query->selectedFields = [];
-                // $query->select = $query->table = null;
-                // if ($query->unionQuery !== null) {
-                //     $query->unionQuery = null;
-                // }
-                // return $object;
-            //}
-            if ($query->currentSubQueryNumber !== null) {
-                $query->makeSubQuery($query->showCurrentSubQuery());
-                return $query;
-            }
-            if ($query->currentUnionNumber !== null && isset($query->useUnionQuery[$query->currentUnionNumber]) && $query->useUnionQuery[$query->currentUnionNumber] === false) {
-                //$query->boot();
-                return $query;
-            }
-            $query->boot();
-                $mainSQL = $query->getQuery();
-            if ($query->toSQL == true) {
-                $query->setLastSQLFields($query->getFields());
-                $query->disableForSQL();
-                return $mainSQL;
-            }
-                $class = $query->getCalledClass();
-                $fields = $query->getFields();
-                $stmt = $query->connectDatabase()->prepare($mainSQL);
-                bindValues($stmt, $fields);
-                $stmt->execute();
-                $query->disableBooting();
-                $object = $stmt->fetchAll(PDO::FETCH_CLASS, $class);
-            if ($query->shouldFilterSelectedFields($class)) {
-                $object = $query->filterSelectedFields($object, $class);
-            }
-                $query->selectedFields = [];
-                $query->select = $query->table = null;
-            if ($query->unionQuery !== null) {
-                $query->unionQuery = null;
-            }
-                return $object;
-        } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+{
+    $query = clone $this;
+
+    try {
+        $query->caller = getCallerInfo();
+        $query->checkInstance();
+
+        /*
+         * Build subquery and return builder.
+         */
+        if ($query->currentSubQueryNumber !== null) {
+            $query->makeSubQuery(
+                $query->showCurrentSubQuery()
+            );
+
+            return $query;
         }
+
+        /*
+         * Build UNION callback query and return builder.
+         *
+         * makeUnionQuery() sets this flag to false before
+         * executing the callback.
+         */
+        if (
+            isset(
+                $query->useUnionQuery[
+                    $query->currentUnionNumber
+                ]
+            ) &&
+            $query->useUnionQuery[
+                $query->currentUnionNumber
+            ] === false
+        ) {
+            $query->boot();
+
+            return $query;
+        }
+
+        /*
+         * Normal query execution.
+         */
+        $query->boot();
+
+        $mainSQL = $query->getQuery();
+
+        if ($query->toSQL == true) {
+            $query->setLastSQLFields(
+                $query->getFields()
+            );
+
+            $query->disableForSQL();
+
+            return $mainSQL;
+        }
+
+        $class = $query->getCalledClass();
+        $fields = $query->getFields();
+
+        $stmt = $query
+            ->connectDatabase()
+            ->prepare($mainSQL);
+
+        bindValues($stmt, $fields);
+
+        $stmt->execute();
+
+        $query->disableBooting();
+
+        $object = $stmt->fetchAll(
+            PDO::FETCH_CLASS,
+            $class
+        );
+
+        if ($query->shouldFilterSelectedFields($class)) {
+            $object = $query->filterSelectedFields(
+                $object,
+                $class
+            );
+        }
+
+        $query->selectedFields = [];
+        $query->select = $query->table = null;
+
+        if ($query->unionQuery !== null) {
+            $query->unionQuery = null;
+        }
+
+        return $object;
+    } catch (Exception $e) {
+        return showErrorPage(
+            $e->getMessage() .
+            showCallerInfo($query->caller)
+        );
     }
+}
 
     public function new()
     {
