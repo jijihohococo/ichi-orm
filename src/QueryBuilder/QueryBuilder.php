@@ -1811,11 +1811,11 @@ class QueryBuilder
             }
             $query->boot();
                 $mainSQL = $query->getQuery();
-                if ($query->toSQL == true) {
-                    $query->setLastSQLFields($query->getFields());
-                    $query->disableForSQL();
-                    return $mainSQL;
-                }
+            if ($query->toSQL == true) {
+                $query->setLastSQLFields($query->getFields());
+                $query->disableForSQL();
+                return $mainSQL;
+            }
                 $class = $query->getCalledClass();
                 $fields = $query->getFields();
                 $stmt = $query->connectDatabase()->prepare($mainSQL);
@@ -1823,14 +1823,14 @@ class QueryBuilder
                 $stmt->execute();
                 $query->disableBooting();
                 $object = $stmt->fetchAll(PDO::FETCH_CLASS, $class);
-                if ($query->shouldFilterSelectedFields($class)) {
-                    $object = $query->filterSelectedFields($object, $class);
-                }
+            if ($query->shouldFilterSelectedFields($class)) {
+                $object = $query->filterSelectedFields($object, $class);
+            }
                 $query->selectedFields = [];
                 $query->select = $query->table = null;
-                if ($query->unionQuery !== null) {
-                    $query->unionQuery = null;
-                }
+            if ($query->unionQuery !== null) {
+                $query->unionQuery = null;
+            }
                 return $object;
         } catch (Exception $e) {
             return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
