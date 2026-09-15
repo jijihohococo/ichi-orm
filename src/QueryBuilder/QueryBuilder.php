@@ -1119,7 +1119,6 @@ class QueryBuilder
                 $query->{$whereIn}[$field] = $value;
                 if ($value !== null) {
                     $query->fields[] = $value;
-                    print_r($query->fields);
                 }
             }
             if (is_callable($value) && $query->currentSubQueryNumber == null) {
@@ -1804,6 +1803,7 @@ class QueryBuilder
             if ($query->currentSubQueryNumber == null) {
                 $query->boot();
                 $mainSQL = $query->getQuery();
+                print_r($mainSQL);
                 if ($query->toSQL == true) {
                     $query->setLastSQLFields($query->getFields());
                     $query->disableForSQL();
