@@ -1690,13 +1690,23 @@ class QueryBuilder
                 $uNumber = $query->currentUnionNumber;
                 $query->useUnionQuery[$uNumber] = false;
                 $query->unionNumber++;
-                $result = $value($query);
-                if (!$result instanceof self) {
-                    throw new Exception("Unable to build UNION query", 1);
+                $reflection = new ReflectionFunction(Closure::fromCallable($value));
+                if ($reflection->getNumberOfParameters() > 0) {
+                    $result = $value($query);
+                    if (!$result instanceof self) {
+                        throw new Exception("Unable to build UNION query", 1);
+                    }
+                    $query = $result;
+                    $newUnionQuery = $query->getQuery();
+                    $newUnionFields = $query->getFields();
+                } else {
+                    $result = $value();
+                    if (!is_string($result)) {
+                        throw new Exception("Unable to build UNION query", 1);
+                    }
+                    $newUnionQuery = $result;
+                    $newUnionFields = $query->getLastSQLFields();
                 }
-                $query = $result;
-                $newUnionQuery = $query->getQuery();
-                $newUnionFields = $query->getFields();
                 $query->fields = array_merge($previousFields, $newUnionFields);
                 $query->useUnionQuery[$uNumber] = true;
                 $query->currentUnionNumber = $uNumber;
