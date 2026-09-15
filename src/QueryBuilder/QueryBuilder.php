@@ -1691,10 +1691,12 @@ class QueryBuilder
                 $table = $query->table;
                 $className = $query->className;
                 $getID = $query->getID;
+                $previousSelect = $query->select;
                 $query->disableForSQL();
                 $query->table = $table;
                 $query->className = $className;
                 $query->getID = $getID;
+                $query->select = $previousSelect;
                 $uNumber = $query->currentUnionNumber;
                 $query->useUnionQuery[$uNumber] = false;
                 $query->unionNumber++;
