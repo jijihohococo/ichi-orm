@@ -933,9 +933,9 @@ class QueryBuilder
         $query->setSubQuery($field, $check);
         $this->subQueries[$field . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
         $query = $value($query);
-        if ($query instanceof self){
+        if ($query instanceof self) {
             $this->copySubQueryBuilder($query);
-        } 
+        }
 
         if ($whereSelect !== 'selectQuery') {
             $this->{$check}[$previousField . $previousSubQueryNumber][$whereSelect] = $this->subQuery;
@@ -1723,7 +1723,7 @@ class QueryBuilder
                     $this->subQueries[$secondSubQueryKey] = $currentSubQueryNumber;
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = true;
                     $query = $value($query);
-                    if ($query instanceof self){
+                    if ($query instanceof self) {
                         $this->copySubQueryBuilder($query);
                     }
                     if (!isset($this->{$currentQuery}[$secondField])) {
@@ -1745,7 +1745,7 @@ class QueryBuilder
                     $secondSubQueryKey = $secondField . $this->currentSubQueryNumber;
                     $this->subQueries[$secondSubQueryKey] = $currentSubQueryNumber;
                     $query = $value($query);
-                    if ($query instanceof self){
+                    if ($query instanceof self) {
                         $this->copySubQueryBuilder($query);
                     }
                     if (!isset($this->{$currentQuery}[$secondField])) {
