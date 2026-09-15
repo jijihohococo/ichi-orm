@@ -1012,8 +1012,9 @@ class QueryBuilder
 
     private function makeWhereQuery(array $parameters, $where)
     {
+        $query = $this;
         try {
-            $this->checkInstance();
+            $query->checkInstance();
             $countParameters = count($parameters);
             $value = $operator = $field = null;
 
@@ -1047,30 +1048,29 @@ class QueryBuilder
                     $operator = ' IS NOT ';
                 }
 
-                if (!is_callable($value) && $this->currentSubQueryNumber == null) {
-                    $this->checkUnionQuery();
-                    $this->boot();
+                if (!is_callable($value) && $query->currentSubQueryNumber == null) {
+                    $query->checkUnionQuery();
+                    $query->boot();
 
                     // Create unique key for same field multiple times
-                    $uniqueKey = $field . '__' . $this->whereKeyCounter;
-                    $this->whereKeyCounter++;
+                    $uniqueKey = $field . '__' . $query->whereKeyCounter;
+                    $query->whereKeyCounter++;
 
-                    $this->{$where}[$uniqueKey] = $value;
-                    $this->operators[$uniqueKey . $where] = makeOperator($operator);
+                    $query->{$where}[$uniqueKey] = $value;
+                    $query->operators[$uniqueKey . $where] = makeOperator($operator);
 
                     if ($value !== null && $where !== 'whereColumn') {
-                        $this->fields[] = $value;
+                        $query->fields[] = $value;
                     }
                 }
 
-                if (is_callable($value) && $this->currentSubQueryNumber == null) {
-                    $this->checkUnionQuery();
-                    $this->boot();
-                    $query = $this;
+                if (is_callable($value) && $query->currentSubQueryNumber == null) {
+                    $query->checkUnionQuery();
+                    $query->boot();
                     $query->setSubQuery($field, $where);
-                    $this->operators[$this->currentField . $where] = makeOperator($operator);
-                    $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
-                    $this->subQueries[$subQueryKey] = $this->currentSubQueryNumber;
+                    $query->operators[$query->currentField . $where] = makeOperator($operator);
+                    $subQueryKey = $query->currentField . $query->currentSubQueryNumber;
+                    $query->subQueries[$subQueryKey] = $query->currentSubQueryNumber;
                     $result = $value($query);
                     if ($result instanceof self) {
                         $query = $result;
@@ -1078,77 +1078,77 @@ class QueryBuilder
                     $query->makeDefaultSubQueryData();
                 }
 
-                if (!is_callable($value) && $this->currentSubQueryNumber !== null) {
-                    $currentQuery = $this->showCurrentSubQuery();
-                    $this->checkSubQueryUnionQuery($currentQuery);
-                    $this->setSubWhere($currentQuery, $value, $field, $operator, $where);
+                if (!is_callable($value) && $query->currentSubQueryNumber !== null) {
+                    $currentQuery = $query->showCurrentSubQuery();
+                    $query->checkSubQueryUnionQuery($currentQuery);
+                    $query->setSubWhere($currentQuery, $value, $field, $operator, $where);
                     if ($value !== null && $where !== 'whereColumn') {
-                        $this->fields[] = $value;
+                        $query->fields[] = $value;
                     }
                 }
 
-                if (is_callable($value) && $this->currentSubQueryNumber !== null) {
-                    $check = $this->showCurrentSubQuery();
-                    $this->checkSubQueryUnionQuery($check);
-                    $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
-                    $this->{$check}[$subQueryKey]['operators'][$this->currentField . $where] = makeOperator($operator);
-                    $this->makeSubQueryInSubQuery($where, $value, $field, $check);
+                if (is_callable($value) && $query->currentSubQueryNumber !== null) {
+                    $check = $query->showCurrentSubQuery();
+                    $query->checkSubQueryUnionQuery($check);
+                    $subQueryKey = $query->currentField . $query->currentSubQueryNumber;
+                    $query->{$check}[$subQueryKey]['operators'][$query->currentField . $where] = makeOperator($operator);
+                    $query->makeSubQueryInSubQuery($where, $value, $field, $check);
                 }
             } else {
                 throw new Exception("Invalid Argument Parameter", 1);
             }
-            return $this;
+            return $query;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
     private function makeInQuery($whereIn, $field, $value)
     {
+        $query = $this;
         try {
-            $this->checkInstance();
+            $query->checkInstance();
 
             if (!is_array($value) && !is_callable($value) && $value !== null) {
                 throw new Exception("You can add only array values or sub query in {$whereIn} function", 1);
             }
 
-            if ((is_array($value) || $value === null) && $this->currentSubQueryNumber == null) {
-                $this->checkUnionQuery();
-                $this->boot();
-                $this->{$whereIn}[$field] = $value;
+            if ((is_array($value) || $value === null) && $query->currentSubQueryNumber == null) {
+                $query->checkUnionQuery();
+                $query->boot();
+                $query->{$whereIn}[$field] = $value;
                 if ($value !== null) {
-                    $this->fields[] = $value;
+                    $query->fields[] = $value;
                 }
             }
-            if (is_callable($value) && $this->currentSubQueryNumber == null) {
-                $this->checkUnionQuery();
-                $this->boot();
-                $query = $this;
+            if (is_callable($value) && $query->currentSubQueryNumber == null) {
+                $query->checkUnionQuery();
+                $query->boot();
                 $query->setSubQuery($field, $whereIn, $field);
-                $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
-                $this->subQueries[$subQueryKey] = $this->currentSubQueryNumber;
+                $subQueryKey = $query->currentField . $query->currentSubQueryNumber;
+                $query->subQueries[$subQueryKey] = $query->currentSubQueryNumber;
                 $result = $value($query);
                 if ($result instanceof self) {
                     $query = $result;
                 }
                 $query->makeDefaultSubQueryData();
             }
-            if ((is_array($value) || $value === null) && $this->currentSubQueryNumber !== null) {
-                $currentQuery = $this->showCurrentSubQuery();
-                $this->checkSubQueryUnionQuery($currentQuery);
-                $this->setSubWhereIn($currentQuery, $value, $field, $whereIn);
+            if ((is_array($value) || $value === null) && $query->currentSubQueryNumber !== null) {
+                $currentQuery = $query->showCurrentSubQuery();
+                $query->checkSubQueryUnionQuery($currentQuery);
+                $query->setSubWhereIn($currentQuery, $value, $field, $whereIn);
                 if ($value !== null) {
-                    $this->fields[] = $value;
+                    $query->fields[] = $value;
                 }
             }
-            if (is_callable($value) && $this->currentSubQueryNumber !== null) {
-                $currentQuery = $this->showCurrentSubQuery();
-                $this->checkSubQueryUnionQuery($currentQuery);
-                $this->makeSubQueryInSubQuery($whereIn, $value, $field, $currentQuery);
+            if (is_callable($value) && $query->currentSubQueryNumber !== null) {
+                $currentQuery = $query->showCurrentSubQuery();
+                $query->checkSubQueryUnionQuery($currentQuery);
+                $query->makeSubQueryInSubQuery($whereIn, $value, $field, $currentQuery);
             }
-            return $this;
+            return $query;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
