@@ -927,11 +927,11 @@ class QueryBuilder
 
     private function makeSubQueryInSubQuery($whereSelect, $value, $field, $check)
     {
-        $previousField = $this->currentField;
-        $previousSubQueryNumber = $this->currentSubQueryNumber;
         $query = $this;
+        $previousField = $query->currentField;
+        $previousSubQueryNumber = $query->currentSubQueryNumber;
         $query->setSubQuery($field, $check);
-        $this->subQueries[$field . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
+        $query->subQueries[$field . $query->currentSubQueryNumber] = $query->currentSubQueryNumber;
         $result = $value($query);
         if ($result instanceof self) {
             $query = $result;
