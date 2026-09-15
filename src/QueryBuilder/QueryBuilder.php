@@ -1690,11 +1690,17 @@ class QueryBuilder
                 $uNumber = $query->currentUnionNumber;
                 $query->useUnionQuery[$uNumber] = false;
                 $query->unionNumber++;
-                $newUnionQuery = $value();
+                $result = $value($query);
+                if ($result instanceof self) {
+                    $query = $result;
+                }
+
                 $newUnionFields = $query->getLastSQLFields();
-                if ($newUnionQuery instanceof QueryBuilder) {
-                    $newUnionFields = $newUnionQuery->getFields();
-                    $newUnionQuery = $newUnionQuery->getQuery();
+                if ($result instanceof self) {
+                    $newUnionFields = $result->getFields();
+                    $newUnionQuery = $result->getQuery();
+                } else {
+                    $newUnionQuery = $result;
                 }
                 $query->fields = array_merge($previousFields, $newUnionFields);
                 $query->useUnionQuery[$uNumber] = true;
