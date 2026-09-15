@@ -929,6 +929,7 @@ class QueryBuilder
     {
         $previousField = $this->currentField;
         $previousSubQueryNumber = $this->currentSubQueryNumber;
+        $previousSubQueries = $this->subQueries;
         $query = $this;
         $query->setSubQuery($field, $check);
         $subQueryKey = $query->currentField . $query->currentSubQueryNumber;
@@ -946,6 +947,7 @@ class QueryBuilder
             $query->{$check}[$previousField . $previousSubQueryNumber][$whereSelect][$field] = $query->subQuery;
         }
 
+        $query->subQueries = $previousSubQueries;
         $query->currentField = $previousField;
         $query->currentSubQueryNumber = $previousSubQueryNumber;
         return $query;
