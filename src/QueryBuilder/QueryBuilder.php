@@ -1796,9 +1796,6 @@ class QueryBuilder
 
     public function get()
     {
-        print_r($this->fields);
-        print_r($this->where);
-        print_r($this->whereIn);
         $query = clone $this;
         try {
             $query->caller = getCallerInfo();
