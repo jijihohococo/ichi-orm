@@ -249,7 +249,7 @@ class QueryBuilder
         $query->caller = getCallerInfo();
         $query->checkInstance();
         $groups = $query->normalizeGroupByParameters($groups);
-        
+
         foreach ($groups as $groupBy) {
             $groupBy = Identifier::column($groupBy);
             if ($query->currentSubQueryNumber == null) {
