@@ -237,6 +237,7 @@ class QueryBuilder
 
     public function groupBy(string $groupBy)
     {
+        $groupBy = Identifier::column($groupBy);
         $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
@@ -255,6 +256,7 @@ class QueryBuilder
 
     public function having(string $field, string $operator, $value)
     {
+        $field = Identifier::column($field);
         $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
@@ -626,6 +628,7 @@ class QueryBuilder
 
     public function findBy(string $field, $value)
     {
+        $field = Identifier::column($field);
         try {
             $this->caller = getCallerInfo();
             $this->boot();
@@ -756,6 +759,7 @@ class QueryBuilder
                 }
 
                 foreach ($fields as $key => $field) {
+                    $field = Identifier::column($field);
                     $query->trackSelectedField((string) $field);
                     $query->select .= $key + 1 == count($fields) ? $field : $field . ',';
                 }
@@ -1025,11 +1029,7 @@ class QueryBuilder
             $value = $operator = $field = null;
 
             if ($countParameters == 2 || $countParameters == 3) {
-                $field = $parameters[0];
-
-                if (!is_string($parameters[0])) {
-                    throw new Exception("You must add field name in string", 1);
-                }
+                $field = Identifier::column($parameters[0]);
 
                 if ($countParameters == 3 && !in_array($parameters[1], databaseOperators())) {
                     throw new Exception("You can add only database operators in {$where} function", 1);
@@ -1112,6 +1112,7 @@ class QueryBuilder
     private function makeInQuery($whereIn, $field, $value)
     {
         $query = $this;
+        $field = Identifier::column($field);
         try {
             $query->checkInstance();
 
@@ -1485,6 +1486,7 @@ class QueryBuilder
 
     public function orderBy(string $field, string $sort = "ASC")
     {
+        $field = Identifier::column($field);
         $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
@@ -1518,7 +1520,7 @@ class QueryBuilder
         if ($query->currentSubQueryNumber == null) {
             $query->checkUnionQuery();
             $query->boot();
-            $field = $field == null ? $query->getID() : $field;
+            $field = Identifier::column($field == null ? $query->getID() : $field);
             $query->order = " ORDER BY " . $query->table . '.' . $field . " DESC";
         }
         if ($query->currentSubQueryNumber !== null) {
@@ -1793,72 +1795,6 @@ class QueryBuilder
         }
     }
 
-    // public function get()
-    // {
-    //     $query = clone $this;
-    //     try {
-    //         $query->caller = getCallerInfo();
-    //         $query->checkInstance();
-    //         //if ($query->currentSubQueryNumber == null) {
-    //             // $query->boot();
-    //             // $mainSQL = $query->getQuery();
-    //             // if ($query->toSQL == true) {
-    //             //     $query->setLastSQLFields($query->getFields());
-    //             //     $query->disableForSQL();
-    //             //     return $mainSQL;
-    //             // }
-    //             // $class = $query->getCalledClass();
-    //             // $fields = $query->getFields();
-    //             // $stmt = $query->connectDatabase()->prepare($mainSQL);
-    //             // bindValues($stmt, $fields);
-    //             // $stmt->execute();
-    //             // $query->disableBooting();
-    //             // $object = $stmt->fetchAll(PDO::FETCH_CLASS, $class);
-    //             // if ($query->shouldFilterSelectedFields($class)) {
-    //             //     $object = $query->filterSelectedFields($object, $class);
-    //             // }
-    //             // $query->selectedFields = [];
-    //             // $query->select = $query->table = null;
-    //             // if ($query->unionQuery !== null) {
-    //             //     $query->unionQuery = null;
-    //             // }
-    //             // return $object;
-    //         //}
-    //         if ($query->currentSubQueryNumber !== null) {
-    //             $query->makeSubQuery($query->showCurrentSubQuery());
-    //             return $query;
-    //         }
-    //         if ($query->currentUnionNumber !== null && isset($query->useUnionQuery[$query->currentUnionNumber]) && $query->useUnionQuery[$query->currentUnionNumber] === false) {
-    //             //$query->boot();
-    //             return $query;
-    //         }
-    //         $query->boot();
-    //             $mainSQL = $query->getQuery();
-    //         if ($query->toSQL == true) {
-    //             $query->setLastSQLFields($query->getFields());
-    //             $query->disableForSQL();
-    //             return $mainSQL;
-    //         }
-    //             $class = $query->getCalledClass();
-    //             $fields = $query->getFields();
-    //             $stmt = $query->connectDatabase()->prepare($mainSQL);
-    //             bindValues($stmt, $fields);
-    //             $stmt->execute();
-    //             $query->disableBooting();
-    //             $object = $stmt->fetchAll(PDO::FETCH_CLASS, $class);
-    //         if ($query->shouldFilterSelectedFields($class)) {
-    //             $object = $query->filterSelectedFields($object, $class);
-    //         }
-    //             $query->selectedFields = [];
-    //             $query->select = $query->table = null;
-    //         if ($query->unionQuery !== null) {
-    //             $query->unionQuery = null;
-    //         }
-    //             return $object;
-    //     } catch (Exception $e) {
-    //         return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
-    //     }
-    // }
     public function get()
     {
         $query = clone $this;
@@ -2269,6 +2205,7 @@ class QueryBuilder
         try {
             $query = $this;
             foreach ($fields as $select => $value) {
+                $select = Identifier::column($select);
                 if (!is_callable($value)) {
                     throw new Exception("You need to add function in array in addSelect function or addOnlySelect function.", 1);
                 }
@@ -2314,6 +2251,7 @@ class QueryBuilder
                 $query->{$check}[$subQueryKey]['select'] = null;
                 $query->{$check}[$subQueryKey]['addSelect'] = true;
                 foreach ($fields as $select => $value) {
+                    $select = Identifier::column($select);
                     if (!is_callable($value)) {
                         throw new Exception("You need to add function in array in addSelect function or addOnlySelect function.", 1);
                     }
@@ -2483,13 +2421,17 @@ class QueryBuilder
         try {
             $this->checkInstance();
             $countParameters = count($parameters);
-            if (
-                $countParameters == 4 &&
-                is_string($parameters[0]) &&
-                is_string($parameters[1]) &&
-                is_string($parameters[2]) &&
-                is_string($parameters[3])
-            ) {
+            if ($countParameters == 4) {
+                $table = Identifier::table($parameters[0]);
+                $firstColumn = Identifier::column($parameters[1]);
+                $operator = makeOperator($parameters[2]);
+                $secondColumn = Identifier::column($parameters[3]);
+                $parameters = [
+                    $table,
+                    $firstColumn,
+                    $operator,
+                    $secondColumn
+                ];
                 if ($this->currentSubQueryNumber == null) {
                     $this->boot();
                     $this->makeJoin($parameters, $join);

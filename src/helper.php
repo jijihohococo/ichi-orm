@@ -71,13 +71,6 @@ if (!function_exists('getTableName')) {
     }
 }
 
-// if (!function_exists('getCurrentField')) {
-//     function getCurrentField($subQueries, $currentField, $currentSubQueryNumber)
-//     {
-//         return substr_replace(array_keys($subQueries)[$subQueries[$currentField . $currentSubQueryNumber]], null, -strlen($currentSubQueryNumber + 1));
-//     }
-// }
-
 if (!function_exists('getCurrentField')) {
     function getCurrentField($subQueries, $currentField, $currentSubQueryNumber)
     {

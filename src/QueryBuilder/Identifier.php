@@ -20,4 +20,20 @@ final class Identifier
         }
         return $column;
     }
+
+    public static function table(string $table): string
+    {
+        if (
+            !preg_match(
+                '/^[a-zA-Z_][a-zA-Z0-9_]*$/',
+                $table
+            )
+        ) {
+            throw new InvalidArgumentException(
+                "Invalid table identifier: {$table}"
+            );
+        }
+
+        return $table;
+    }
 }
