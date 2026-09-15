@@ -932,21 +932,21 @@ class QueryBuilder
         $query = $this;
         $query->setSubQuery($field, $check);
         $this->subQueries[$field . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
-        $query = $value($query);
-        if ($query instanceof self) {
-            $this->copySubQueryBuilder($query);
+        $result = $value($query);
+        if ($result instanceof self) {
+            $query = $result;
         }
 
         if ($whereSelect !== 'selectQuery') {
-            $this->{$check}[$previousField . $previousSubQueryNumber][$whereSelect] = $this->subQuery;
+            $query->{$check}[$previousField . $previousSubQueryNumber][$whereSelect] = $query->subQuery;
         }
 
         if ($whereSelect == 'selectQuery') {
-            $this->{$check}[$previousField . $previousSubQueryNumber][$whereSelect][$field] = $this->subQuery;
+            $query->{$check}[$previousField . $previousSubQueryNumber][$whereSelect][$field] = $query->subQuery;
         }
 
-        $this->currentField = $previousField;
-        $this->currentSubQueryNumber = $previousSubQueryNumber;
+        $query->currentField = $previousField;
+        $query->currentSubQueryNumber = $previousSubQueryNumber;
     }
 
     public function from(string $className)
@@ -1071,11 +1071,11 @@ class QueryBuilder
                     $this->operators[$this->currentField . $where] = makeOperator($operator);
                     $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
                     $this->subQueries[$subQueryKey] = $this->currentSubQueryNumber;
-                    $query = $value($query);
-                    if ($query instanceof self) {
-                        $this->copySubQueryBuilder($query);
+                    $result = $value($query);
+                    if ($result instanceof self) {
+                        $query = $result;
                     }
-                    $this->makeDefaultSubQueryData();
+                    $query->makeDefaultSubQueryData();
                 }
 
                 if (!is_callable($value) && $this->currentSubQueryNumber !== null) {
@@ -1127,11 +1127,11 @@ class QueryBuilder
                 $query->setSubQuery($field, $whereIn, $field);
                 $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
                 $this->subQueries[$subQueryKey] = $this->currentSubQueryNumber;
-                $query = $value($query);
-                if ($query instanceof self) {
-                    $this->copySubQueryBuilder($query);
+                $result = $value($query);
+                if ($result instanceof self) {
+                    $query = $result;
                 }
-                $this->makeDefaultSubQueryData();
+                $query->makeDefaultSubQueryData();
             }
             if ((is_array($value) || $value === null) && $this->currentSubQueryNumber !== null) {
                 $currentQuery = $this->showCurrentSubQuery();
@@ -1722,9 +1722,9 @@ class QueryBuilder
                     $secondSubQueryKey = $secondField . $this->currentSubQueryNumber;
                     $this->subQueries[$secondSubQueryKey] = $currentSubQueryNumber;
                     $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = true;
-                    $query = $value($query);
-                    if ($query instanceof self) {
-                        $this->copySubQueryBuilder($query);
+                    $result = $value($query);
+                    if ($result instanceof self) {
+                        $query = $result;
                     }
                     if (!isset($this->{$currentQuery}[$secondField])) {
                         throw new Exception("Unable to build UNION sub query", 1);
@@ -1744,23 +1744,23 @@ class QueryBuilder
                     $secondField = $this->currentField;
                     $secondSubQueryKey = $secondField . $this->currentSubQueryNumber;
                     $this->subQueries[$secondSubQueryKey] = $currentSubQueryNumber;
-                    $query = $value($query);
-                    if ($query instanceof self) {
-                        $this->copySubQueryBuilder($query);
+                    $result = $value($query);
+                    if ($result instanceof self) {
+                        $query = $result;
                     }
-                    if (!isset($this->{$currentQuery}[$secondField])) {
+                    if (!isset($query->{$currentQuery}[$secondField])) {
                         throw new Exception("Unable to build UNION sub query", 1);
                     }
-                    $secondQuery = $this->{$currentQuery}[$secondField];
-                    unset($this->{$currentQuery}[$secondField]);
-                    $this->currentField = $currentField;
-                    $this->currentSubQueryNumber = $currentSubQueryNumber;
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = $this->formatUnionQuery($previousUnionQuery, $union, $secondQuery);
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = false;
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber] = $this->makeSubQueryAttributes($previousField);
+                    $secondQuery = $query->{$currentQuery}[$secondField];
+                    unset($query->{$currentQuery}[$secondField]);
+                    $query->currentField = $currentField;
+                    $query->currentSubQueryNumber = $currentSubQueryNumber;
+                    $query->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = $query->formatUnionQuery($previousUnionQuery, $union, $secondQuery);
+                    $query->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = false;
+                    $query->{$currentQuery}[$currentField . $currentSubQueryNumber] = $query->makeSubQueryAttributes($previousField);
                 }
             }
-            return $this;
+            return $query;
         } catch (Exception $e) {
             return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
         }
@@ -2151,14 +2151,14 @@ class QueryBuilder
                 }
                 $query->setSubQuery($select, 'selectQuery');
                 $this->subQueries[$this->currentField . $this->currentSubQueryNumber] = $this->currentSubQueryNumber;
-                $query = $value($query);
-                if ($query instanceof self) {
-                    $this->copySubQueryBuilder($query);
+                $result = $value($query);
+                if ($result instanceof self) {
+                    $query = $result;
                 }
-                $this->makeDefaultSubQueryData();
-                $this->selectedFields[$this->className][$select] = $select;
+                $query->makeDefaultSubQueryData();
+                $query->selectedFields[$query->className][$select] = $select;
             }
-            return $this;
+            return $query;
         } catch (Exception $e) {
             return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
         }
