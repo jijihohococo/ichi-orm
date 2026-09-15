@@ -1119,6 +1119,7 @@ class QueryBuilder
                 $query->{$whereIn}[$field] = $value;
                 if ($value !== null) {
                     $query->fields[] = $value;
+                    print_r($query->fields);
                 }
             }
             if (is_callable($value) && $query->currentSubQueryNumber == null) {
