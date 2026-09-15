@@ -1776,8 +1776,40 @@ class QueryBuilder
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
-            if ($query->currentSubQueryNumber == null) {
-                $query->boot();
+            //if ($query->currentSubQueryNumber == null) {
+                // $query->boot();
+                // $mainSQL = $query->getQuery();
+                // if ($query->toSQL == true) {
+                //     $query->setLastSQLFields($query->getFields());
+                //     $query->disableForSQL();
+                //     return $mainSQL;
+                // }
+                // $class = $query->getCalledClass();
+                // $fields = $query->getFields();
+                // $stmt = $query->connectDatabase()->prepare($mainSQL);
+                // bindValues($stmt, $fields);
+                // $stmt->execute();
+                // $query->disableBooting();
+                // $object = $stmt->fetchAll(PDO::FETCH_CLASS, $class);
+                // if ($query->shouldFilterSelectedFields($class)) {
+                //     $object = $query->filterSelectedFields($object, $class);
+                // }
+                // $query->selectedFields = [];
+                // $query->select = $query->table = null;
+                // if ($query->unionQuery !== null) {
+                //     $query->unionQuery = null;
+                // }
+                // return $object;
+            //}
+            if ($query->currentSubQueryNumber !== null) {
+                $query->makeSubQuery($query->showCurrentSubQuery());
+                return $query;
+            }
+            if ($query->currentUnionNumber !== null && isset($query->useUnionQuery[$query->currentUnionNumber]) && $query->useUnionQuery[$query->currentUnionNumber] === false) {
+                //$query->boot();
+                return $query;
+            }
+            $query->boot();
                 $mainSQL = $query->getQuery();
                 if ($query->toSQL == true) {
                     $query->setLastSQLFields($query->getFields());
@@ -1800,15 +1832,6 @@ class QueryBuilder
                     $query->unionQuery = null;
                 }
                 return $object;
-            }
-            if ($query->currentSubQueryNumber !== null) {
-                $query->makeSubQuery($query->showCurrentSubQuery());
-                return $query;
-            }
-            if ($query->currentUnionNumber !== null && isset($query->useUnionQuery[$query->currentUnionNumber]) && $query->useUnionQuery[$query->currentUnionNumber] === false) {
-                $query->boot();
-                return $query;
-            }
         } catch (Exception $e) {
             return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
         }
