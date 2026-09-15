@@ -237,7 +237,7 @@ class QueryBuilder
 
     public function groupBy(string $groupBy)
     {
-        // $groupBy = Identifier::column($groupBy);
+        $groupBy = Identifier::column($groupBy);
         $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
