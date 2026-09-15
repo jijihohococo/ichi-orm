@@ -1684,19 +1684,18 @@ class QueryBuilder
     private function makeUnionQuery($value, $union)
     {
         $query = $this;
+        $previousQuery = null;
         try {
             if ($query->currentSubQueryNumber == null) {
-                $previousQuery = $query->getQuery();
+                $previousQueryBuilder = clone $query;
                 $previousFields = $query->getFields();
                 $table = $query->table;
                 $className = $query->className;
                 $getID = $query->getID;
-                $previousSelect = $query->select;
                 $query->disableForSQL();
                 $query->table = $table;
                 $query->className = $className;
                 $query->getID = $getID;
-                $query->select = $previousSelect;
                 $uNumber = $query->currentUnionNumber;
                 $query->useUnionQuery[$uNumber] = false;
                 $query->unionNumber++;
@@ -1707,9 +1706,12 @@ class QueryBuilder
                         throw new Exception("Unable to build UNION query", 1);
                     }
                     $query = $result;
+                    $previousQueryBuilder->select = $query->select;
+                    $previousQuery = $previousQueryBuilder->getQuery();
                     $newUnionQuery = $query->getQuery();
                     $newUnionFields = $query->getFields();
                 } else {
+                    $previousQuery = $previousQueryBuilder->getQuery();
                     $result = $value();
                     if (!is_string($result)) {
                         throw new Exception("Unable to build UNION query", 1);
