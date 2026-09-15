@@ -2398,7 +2398,7 @@ class QueryBuilder
 
     private function makeJoin(array $parameters, string $join)
     {
-        [$table, $ownField, $field, $operator] = $parameters;
+        [$table, $ownField, $operator, $field] = $parameters;
         $sqlArray = [];
         $sqlArray[$table] = [$ownField, $field, $operator];
         $this->getJoin($sqlArray, $join);
