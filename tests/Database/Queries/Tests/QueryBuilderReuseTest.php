@@ -143,11 +143,11 @@ class QueryBuilderReuseTest extends DriverTestCase
 
     public function testMultipleGroupByQueryIsReusable()
     {
-        $blog = Blog::select(['status', 'author_id'])->where('status', 'published');
+        $blog = Blog::where('status', 'published');
 
-        $first = $blog->groupBy('status', 'author_id')->get();
+        $first = $blog->select(['status', 'author_id'])->groupBy('status', 'author_id')->get();
 
-        $second = $blog->groupBy('author_id')->get();
+        $second = $blog->select(['author_id'])->groupBy('author_id')->get();
 
         $this->assertNotNull($first);
         $this->assertNotNull($second);
