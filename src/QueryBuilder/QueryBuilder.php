@@ -5,6 +5,8 @@ namespace JiJiHoHoCoCo\IchiORM\QueryBuilder;
 use PDO;
 use Exception;
 use ReflectionMethod;
+use ReflectionFunction;
+use Closure;
 use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 use JiJiHoHoCoCo\IchiORM\Observer\ObserverSubject;
 use JiJiHoHoCoCo\IchiORM\Pagination\Paginate;
