@@ -1677,73 +1677,72 @@ class QueryBuilder
 
     private function makeUnionQuery($value, $union)
     {
+        $query = $this;
         try {
-            if ($this->currentSubQueryNumber == null) {
-                $previousQuery = $this->getQuery();
-                $previousFields = $this->getFields();
-                $this->disableForSQL();
-                $uNumber = $this->currentUnionNumber;
-                $this->useUnionQuery[$uNumber] = false;
-                $this->unionNumber++;
+            if ($query->currentSubQueryNumber == null) {
+                $previousQuery = $query->getQuery();
+                $previousFields = $query->getFields();
+                $query->disableForSQL();
+                $uNumber = $query->currentUnionNumber;
+                $query->useUnionQuery[$uNumber] = false;
+                $query->unionNumber++;
                 $newUnionQuery = $value();
-                $newUnionFields = $this->getLastSQLFields();
+                $newUnionFields = $query->getLastSQLFields();
                 if ($newUnionQuery instanceof QueryBuilder) {
                     $newUnionFields = $newUnionQuery->getFields();
                     $newUnionQuery = $newUnionQuery->getQuery();
                 }
-                $this->fields = array_merge($previousFields, $newUnionFields);
-                $this->useUnionQuery[$uNumber] = true;
-                $this->currentUnionNumber = $uNumber;
-                $this->unableUnionQuery[$uNumber] = true;
-                $this->boot();
-                $this->unionQuery[$uNumber] = $previousQuery . $union . $newUnionQuery;
-                return $this;
+                $query->fields = array_merge($previousFields, $newUnionFields);
+                $query->useUnionQuery[$uNumber] = true;
+                $query->currentUnionNumber = $uNumber;
+                $query->unableUnionQuery[$uNumber] = true;
+                $query->boot();
+                $query->unionQuery[$uNumber] = $previousQuery . $union . $newUnionQuery;
+                return $query;
             }
-            if ($this->currentSubQueryNumber !== null) {
-                $currentQuery = $this->showCurrentSubQuery();
-                $currentField = $this->currentField;
-                $currentSubQueryNumber = $this->currentSubQueryNumber;
+            if ($query->currentSubQueryNumber !== null) {
+                $currentQuery = $query->showCurrentSubQuery();
+                $currentField = $query->currentField;
+                $currentSubQueryNumber = $query->currentSubQueryNumber;
                 if (
-                    isset($this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery']) &&
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] == true
+                    isset($query->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery']) &&
+                    $query->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] == true
                 ) {
                     throw new Exception("You are not allowed to use " . $union, 1);
                 }
 
-                $previousUnionQuery = isset($this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery']) ?
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] : null;
-                $previousField = $this->{$currentQuery}[$currentField . $currentSubQueryNumber];
+                $previousUnionQuery = isset($query->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery']) ?
+                    $query->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] : null;
+                $previousField = $query->{$currentQuery}[$currentField . $currentSubQueryNumber];
                 if ($previousUnionQuery == null) {
-                    $this->makeSubQuery($currentQuery);
-                    $previousQuery = $this->{$currentQuery}[$currentField];
-                    $query = $this;
+                    $query->makeSubQuery($currentQuery);
+                    $previousQuery = $query->{$currentQuery}[$currentField];
                     $query->setSubQuery($currentField, $currentQuery, false);
-                    $secondField = $this->currentField;
-                    $secondSubQueryKey = $secondField . $this->currentSubQueryNumber;
-                    $this->subQueries[$secondSubQueryKey] = $currentSubQueryNumber;
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = true;
+                    $secondField = $query->currentField;
+                    $secondSubQueryKey = $secondField . $query->currentSubQueryNumber;
+                    $query->subQueries[$secondSubQueryKey] = $currentSubQueryNumber;
+                    $query->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = true;
                     $result = $value($query);
                     if ($result instanceof self) {
                         $query = $result;
                     }
-                    if (!isset($this->{$currentQuery}[$secondField])) {
+                    if (!isset($query->{$currentQuery}[$secondField])) {
                         throw new Exception("Unable to build UNION sub query", 1);
                     }
-                    $secondQuery = $this->{$currentQuery}[$secondField];
-                    unset($this->{$currentQuery}[$secondField]);
-                    $this->currentField = $currentField;
-                    $this->currentSubQueryNumber = $currentSubQueryNumber;
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = $this->formatUnionQuery($previousQuery, $union, $secondQuery);
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = false;
-                    $this->{$currentQuery}[$currentField . $currentSubQueryNumber] = $this->makeSubQueryAttributes($previousField);
+                    $secondQuery = $query->{$currentQuery}[$secondField];
+                    unset($query->{$currentQuery}[$secondField]);
+                    $query->currentField = $currentField;
+                    $query->currentSubQueryNumber = $currentSubQueryNumber;
+                    $query->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unionQuery'] = $query->formatUnionQuery($previousQuery, $union, $secondQuery);
+                    $query->{$currentQuery}[$currentField . $currentSubQueryNumber . 'unableUnionQuery'] = false;
+                    $query->{$currentQuery}[$currentField . $currentSubQueryNumber] = $query->makeSubQueryAttributes($previousField);
                 }
                 if ($previousUnionQuery !== null) {
-                    $this->{$currentQuery}[$this->currentField . $this->currentSubQueryNumber . 'unableUnionQuery'] = true;
-                    $query = $this;
+                    $query->{$currentQuery}[$query->currentField . $query->currentSubQueryNumber . 'unableUnionQuery'] = true;
                     $query->setSubQuery($currentField, $currentQuery, false);
-                    $secondField = $this->currentField;
-                    $secondSubQueryKey = $secondField . $this->currentSubQueryNumber;
-                    $this->subQueries[$secondSubQueryKey] = $currentSubQueryNumber;
+                    $secondField = $query->currentField;
+                    $secondSubQueryKey = $secondField . $query->currentSubQueryNumber;
+                    $query->subQueries[$secondSubQueryKey] = $currentSubQueryNumber;
                     $result = $value($query);
                     if ($result instanceof self) {
                         $query = $result;
@@ -1762,36 +1761,8 @@ class QueryBuilder
             }
             return $query;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
         }
-    }
-
-    private function copySubQueryBuilder($query)
-    {
-        $this->where = $query->where;
-        $this->whereColumn = $query->whereColumn;
-        $this->orWhere = $query->orWhere;
-        $this->whereIn = $query->whereIn;
-        $this->whereNotIn = $query->whereNotIn;
-        $this->operators = $query->operators;
-        $this->order = $query->order;
-        $this->limit = $query->limit;
-        $this->offset = $query->offset;
-        $this->groupBy = $query->groupBy;
-        $this->joinSQL = $query->joinSQL;
-        $this->select = $query->select;
-        $this->addSelect = $query->addSelect;
-        $this->withTrashed = $query->withTrashed;
-        $this->addTrashed = $query->addTrashed;
-        $this->toSQL = $query->toSQL;
-        $this->currentField = $query->currentField;
-        $this->whereSubQuery = $query->whereSubQuery;
-        $this->subQuery = $query->subQuery;
-        $this->subQueries = $query->subQueries;
-        $this->selectedFields = $query->selectedFields;
-        $this->subQueryLimitNumber = $query->subQueryLimitNumber;
-        $this->whereKeyCounter = $query->whereKeyCounter;
-        $this->fields = $query->fields;
     }
 
     public function get()
