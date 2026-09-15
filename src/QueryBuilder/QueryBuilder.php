@@ -1688,7 +1688,13 @@ class QueryBuilder
             if ($query->currentSubQueryNumber == null) {
                 $previousQuery = $query->getQuery();
                 $previousFields = $query->getFields();
+                $table = $query->table;
+                $className = $query->className;
+                $getID = $query->getID;
                 $query->disableForSQL();
+                $query->table = $table;
+                $query->className = $className;
+                $query->getID = $getID;
                 $uNumber = $query->currentUnionNumber;
                 $query->useUnionQuery[$uNumber] = false;
                 $query->unionNumber++;
