@@ -1686,20 +1686,22 @@ class QueryBuilder
             if ($query->currentSubQueryNumber == null) {
                 $previousQuery = $query->getQuery();
                 $previousFields = $query->getFields();
+                $table = $query->table;
+                $className = $query->className;
                 $query->disableForSQL();
+                $query->table = $table;
+                $query->className = $className;
+                $query->boot();
                 $uNumber = $query->currentUnionNumber;
                 $query->useUnionQuery[$uNumber] = false;
                 $query->unionNumber++;
                 $result = $value($query);
                 if ($result instanceof self) {
                     $query = $result;
-                }
-
-                $newUnionFields = $query->getLastSQLFields();
-                if ($result instanceof self) {
-                    $newUnionFields = $result->getFields();
-                    $newUnionQuery = $result->getQuery();
+                    $newUnionFields = $query->getFields();
+                    $newUnionQuery = $query->getQuery();
                 } else {
+                    $newUnionFields = $query->getLastSQLFields();
                     $newUnionQuery = $result;
                 }
                 $query->fields = array_merge($previousFields, $newUnionFields);
