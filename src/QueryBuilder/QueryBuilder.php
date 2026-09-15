@@ -1686,30 +1686,23 @@ class QueryBuilder
             if ($query->currentSubQueryNumber == null) {
                 $previousQuery = $query->getQuery();
                 $previousFields = $query->getFields();
-                $table = $query->table;
-                $className = $query->className;
                 $query->disableForSQL();
-                $query->table = $table;
-                $query->className = $className;
-                $query->boot();
                 $uNumber = $query->currentUnionNumber;
                 $query->useUnionQuery[$uNumber] = false;
                 $query->unionNumber++;
                 $result = $value($query);
-                if ($result instanceof self) {
-                    $query = $result;
-                    $newUnionFields = $query->getFields();
-                    $newUnionQuery = $query->getQuery();
-                } else {
-                    $newUnionFields = $query->getLastSQLFields();
-                    $newUnionQuery = $result;
+                if (!$result instanceof self) {
+                    throw new Exception("Unable to build UNION query", 1);
                 }
+                $query = $result;
+                $newUnionQuery = $query->getQuery();
+                $newUnionFields = $query->getFields();
                 $query->fields = array_merge($previousFields, $newUnionFields);
                 $query->useUnionQuery[$uNumber] = true;
                 $query->currentUnionNumber = $uNumber;
                 $query->unableUnionQuery[$uNumber] = true;
-                $query->boot();
                 $query->unionQuery[$uNumber] = $previousQuery . $union . $newUnionQuery;
+                $query->boot();
                 return $query;
             }
             if ($query->currentSubQueryNumber !== null) {
@@ -1810,6 +1803,10 @@ class QueryBuilder
             }
             if ($query->currentSubQueryNumber !== null) {
                 $query->makeSubQuery($query->showCurrentSubQuery());
+                return $query;
+            }
+            if ($query->currentUnionNumber !== null && isset($query->useUnionQuery[$query->currentUnionNumber]) && $query->useUnionQuery[$query->currentUnionNumber] === false) {
+                $query->makeSQL();
                 return $query;
             }
         } catch (Exception $e) {
