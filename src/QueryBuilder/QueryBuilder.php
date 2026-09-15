@@ -1696,6 +1696,7 @@ class QueryBuilder
                 $query->table = $table;
                 $query->className = $className;
                 $query->getID = $getID;
+                $query->fields = [];
                 $uNumber = $query->currentUnionNumber;
                 $query->useUnionQuery[$uNumber] = false;
                 $query->unionNumber++;
