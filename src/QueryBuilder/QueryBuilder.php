@@ -119,7 +119,7 @@ class QueryBuilder
 
     public function withTrashed()
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber == null) {
@@ -235,7 +235,7 @@ class QueryBuilder
 
     public function groupBy(string $groupBy)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber == null) {
@@ -253,7 +253,7 @@ class QueryBuilder
 
     public function having(string $field, string $operator, $value)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber == null) {
@@ -660,7 +660,7 @@ class QueryBuilder
 
     public function delete()
     {
-        $query = $this;
+        $query = clone $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -685,7 +685,7 @@ class QueryBuilder
 
     public function forceDelete()
     {
-        $query = $this;
+        $query = clone $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -710,7 +710,7 @@ class QueryBuilder
 
     public function restore()
     {
-        $query = $this;
+        $query = clone $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -736,7 +736,7 @@ class QueryBuilder
 
     public function select(array $fields)
     {
-        $query = $this;
+        $query = clone $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -802,7 +802,7 @@ class QueryBuilder
 
     public function limit(int $limit)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber == null) {
@@ -821,7 +821,7 @@ class QueryBuilder
 
     public function offset(int $offset)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         $driver = $query->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
@@ -919,9 +919,9 @@ class QueryBuilder
 
     public function where(...$parameters)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
-        $query->makeWhereQuery($query->normalizeParameters($parameters), 'where');
+        $query = $query->makeWhereQuery($query->normalizeParameters($parameters), 'where');
         return $query;
     }
 
@@ -948,7 +948,7 @@ class QueryBuilder
 
     public function from(string $className)
     {
-        $query = $this;
+        $query = clone $this;
         try {
             $query->caller = getCallerInfo();
             checkClass($className);
@@ -993,17 +993,17 @@ class QueryBuilder
 
     public function whereColumn(...$parameters)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
-        $query->makeWhereQuery($query->normalizeParameters($parameters), 'whereColumn');
+        $query = $query->makeWhereQuery($query->normalizeParameters($parameters), 'whereColumn');
         return $query;
     }
 
     public function orWhere(...$parameters)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
-        $query->makeWhereQuery($query->normalizeParameters($parameters), 'orWhere');
+        $query = $query->makeWhereQuery($query->normalizeParameters($parameters), 'orWhere');
         return $query;
     }
 
@@ -1091,6 +1091,7 @@ class QueryBuilder
             } else {
                 throw new Exception("Invalid Argument Parameter", 1);
             }
+            return $this;
         } catch (Exception $e) {
             return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
         }
@@ -1136,6 +1137,7 @@ class QueryBuilder
                 $this->checkSubQueryUnionQuery($currentQuery);
                 $this->makeSubQueryInSubQuery($whereIn, $value, $field, $currentQuery);
             }
+            return $this;
         } catch (Exception $e) {
             return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
         }
@@ -1143,17 +1145,17 @@ class QueryBuilder
 
     public function whereIn(string $field, $value)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
-        $query->makeInQuery('whereIn', $field, $value);
+        $query = $query->makeInQuery('whereIn', $field, $value);
         return $query;
     }
 
     public function whereNotIn(string $field, $value)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
-        $query->makeInQuery('whereNotIn', $field, $value);
+        $query = $query->makeInQuery('whereNotIn', $field, $value);
         return $query;
     }
 
@@ -1468,7 +1470,7 @@ class QueryBuilder
 
     public function orderBy(string $field, string $sort = "ASC")
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber == null) {
@@ -1495,7 +1497,7 @@ class QueryBuilder
 
     public function latest(string $field = null)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber == null) {
@@ -1607,14 +1609,14 @@ class QueryBuilder
 
     public function union(callable $value)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
         return $query->makeUnionQuery($value, ' UNION ');
     }
 
     public function unionAll(callable $value)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
         return $query->makeUnionQuery($value, ' UNION ALL ');
     }
@@ -1751,7 +1753,7 @@ class QueryBuilder
 
     public function get()
     {
-        $query = $this;
+        $query = clone $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -2036,7 +2038,7 @@ class QueryBuilder
 
     public function toArray()
     {
-        $query = $this;
+        $query = clone $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -2063,7 +2065,7 @@ class QueryBuilder
 
     public function toSQL()
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
         $query->checkInstance();
         if ($query->currentSubQueryNumber !== null) {
@@ -2076,7 +2078,7 @@ class QueryBuilder
 
     public function addSelect(array $fields)
     {
-        $query = $this;
+        $query = clone $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -2117,7 +2119,7 @@ class QueryBuilder
 
     public function addOnlySelect(array $fields)
     {
-        $query = $this;
+        $query = clone $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -2156,7 +2158,7 @@ class QueryBuilder
 
     public function paginate(int $perPage = 10)
     {
-        $query = $this;
+        $query = clone $this;
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
@@ -2287,21 +2289,21 @@ class QueryBuilder
 
     public function innerJoin(...$parameters)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
         return $query->sqlJoin($query->normalizeParameters($parameters), ' INNER JOIN ');
     }
 
     public function leftJoin(...$parameters)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
         return $query->sqlJoin($query->normalizeParameters($parameters), ' LEFT JOIN ');
     }
 
     public function rightJoin(...$parameters)
     {
-        $query = $this;
+        $query = clone $this;
         $query->caller = getCallerInfo();
         return $query->sqlJoin($query->normalizeParameters($parameters), ' RIGHT JOIN ');
     }
