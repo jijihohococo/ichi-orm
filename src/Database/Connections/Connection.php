@@ -3,9 +3,8 @@
 namespace JiJiHoHoCoCo\IchiORM\Database\Connections;
 
 use JiJiHoHoCoCo\IchiORM\Database\Connections\DetectableDatabaseError;
-use PDO,
-
-Exception;
+use PDO;
+use Exception;
 
 abstract class Connection
 {

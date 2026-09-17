@@ -2,9 +2,8 @@
 
 namespace JiJiHoHoCoCo\IchiORM\Database\Connections;
 
-use PDO,
-
-Exception;
+use PDO;
+use Exception;
 
 class SQLServerConnection extends Connection
 {
