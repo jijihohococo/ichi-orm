@@ -6,9 +6,8 @@ use JiJiHoHoCoCo\IchiORM\Database\Connections\MySQLConnection;
 use JiJiHoHoCoCo\IchiORM\Database\Connections\PostgresSQLConnection;
 use JiJiHoHoCoCo\IchiORM\Database\Connections\SQLServerConnection;
 use JiJiHoHoCoCo\IchiORM\Database\Connections\SQLiteConnection;
-use PDO,
-
-Exception;
+use PDO;
+use Exception;
 
 class Connector
 {
