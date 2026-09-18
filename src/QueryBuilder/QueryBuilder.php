@@ -166,7 +166,7 @@ class QueryBuilder
 
     private function makeRestore()
     {
-        return "UPDATE " . $this->table . " SET deleted_at=NULL" . $this->getJoinSQL();
+        return "UPDATE " . $this->table . " SET deleted_at = NULL" . $this->getJoinSQL();
     }
 
     private function getSubQuerySelect($where)
