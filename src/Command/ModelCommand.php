@@ -60,6 +60,7 @@ class ModelCommand
         return "<?php
 
 namespace " . $this->getNamespace($defaultFolder) . ";
+
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
 class " . $createdFile . " extends Model
@@ -77,6 +78,7 @@ class " . $createdFile . " extends Model
         return "<?php
 
 namespace " . $this->getNamespace($defaultFolder) . ";
+
 use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 
 class " . $createdFile . " implements ModelObserver
@@ -116,6 +118,7 @@ class " . $createdFile . " implements ModelObserver
         return "<?php
 
 namespace " . $this->getNamespace($defaultFolder) . ";
+
 use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
 
 class " . $createdFile . " extends ResourceCollection
