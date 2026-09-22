@@ -1425,7 +1425,7 @@ class QueryBuilder
             $current = $this->{$where}[$this->currentField . $this->currentSubQueryNumber];
             if ($current['whereIn'] !== null && is_array($current['whereIn'])) {
                 foreach ($current['whereIn'] as $key => $value) {
-                    $check = i == 0 && $current['where'] == null && $current['whereColumn'] == null;
+                    $check = $i == 0 && $current['where'] == null && $current['whereColumn'] == null;
                     if (is_array($value) && !empty($value)) {
                         $in = addArray($value);
                         $condition = $this->getWhereInField($key) . ' IN (' . $in . ')';
