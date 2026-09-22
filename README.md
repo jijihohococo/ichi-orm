@@ -1304,6 +1304,7 @@ If you want to observe a custom function:
 ```php
 namespace App\Models;
 use JiJiHoHoCoCo\IchiORM\Database\Model;
+
 class Blog extends Model
 {
 
@@ -1380,6 +1381,7 @@ namespace App\Observers;
 use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 use App\Models\Blog;
 use App\Models\Author;
+
 class BlogObserver implements ModelObserver
 {
 
