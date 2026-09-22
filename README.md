@@ -1,6 +1,6 @@
 # Ichi ORM
 
-<p>Ichi ORM is aimed to be the fast performance and secure database ORM for PHP with simple usage.</p>
+<p>Ichi ORM aims to be a fast, secure database ORM for PHP that is simple to use.</p>
 
 ## License
 
@@ -62,9 +62,9 @@ composer require jijihohococo/ichi-orm
 
 ## Set up Database Connection
 
-This library can connect MySQL, Postgres and MS SQL Server.
+This library can connect to MySQL, PostgreSQL, Microsoft SQL Server and SQLite.
 
-Firstly, you need to declare your database driver like below.
+First, you need to declare your database driver as shown below.
 
 ```php
 
@@ -80,11 +80,11 @@ $connector->createConnection('mysql',[
 	'user_password' => 'user_password'
 ]);
 ```
-If you want to add another custom database connection, you can do just like that.
+If you want to add another custom database connection, you can do so as shown below.
 
-You must add dbname,host,user_name and user_password in your database connection. I recomend you to use "utf8mb4" for your database charset and "utf8mb4_unicode_ci" for your database collation.
+You must add dbname, host, user_name, and user_password to your database connection. We recommend using "utf8mb4" for the database charset and "utf8mb4_unicode_ci" for the database collation.
 
-<i>In defalt database connections, you don't need to add driver parameters but in your custom database connection you have to add driver parameters.</i>
+<i>For the default database connections, you do not need to specify the driver parameter. For custom database connections, you must specify it.</i>
 
 ```php
 $connector->addConnection('new_mysql_connection')->createConnection('new_mysql_connection',[
@@ -97,11 +97,11 @@ $connector->addConnection('new_mysql_connection')->createConnection('new_mysql_c
 	'user_password' => 'user_password'
 ]);
 ```
-Default database connections are 'mysql' , 'pgsql' and 'sqlsrv'.
+The default database connections are 'mysql', 'pgsql', 'sqlsrv' and 'sqlite'.
 
-Supported database drivers are 'mysql' , 'pgsql' and 'sqlsrv'.
+The supported database drivers are 'mysql', 'pgsql', 'sqlsrv' and 'sqlite'.
 
-After declaring database connection, you can select default database connection
+After declaring the database connection, you can select the default database connection.
 
 ```php
 $connector->selectConnection('mysql');
@@ -146,11 +146,11 @@ $connector->selectConnection('mysql');
 
 ## Table Structure
 
-If you have the column named "deleted_at", be sure that the column is NULLABLE column.
+If you have a column named "deleted_at", make sure that the column is nullable.
 
 ## Create Model From Commandline
 
-Firstly you need to created the file named "ichi" under your project folder and use the below code in this file
+First, create a file named "ichi" in your project folder and add the following code to it:
 
 ```php
 #!/usr/bin/env php
@@ -166,7 +166,7 @@ $modelCommand->run(__DIR__,$argv);
 
 ```
 
-And then you can create the model in your commandline
+You can then create a model from the command line:
 
 ```php
 
@@ -174,8 +174,7 @@ php ichi make:model Blog
 
 ```
 
-The default file folder is "app/Models". So after making command, the model you created will be in the this default file folder. If you want to change the default folder path, you can change it in your "ichi" file.
-
+The default model directory is "app/Models". After running the command, the model you created will be placed in this directory. If you want to change the default directory, you can change it in your "ichi" file.
 
 ```php
 
@@ -189,23 +188,25 @@ $modelCommand->run(__DIR__,$argv);
 
 In Ichi ORM, one model class which is extended <b>"JiJiHoHoCoCo\IchiORM\Database\Model"</b> abstract class is represented one table.
 
-In default, the table name of the model class will show according to the format below
+By default, the table name for a model class follows the format below:
 
 | Model     | Table       |
 |-----------|-------------|
 | Item      | items       |
 | OrderItem | order_items |
 
-If the above format is not suitable for the model class, you can customize in your model class
+If the default format is not suitable for your model class, you can customize the table name in your model class:
 
 ```php
 namespace App\Models;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
-class Blog extends Model{
+class Blog extends Model
+{
 	
-	protected function getTable(){
+	protected function getTable()
+	{
 		return "order_item_details";
 	}
 }
@@ -213,16 +214,18 @@ class Blog extends Model{
 
 ## Configuration Primary Key
 
-In default, the primary key for the table is represented "id". If you want to change that, you can customize in your model class
+By default, the primary key for the table is "id". If you want to change it, you can customize it in your model class:
 
 ```php
 namespace App\Models;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
-class Blog extends Model{
+class Blog extends Model
+{
 	
-	protected function getID(){
+	protected function getID()
+	{
 		return "blog_id";
 	}
 }
@@ -230,12 +233,15 @@ class Blog extends Model{
 
 ## CRUD
 
-Firstly, you need to extend Model Class from your class and declare your data fields as attributes in your model as shown as below.
+First, extend the Model class and declare your data fields as properties in your model, as shown below.
 
 ```php
 namespace App\Models;
+
 use JiJiHoHoCoCo\IchiORM\Database\Model;
-class Blog extends Model{
+
+class Blog extends Model
+{
 
 	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
@@ -244,7 +250,7 @@ class Blog extends Model{
 
 ### Create
 
-You can create the data as shown as below.
+You can create data as shown below.
 
 ```php
 
@@ -255,28 +261,28 @@ Blog::create([
 
 ```
 
-<b>It is your choice to add or not to add the nullable field data into array in "create" function.</b>
+<b>You can choose whether or not to include nullable fields in the array passed to the "create" function.</b>
 
-<b>If you have "created_at" data field, you don't need to add any data for that data field. Ichi ORM will automatically insert current date time for this data field. The data field must be in the format of timestamp or varchar.</b>
+<b>If you have a "created_at" field, you do not need to provide a value for it. Ichi ORM automatically inserts the current date and time. The field must use the timestamp or varchar format.</b>
 
-You can get the new model object after creating.
+You can get the new model object after creation.
 
 <b> App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => [deleted_at] => )</b>
 
 #### Disable Auto increment Id
 
-If you don't use auto increment id in your table you must write this function in your model class
+If your table does not use an auto-incrementing ID, you must define this function in your model class:
 
 ```php
 
-
-protected function autoIncrementId(){
-		return FALSE;
+protected function autoIncrementId()
+{
+	return FALSE;
 }
 
 ```
 
-And you must add your ID Values from your side manually like this
+You must then provide the ID value manually, as shown below:
 
 ```php
 
@@ -290,7 +296,7 @@ Blog::create([
 
 ### Insert Multiple Rows In One Query
 
-If you want to insert multiple rows in one query you can do according to below coding flow.
+If you want to insert multiple rows with one query, you can do so as shown below.
 
 ```php
 use App\Models\Blog;
@@ -309,60 +315,64 @@ Blog::insert($insertBlogs);
 
 ### Retrieve
 
-You can get your data by your primary key as shown as below.
+You can retrieve data by its primary key as shown below.
 
 ```php
 Blog::find(1);
 ```
 
-If you don't want to get your data by your primary key, you can do as shown as below.
+If you do not want to retrieve data by the primary key, you can use the following:
 
 ```php
 Blog::findBy('content','Content');
 ```
-<i>First Parameter is field name and second parameter is value.</i>
+<i>The first parameter is the field name, and the second parameter is the value.</i>
 
-<b>You can get only single object by using "find" and findBy" function.</b>
+<b>The "find" and "findBy" functions return only a single object.</b>
 
 #### Refers To
 
-If you have one to one relationship in your database (with foreign keys or without foreign keys), you can use "refersTo" function in child model class as shown as below. The function will output the single object.
+If you have a one-to-one relationship in your database, with or without foreign keys, you can use the "refersTo" function in the child model class as shown below. The function returns a single object.
 
-<b>You must add parent model name, the field that represent parent id into "refersTo" function if parent model's primary key is "id".</b>
+<b>If the parent model's primary key is "id", you must provide the parent model name and the field that represents the parent ID to the "refersTo" function.</b>
 
 ```php
 namespace App\Models;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
-class Blog extends Model{
+class Blog extends Model
+{
 
 	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
-	public function author(){
+	public function author()
+	{
 		return $this->refersTo('App\Models\Author','author_id');
 	}
 }
 ```
 
-<b>You must add parent model name, the field name that represent parent id and parent primary key field into "refersTo" function if parent model's primary key is not "id".</b>
+<b>If the parent model's primary key is not "id", you must provide the parent model name, the field that represents the parent ID, and the parent's primary key field to the "refersTo" function.</b>
 
 ```php
 namespace App\Models;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
-class Blog extends Model{
+class Blog extends Model
+{
 
 	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
-	public function author(){
+	public function author()
+	{
 		return $this->refersTo('App\Models\Author','author_id','authorID');
 	}
 }
 ```
 
-You can get parent data as single object in your controller or class.
+You can retrieve the parent data as a single object in your controller or class.
 
 ```php
 use App\Models\Blog;
@@ -372,13 +382,13 @@ $authorObject = $blogObject->author();
 $authorId = $authorObject->id;
 ```
 
-<b>You don't need to worry about null. It has null safety.</b>
+<b>You do not need to handle null values manually; the relationship function provides null safety.</b>
 
 #### Refers Many
 
-If you have one to many relationship in your database (with foreign keys or without foreign keys), you can use "refersMany" function in parent model class as shown as below. The function will output the object array.
+If you have a one-to-many relationship in your database, with or without foreign keys, you can use the "refersMany" function in the parent model class as shown below. The function returns an object array.
 
-<b>You must add child model name and the field name that represent parent id in child model into "refersMany" function if parent model's primary key is "id".</b>
+<b>If the parent model's primary key is "id", you must provide the child model name and the field that represents the parent ID in the child model to the "refersMany" function.</b>
 
 ```php
 namespace App\Models;
@@ -389,38 +399,41 @@ class Author extends Model
 {
     publilc $id,$name,$created_at,$updated_at,$deleted_at;
 
- 	public function blogs(){
+ 	public function blogs()
+	{
  		return $this->refersMany('App\Models\Blog','author_id')->get();
  	}
 }
 ```
 
-<b>You must add child model name, the field name that represent parent id in child model and parent primary key field into "refersMany" function if parent model's primary key is not "id".</b>
+<b>If the parent model's primary key is not "id", you must provide the child model name, the field that represents the parent ID in the child model, and the parent's primary key field to the "refersMany" function.</b>
 
 ```php
 namespace App\Models;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
-class Author extends Model{
+class Author extends Model
+{
  	
  	publilc $authorID,$name,$created_at,$updated_at,$deleted_at;
 
- 	public function blogs(){
+ 	public function blogs()
+	{
  		return $this->refersMany('App\Models\Blog','author_id','authorID')->get();
  	}
 
 }
 ```
 
-You can customize the child query
+You can customize the child query:
 
 ```php
 return $this->refersMany('App\Models\Blog','author_id','authorID')->latest()->get();
 ```
 
 
-You can get child data as object array in your controller or class.
+You can retrieve child data as an object array in your controller or class.
 
 ```php
 use App\Models\Author;
@@ -432,7 +445,7 @@ $blogs = $authorObject->blogs();
 
 ### Update
 
-You can update your data as shown as below.
+You can update your data as shown below.
 
 ```php
 Blog::find(1)->update([
@@ -440,15 +453,15 @@ Blog::find(1)->update([
 ]);
 ```
 
-You can get the model object after updating
+You can get the model object after updating.
 
-<b>If you have "updated_at" data field, you don't need to add any data for that data field. Ichi ORM will automatically insert current date time for this data field. The data field must be in the format of timestamp or varchar.</b>
+<b>If you have an "updated_at" field, you do not need to provide a value for it. Ichi ORM automatically inserts the current date and time. The field must use the timestamp or varchar format.</b>
 
 <b> App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => New Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:03:26 [deleted_at] => )</b>
 
 ### Update Multiple Rows In One Query
 
-If you want to update multiple rows in one query you can do according to below coding flow.
+If you want to update multiple rows with one query, you can do so as shown below.
 
 ```php
 use App\Models\Blog;
@@ -469,22 +482,22 @@ Blog::bulkUpdate($updateBlogs);
 
 ### Delete
 
-You can delete your data as shown as below.
+You can delete your data as shown below.
 
 ```php
 Blog::find(1)->delete();
 ```
-If you have "deleted_at" data field and "deleted_at" data field is nullable, you have soft delete function. So, the data will not actually delete after deleting but this data will not be shown in querying in default.
+If you have a nullable "deleted_at" field, soft deletes are enabled. The data is not actually deleted; instead, it is excluded from queries by default.
 
-<i>Soft Delete Functions can't be used if you don't have "delete_at" data field and the data will be deleted.</i>
+<i>Soft deletes cannot be used if you do not have a "deleted_at" field; in that case, the data is permanently deleted.</i>
 
-If you want to restore your soft deleted data, you can do as shown as before.
+If you want to restore your soft-deleted data, you can do so as shown below.
 
 ```php
 Blog::find(1)->restore();
 ```
 
-If you want to force to delete your data (whatever it is able to be soft deleted or not), you can do as shown as before.
+If you want to permanently delete your data, whether or not it is configured for soft deletes, you can use the following:
 
 ```php
 Blog::find(1)->forceDelete();
@@ -494,7 +507,7 @@ Blog::find(1)->forceDelete();
 
 ### SELECT
 
-To make "SELECT" sql query, you can use "select" function as shown as below
+To build a "SELECT" SQL query, you can use the "select" function as shown below:
 
 ```php
 Blog::select(['id'])
@@ -514,16 +527,16 @@ Blog::select(['blogs.id','blogs.content'])
 
 ### Getting Query Data
 
-You can get your query data with "get()" and "toArray()" functions.
+You can retrieve query data using the "get()" and "toArray()" functions.
 
 #### Get
 
-"get()" function can use in main query and subquery. This function will return the object array of related model when it is used in main query as shown as below.
+The "get()" function can be used in both main queries and subqueries. When used in a main query, it returns an array of model objects, as shown below.
 
 
 <b>Array ( [0] => App\Models\Blog Object ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 [deleted_at] => ) )</b>
 
-<b>You can call relationship functions directly with the object in the loop because "get()" function outputs the object array</b>
+<b>You can call relationship functions directly on the objects in the loop because "get()" returns an object array.</b>
 
 ```php
 $blogs = Blog::select(['id','content'])->get();
@@ -534,7 +547,7 @@ foreach($blogs as $blog){
 }
 ```
 
-If you don't use select function, you will get all data fields of related model.
+If you do not use the "select" function, you will get all fields of the related model.
 
 ```php
 Blog::get();
@@ -542,13 +555,13 @@ Blog::get();
 
 #### To Array
 
-"toArray()" function can use in only main query. This function will return the array for thre query as shown as below.
+The "toArray()" function can only be used in the main query. It returns the query results as an array, as shown below.
 
 <b>Array ( [0] => Array ( [id] => 1 [author_id] => 1 [content] => Content [created_at] => 2021-10-01 12:02:26 [updated_at] => 2021-10-01 12:02:26 [deleted_at] => ) )</b>
 
-<b>You can't call relationship functions directly with the object in the loop because "toArray()" function outputs the array.</b>
+<b>You cannot call relationship functions directly on the objects in the loop because "toArray()" returns arrays.</b>
 
-<b>You can't use "toArray" function in subquery.</b>
+<b>You cannot use the "toArray()" function in a subquery.</b>
 
 ```php
 $blogs = Blog::select(['id','content'])->toArray();
@@ -557,14 +570,15 @@ foreach($blogs as $blog){
 	echo $blog['id'] . '<br>';
 }
 ```
-If you don't use select function, you will get all data fields of related model.
+
+If you do not use the "select" function, you will get all fields of the related model.
 
 ```php
 Blog::toArray();
 ```
 #### Get Query Data With Soft Deleted Data
 
-If you have soft deleted data rows, you can't see those in your array or data object array. If you want to see the array or data object array with soft deleted data rows, you must use "withTrashed()" function as shown as below.
+If you have soft-deleted rows, they are not included in your arrays or object arrays by default. To include soft-deleted rows, use the "withTrashed()" function as shown below.
 
 ```php
 Blog::withTrashed()->select(['id','content'])->get();
@@ -572,7 +586,7 @@ Blog::withTrashed()->select(['id','content'])->get();
 Blog::withTrashed()->select(['id','content'])->toArray();
 ```
 
-If you don't use select function, you will get all data fields of related model. You will also get soft deleted data rows if you use "withTrashed()" function.
+If you do not use the "select" function, you will get all fields of the related model. You will also get soft deleted data rows if you use "withTrashed()" function.
 
 ```php
 Blog::withTrashed()->get();
@@ -582,16 +596,16 @@ Blog::withTrashed()->toArray();
 
 ### LIMIT
 
-To make limit sql query, you can use "limit" function and put the integer into this function as shown as below
+To add a LIMIT clause to a SQL query, use the "limit" function and pass an integer to it, as shown below.
 
-In main query
+In a main query:
 ```php
 Blog::limit(1)->get();
 
 Blog::limit(1)->toArray();
 ```
 
-In subquery
+In subquery:
 ```php
 Blog::whereIn('id',function($query){
 	return $query->select(['id'])->limit(1)->get();
@@ -604,13 +618,14 @@ Blog::whereIn('id',function($query){
 
 ### WHERE
 
-To make "WHERE" sql query, you can use "where" function as shown as below
+To add a "WHERE" clause to a SQL query, use the "where" function as shown below:
 
-<i>In case of '='</i>
+<i>For the "=" operator:</i>
+
 ```php
 Blog::where('id',1)->get();
 ```
-<i>If you want to add operators</i>
+<i>To specify an operator:</i>
 
 ```php
 Blog::where('id','=',1)->get();
@@ -618,18 +633,17 @@ Blog::where('id','=',1)->get();
 Blog::where('content','like','%Content%')->get();
 ```
 
-
 ### OR WHERE
 
-To make "OR WHERE" sql query, you can use "orWhere" function as shown as below
+To add an "OR WHERE" clause to a SQL query, use the "orWhere" function as shown below:
 
+<i>For the "=" operator:</i>
 
-<i>In case of '=' </i>
 ```php
 Blog::where('id',1)->orWhere('content','Content')->get();
 ```
 
-<i>If you want to add operators</i>
+<i>To specify an operator:</i>
 
 ```php
 Blog::where('id',1)->orWhere('content','=','Content')->get();
@@ -639,7 +653,7 @@ Blog::where('id',1)->orWhere('content','like','%Content%')->get();
 
 ### WHERE IN
 
-To make "WHERE IN" sql query, you can use "whereIn" function as shown as below
+To add a "WHERE IN" clause to a SQL query, use the "whereIn" function as shown below:
 
 ```php
 Blog::whereIn('id',[1,2])->get();
@@ -648,7 +662,7 @@ Blog::whereIn('id',[1,2])->get();
 
 ### WHERE NOT IN
 
-To make "WHERE NOT IN" sql query, you can use "whereNotIn" function as shown as below
+To add a "WHERE NOT IN" clause to a SQL query, use the "whereNotIn" function as shown below:
 
 ```php
 Blog::whereNotIn('id',[1,2])->get();
@@ -656,18 +670,18 @@ Blog::whereNotIn('id',[1,2])->get();
 
 ### Join
 
-The rules and flows are same as SQL Join.
+The syntax and behavior follow standard SQL JOIN syntax.
 
 #### Inner Join
 
-Single SQL Query
+Single SQL query:
 ```php
 Author::innerJoin('blogs','authors.id','=','blogs.author_id')
 ->select(['authors.*','blogs.id AS blog_id'])
 ->get();
 ```
 
-Subquery
+Subquery:
 ```php
 Blog::where('id',function($query){
 	return $query->from('App\Models\Author')
@@ -679,14 +693,14 @@ Blog::where('id',function($query){
 
 #### Left Join
 
-Single SQL Query
+Single SQL query:
 ```php
 Author::leftJoin('blogs','authors.id','=','blogs.author_id')
 ->select(['authors.*','blogs.id AS blog_id'])
 ->get();
 ```
 
-Subquery
+Subquery:
 ```php
 Blog::where('id',function($query){
 	return $query->from('App\Models\Author')
@@ -698,14 +712,14 @@ Blog::where('id',function($query){
 
 #### Right Join
 
-Single SQL Query
+Single SQL query:
 ```php
 Author::rightJoin('blogs','authors.id','=','blogs.author_id')
 ->select(['authors.*','blogs.id AS blog_id'])
 ->get();
 ```
 
-Subquery
+Subquery:
 ```php
 Blog::where('id',function($query){
 	return $query->from('App\Models\Author')
@@ -717,7 +731,7 @@ Blog::where('id',function($query){
 
 ### Union
 
-You can use "union" function in queries.
+You can use the "union" function in queries.
 
 ```php
 Blog::where('id',1)->union(function(){
@@ -725,7 +739,7 @@ Blog::where('id',1)->union(function(){
 })->get();
 ```
 
-You can use "union" function in subqueries.
+You can also use the "union" function in subqueries.
 
 ```php
 Blog::whereIn('id', function($query) {
@@ -737,14 +751,14 @@ Blog::whereIn('id', function($query) {
 
 ### Pagination
 
-In this library, you can use two types of pagination.
+This library supports two types of pagination:
 
 1. Database Pagination
 2. Array Pagination
 
-The default paginated data per page is 10. You can customize that number.
-Pagination functions will output the array according to the below format.
-So, you can use server pagination into your frontend (like Vue and React) with that array data.
+The default number of items per page is 10. You can customize this number.
+The pagination functions return an array in the following format.
+You can use this array data for server-side pagination in your frontend application, such as Vue or React.
 
 ```php
 [
@@ -765,17 +779,16 @@ So, you can use server pagination into your frontend (like Vue and React) with t
 
 #### Database Pagination
 
-You can paginate your query result like that
+You can paginate your query results as shown below:
 
 ```php
 $paginatedBlogs = Blog::whereIn('id',[1,2,3,4,5])->paginate();
 ```
-You can customize the number of paginated data by
-
+You can customize the number of items per page:
 ```php
 $paginatedBlogs = Blog::whereIn('id',[1,2,3,4,5])->paginate(12);
 ```
-You can get paginated data like below. The data in "data" array key is object array.
+You can access the paginated data as shown below. The value of the "data" key is an object array.
 
 ```php
 foreach($paginatedBlogs['data'] as $blog){
@@ -783,15 +796,15 @@ foreach($paginatedBlogs['data'] as $blog){
 	echo $blog->author()->name . '<br>';
 }
 ```
-<b>You can call relationship functions directly with the object in the loop.</b>
+<b>You can call relationship functions directly on the objects in the loop.</b>
 
-You can use pagination user interface in your frontend php file like
+You can use the pagination UI in your frontend PHP file as follows:
 
 ```php
 (new  JiJiHoHoCoCo\IchiORM\UI\Pagination)->paginate($paginatedBlogs);
 ```
 
-You can customize the pagination user interface color
+You can customize the pagination UI color:
 
 ```php
 (new JiJiHoHoCoCo\IchiORM\UI\Pagination)->paginate($paginatedBlogs,'#000000');
@@ -799,7 +812,7 @@ You can customize the pagination user interface color
 
 #### Array Pagination
 
-You can paginate your array like below.
+You can paginate an array as shown below.
 
 ```php
 use JiJiHoHoCoCo\IchiORM\Pagination\ArrayPagination;
@@ -810,51 +823,51 @@ $paginatedBlogs = (new ArrayPagination)->paginate($blogs);
 
 ```
 
-You can also use multidimensional array
+You can also use a multidimensional array:
 
 ```php
 use JiJiHoHoCoCo\IchiORM\Pagination\ArrayPagination;
 
 $blogs = [
-			[
-				'content' => 'Blog One',
-				'author_name' => 'John Doe'
-			],
-			[
-				'content' => 'Blog Two',
-				'author_name' => 'Joe Blow'
-			],
-			[
-				'content' => 'Blog Three',
-				'author_name' => 'Everyman'
-			],
-			[
-				'content' => 'Blog Four',
-				'author_name' => 'John Doe'
-			],
-			[
-				'content' => 'Blog Five',
-				'author_name' => 'John Doe'
-			]
-		];
+	[
+		'content' => 'Blog One',
+		'author_name' => 'John Doe'
+	],
+	[
+		'content' => 'Blog Two',
+		'author_name' => 'Joe Blow'
+	],
+	[
+		'content' => 'Blog Three',
+		'author_name' => 'Everyman'
+	],
+	[
+		'content' => 'Blog Four',
+		'author_name' => 'John Doe'
+	],
+	[
+		'content' => 'Blog Five',
+		'author_name' => 'John Doe'
+	]
+];
 
 $paginatedBlogs = (new ArrayPagination)->paginate($blogs);
 
 ```
 
-You can customize the number of paginated data by
+You can customize the number of items per page:
 
 ```php
 $paginatedBlogs = (new ArrayPagination)->paginate($blogs,2);
 ```
 
-You can use pagination user interface in your frontend php file like
+You can use the pagination UI in your frontend PHP file as follows:
 
 ```php
 (new  JiJiHoHoCoCo\IchiORM\UI\Pagination)->paginate($paginatedBlogs);
 ```
 
-You can customize the pagination user interface color
+You can customize the pagination UI color:
 
 ```php
 (new JiJiHoHoCoCo\IchiORM\UI\Pagination)->paginate($paginatedBlogs,'#000000');
@@ -863,16 +876,17 @@ You can customize the pagination user interface color
 
 ### Subqueries
 
-If you want to use subquery within one table you can do as shown as before.
+If you want to use a subquery within the same table, you can do so as shown below.
 
-<i>You can use subqueries as shown as below in "where","orWhere" and "whereIn" functions.</i>
+<i>You can use subqueries in the "where", "orWhere", and "whereIn" functions as shown below.</i>
+
 ```php
 Blog::whereIn('author_id',function($query){
 return $query->select(['id'])->where('id',1)->get();
 })->get();
 ```
 
-If you want to use subquery from different table you can do as shown as before.
+If you want to use a subquery from a different table, you can do so as shown below.
 
 ```php
 Blog::whereIn('author_id',function($query){
@@ -882,13 +896,15 @@ Blog::whereIn('author_id',function($query){
 	->get();
 })->get();
 ```
-You can use "from" function in only subqueries. You need to add model class name which is represented the another table in "from" function.
+You can use the "from" function only in subqueries. You need to provide the model class name that represents the other table to the "from" function.
 
-If you want to use subquery in select, you can use "addSelect" and "addOnlySelect" functions.
+If you want to use a subquery in SELECT, you can use the "addSelect" and "addOnlySelect" functions.
 
-"addSelect" function is making subquery in select query.
-It will select the data within its function with the data from "select" function.
-If you don't use "select" function, it will select the data within its function with the data of all fields' values of selected table.
+The "addSelect" function adds a subquery to the SELECT query.
+
+It selects the data returned by its function in addition to the data selected by the "select" function.
+
+If you do not use the "select" function, it selects the data returned by its function in addition to all fields from the selected table.
 
 ```php
 Blog::select(['id','author_id'])
@@ -902,9 +918,9 @@ Blog::select(['id','author_id'])
 <b>You can't use "addSelect" function in subqueries</b>
 
 
-"addOnlySelect" function is making subquery in select query.
-It will select only the data within its function.
-You can't use other select functions("select" and "addSelect") if you want to use "addOnlySelect" function. 
+The "addOnlySelect" function adds a subquery to the SELECT query.
+It selects only the data returned by its function.
+You cannot use the other SELECT functions ("select" and "addSelect") when using "addOnlySelect".
 
 ```php
 Blog::addOnlySelect(['autor_name' => function($query){
@@ -918,16 +934,18 @@ Blog::addOnlySelect(['autor_name' => function($query){
 
 ## Using PDO Functions
 
-You can use PDO functions like that. You can use all PDO functions according to 
+You can use PDO functions as shown below. You can use all PDO functions provided by 
 https://www.php.net/manual/en/class.pdo.php
 
-<i>If you want to use default database connection with PDO object</i>
+<i>To use the default database connection with a PDO object:</i>
+
 ```php
 $pdo = connectPDO();
 
 ```
 
-<i>If you want to use selected database connection with PDO object</i>
+<i>To use the selected database connection with a PDO object:</i>
+
 ```php
 use JiJiHoHoCoCo\IchiORM\Database\Connector;
 
@@ -937,16 +955,19 @@ $pdo = Connector::getInstance()->executeConnect('new_mysql_connection');
 
 ## Using Different Databases
 
-If you have the model which is from different database you can connect like that
+If a model uses a different database connection, you can configure it as follows:
 
 ```php
 namespace App\Models;
 
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 use JiJiHoHoCoCo\IchiORM\Database\Connector;
-class Author extends Model{
 
-	protected function connectDatabase(){
+class Author extends Model
+{
+
+	protected function connectDatabase()
+	{
 		return Connector::getInstance()->executeConnect('new_mysql_connection');
 	}
 }
@@ -954,14 +975,14 @@ class Author extends Model{
 
 ## JSON Response
 
-When you want to do json data of for your API you can simply do as shown as below.
+When you want to return JSON data for your API, you can simply do the following:
 
 ```php
 return jsonResponse([
 	'blogs' => Blog::get()
 ]);
 ```
-You can customize http response code for json response. Default http response code is 200.
+You can customize the HTTP response code for a JSON response. The default HTTP response code is 200.
 
 ```php
 return jsonResponse([
@@ -969,17 +990,20 @@ return jsonResponse([
 ],202);
 ```
 
-If you want to customize your JSON data, firstly you need to create the class.
+If you want to customize your JSON data, first create a resource collection class.
 
 <i>You must extend "JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection" abstract class and declare "getSelectedResource()" function for your all resource collection classes.</i>
+
 ```php
 namespace App\Resources;
 
 use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
 
-class BlogResourceCollection extends ResourceCollection{
+class BlogResourceCollection extends ResourceCollection
+{
 	
-	public function getSelectedResource($data){
+	public function getSelectedResource($data)
+	{
 		return [
 			'id' => $data->id,
 			'author_id' => $data->author_id,
@@ -1010,35 +1034,36 @@ $modelCommand->run(__DIR__,$argv);
 
 ```
 
+You can then return your custom JSON resource as shown below.
 
+<b>For an object array:</b>
 
-
-And then, you can do to show to your custom JSON Resource as shown as below.
-
-<b>For Object Array- </b>
 ```php
 return jsonResponse([
 	'blogs' => (new BlogResourceCollection)->collection( Blog::get() ) 
 ]);
 ```
 
-<b>For Single Object- </b>
+<b>For a single object:</b>
+
 ```php
 return jsonResponse([
 	'blog' => (new BlogResourceCollection)->singleCollection( Blog::find(1) )
 ]);
 ```
 
-You can declare your relationship in your resource collection class (For refers to and refers many).
+You can define relationships in your resource collection class (for both "refersTo" and "refersMany").
 
 ```php
 namespace App\Resources;
 
 use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
 
-class BlogResourceCollection extends ResourceCollection{
+class BlogResourceCollection extends ResourceCollection
+{
 	
-	public function getSelectedResource($data){
+	public function getSelectedResource($data)
+	{
 		return [
 			'id' => $data->id,
 			'author' => $data->author(),
@@ -1050,7 +1075,7 @@ class BlogResourceCollection extends ResourceCollection{
 }
 ```
 
-You can declare another resource collection (according to the data is single object or object array) in your resource collection class.
+You can use another resource collection in your resource collection class, depending on whether the related data is a single object or an object array.
 
 
 ```php
@@ -1059,9 +1084,11 @@ namespace App\Resources;
 use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
 use App\Resources\AuthorResourceCollection;
 
-class BlogResourceCollection extends ResourceCollection{
+class BlogResourceCollection extends ResourceCollection
+{
 	
-	public function getSelectedResource($data){
+	public function getSelectedResource($data)
+	{
 		return [
 			'id' => $data->id,
 			'author_id' => $data->author_id,
@@ -1079,9 +1106,11 @@ namespace App\Resources\AuthorResourceCollection;
 
 use JiJiHoHoCoCo\IchiORM\Resource\ResourceCollection;
 
-class AuthorResourceCollection extends ResourceCollection{
+class AuthorResourceCollection extends ResourceCollection
+{
 
-	public function getSelectedResource($data){
+	public function getSelectedResource($data)
+	{
 		return [
 			'id' => $data->id,
 			'name' => $data->name
@@ -1094,10 +1123,10 @@ class AuthorResourceCollection extends ResourceCollection{
 
 You can cache your query data with <a href="https://github.com/phpredis/phpredis">redis</a> or <a href="https://pecl.php.net/package/memcached">memcached</a> extensions in this library.
 
-Firstly, you need to pass the object of redis or memcached into the "JiJiHoHoCoCo\IchiORM\Cache\CacheModel" static function "setCacheObject" like below.
-
+First, pass the Redis or Memcached object to the "setCacheObject" static function of "JiJiHoHoCoCo\IchiORM\Cache\CacheModel", as shown below.
 
 <i>With Redis</i>
+
 ```php
 use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 use Redis;
@@ -1108,33 +1137,34 @@ CacheModel::setCacheObject($redis);
 ```
 
 <i>With Memcached</i>
+
 ```php
 use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 use Memcached;
+
 $memcached = new Memcached();
 $memcached->addServer('127.0.0.1',11211);
 CacheModel::setCacheObject($memcached);
 ```
 
-<b>It might be different of connecting the way of redis or memcached to each other according to the security and ports' availabilities. The important thing is you must pass the redis or memcached object into the "setCacheObject" static function of "JiJiHoHoCoCo\IchiORM\Cache\CacheModel".</b>
+<b>The connection method for Redis or Memcached may vary depending on your security requirements and available ports. The important point is that you must pass the Redis or Memcached object to the "setCacheObject" static function of "JiJiHoHoCoCo\IchiORM\Cache\CacheModel".</b>
 
-And then, you can call the cache functions to store and get.
+You can then use the cache functions to store and retrieve data.
 
 ```php
 use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 use App\Models\Blog;
 
 $blogs = CacheModel::remember('blogs',function(){
-		 	return  Blog::whereIn('author_id',[1,2,3])->get();
-		 },100);
+		return Blog::whereIn('author_id',[1,2,3])->get();
+	},100);
 ```
 
-In "remember" function you must declare the cached key name,and the stored query or data and expired time in seconds. Without adding expired time is also ok but it will save the data into the unlimited time. This function will store the data if the declared cached key is not in the cached server and get the cached data if the declared cached key is in the cached server.
+In the "remember" function, you must specify the cache key, the query or data to store, and the expiration time in seconds. The expiration time is optional; if you omit it, the data is stored indefinitely. If the specified key does not exist in the cache server, the function stores the data and returns it. If the key already exists, the function retrieves the cached data.
 
-<b>The default stored time is unlimited. So you must declare the stored time for your cached server</b>
+<b>The default expiration time is unlimited, so you should specify an expiration time when appropriate.</b>
 
-
-If you want to delete your cached key, you can do
+To delete a cached key, use:
 
 ```php
 use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
@@ -1142,17 +1172,17 @@ use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 CacheModel::remove('blogs');
 ```
 
-You can just save your data in your cache
+You can save data directly to the cache:
 
 ```php
 use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 
 $blogs = CacheModel::save('blogs',function(){
-		 	return  Blog::whereIn('author_id',[1,2,3])->get();
-		 },100);
+		return  Blog::whereIn('author_id',[1,2,3])->get();
+	},100);
 ```
 
-To get your cached data
+To retrieve cached data:
 
 ```php
 use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
@@ -1161,7 +1191,7 @@ $cachedBlogs = CacheModel::get('blogs');
 
 ```
 
-You can get back your redis object to implement the functions of redis extension.
+You can retrieve the Redis object and use the functions provided by the Redis extension.
 
 ```php
 use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
@@ -1169,7 +1199,7 @@ use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
 $redisObject = CacheModel::getRedis();
 ```
 
-You can also get back your memcached object to implement the functions of memcached.
+You can also retrieve the Memcached object and use the functions provided by Memcached.
 
 ```php
 use JiJiHoHoCoCo\IchiORM\Cache\CacheModel;
@@ -1181,32 +1211,39 @@ $memcachedObject = CacheModel::getMemcached();
 
 To make observers firstly you need to create the observer class which implements <b>"JiJiHoHoCoCo\IchiORM\Observer\ModelObserver"</b> interface.
 
-In this created class, you must declare the functions as shown as below.
+In this class, you must define the following functions:
 
 ```php
 namespace App\Observers;
 
 use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 use App\Models\Blog;
-class BlogObserver implements ModelObserver{
 
-	public function create($blog){
+class BlogObserver implements ModelObserver
+{
+
+	public function create($blog)
+	{
 		
 	}
 
-	public function update($blog){
+	public function update($blog)
+	{
 		
 	}
 
-	public function delete($blog){
+	public function delete($blog)
+	{
 
 	}
 
-	public function restore($blog){
+	public function restore($blog)
+	{
 
 	}
 
-	public function forceDelete($blog){
+	public function forceDelete($blog)
+	{
 
 	}
 
@@ -1214,11 +1251,11 @@ class BlogObserver implements ModelObserver{
 
 ```
 
-1. "create" function will load after creating the data of blog model.
-2. "update" function will load after updating the data of blog model.
-3. "delete" function will load after deleting the data of blog model.
-4. "restore" function will load after restoring the soft deleted data of blog model.
-5. "forceDelete" function will load after force deleting the data of blog model.
+1. The "create" function is called after creating the blog model data.
+2. The "update" function is called after updating the blog model data.
+3. The "delete" function is called after deleting the blog model data.
+4. The "restore" function is called after restoring the soft-deleted blog model data.
+5. The "forceDelete" function is called after permanently deleting the blog model data.
 
 You can create the observer via terminal after creating "ichi" file as we mentioned in [Create Model From Commandline](#create-model-from-commandline)
 
@@ -1228,7 +1265,7 @@ php ichi make:observer BlogObserver
 
 ```
 
-The default path for observer is "app/Observers". You can also change this in "ichi" file.
+The default directory for observers is "app/Observers". You can also change this in the "ichi" file.
 
 ```php
 
@@ -1252,24 +1289,28 @@ You can also add many observers for one model
 
 ```php
 use App\Models\Blog;
-use App\Observers\{BlogObserver,BlogDataObserver};
+use App\Observers\BlogObserver;
+use App\Observers\BlogDataObserver;
 
 Blog::observe(new BlogObserver);
 Blog::observe(new BlogDataObserver);
 ```
-The observers' functions will load sequetly.
+Observer functions are called sequentially.
 
-If you want to observe your custom function
+If you want to observe a custom function:
 
 <i>In model</i>
+
 ```php
 namespace App\Models;
 use JiJiHoHoCoCo\IchiORM\Database\Model;
-class Blog extends Model{
+class Blog extends Model
+{
 
 	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
-	public function customFunction(){
+	public function customFunction()
+	{
 		/*----- your business logic -----*/
 		
 		//--- Example to pass one parameter into observer function ---//
@@ -1282,34 +1323,44 @@ class Blog extends Model{
 ```
 
 <i>In observer</i>
+
 ```php
 namespace App\Observers;
 
 use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
 use App\Models\Blog;
-class BlogObserver implements ModelObserver{
 
-	public function customFunction($blog){
+class BlogObserver implements ModelObserver
+{
+
+	public function customFunction($blog)
+	{
 
 	}
 }
 ```
 
-If you need to pass multiple parameters in observer function.
+If you need to pass multiple parameters to an observer function:
 
 <i>In model</i>
+
 ```php
 namespace App\Models;
+
 use JiJiHoHoCoCo\IchiORM\Database\Model;
-class Blog extends Model{
+
+class Blog extends Model
+{
 
 	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
-	public function author(){
+	public function author()
+	{
 		return $this->refersTo('App\Models\Author','author_id');
 	}
 
-	public function customFunction(){
+	public function customFunction()
+	{
 		/*----- your business logic -----*/
 		
 		//--- Example to pass multiple parameter into observer function ---//
@@ -1322,14 +1373,18 @@ class Blog extends Model{
 
 ```
 <i>In observer</i>
+
 ```php
 namespace App\Observers;
 
 use JiJiHoHoCoCo\IchiORM\Observer\ModelObserver;
-use App\Models\{Blog,Author};
-class BlogObserver implements ModelObserver{
+use App\Models\Blog;
+use App\Models\Author;
+class BlogObserver implements ModelObserver
+{
 
-	public function customFunction($blog,$author){
+	public function customFunction($blog,$author)
+	{
 	
 	}
 }
