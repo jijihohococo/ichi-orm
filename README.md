@@ -1303,6 +1303,7 @@ If you want to observe a custom function:
 
 ```php
 namespace App\Models;
+
 use JiJiHoHoCoCo\IchiORM\Database\Model;
 
 class Blog extends Model
