@@ -160,7 +160,6 @@ require __DIR__.'/vendor/autoload.php';
 
 use JiJiHoHoCoCo\IchiORM\Command\ModelCommand;
 
-
 $modelCommand = new ModelCommand;
 $modelCommand->run(__DIR__,$argv);
 

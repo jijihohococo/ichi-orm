@@ -1,7 +1,9 @@
 <?php
 
-use JiJiHoHoCoCo\IchiORM\Database\{Connector, NullModel};
+use JiJiHoHoCoCo\IchiORM\Database\Connector;
+use JiJiHoHoCoCo\IchiORM\Database\NullModel;
 use JiJiHoHoCoCo\IchiORM\UI\ErrorPage;
+use Exception;
 
 if (!function_exists('connectPDO')) {
     function connectPDO()
@@ -219,7 +221,7 @@ if (!function_exists('checkClass')) {
                 throw new Exception($className . " is not exist", 1);
             }
             if (!is_subclass_of($className, 'JiJiHoHoCoCo\IchiORM\Database\Model')) {
-                throw new \Exception($className . " must extend JiJiHoHoCoCo\IchiORM\Database\Model", 1);
+                throw new Exception($className . " must extend JiJiHoHoCoCo\IchiORM\Database\Model", 1);
             }
         } catch (Exception $e) {
             return showErrorPage($e->getMessage());

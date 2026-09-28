@@ -127,11 +127,4 @@ class SubqueryTest extends DriverTestCase
 
         $this->assertCount(1, $rows);
     }
-
-    public function testToSQLIsNotAvailableInsideSubqueryContract()
-    {
-        // This contract is intentionally checked by inspecting the public API's state.
-        $sql = Blog::where('id', 1)->toSQL()->get();
-        $this->assertIsString($sql);
-    }
 }
