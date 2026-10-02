@@ -610,7 +610,7 @@ class QueryBuilder
                 $whereQuery = " WHERE " . $getID . " = ?";
                 $updatedBindValues[] = $idValue;
             } elseif ($this->where !== null || $this->whereColumn !== null || $this->whereIn !== null || $this->whereNotIn !== null) {
-                $whereQuery = $this->getWhere() . $this->getWhereColumn() . $this->getWhereIn() . $this->getWhereNotIn();
+                $whereQuery = $this->getWhere();
                 $fields = $this->getFields();
                 if (!empty($fields)) {
                     $updatedBindValues = array_merge($updatedBindValues, $fields);
@@ -1375,21 +1375,6 @@ class QueryBuilder
         return $string;
     }
 
-    private function getWhereColumn()
-    {
-        $string = null;
-        $i = 0;
-        if ($this->whereColumn !== null) {
-            foreach ($this->whereColumn as $uniqueKey => $value) {
-                $field = preg_replace('/__\d+$/', '', $uniqueKey);
-                $result = $field . $this->operators[$uniqueKey . 'whereColumn'] . $value;
-                $string .= $i == 0 && $this->where == null ? ' WHERE ' . $result : ' AND ' . $result;
-                $i++;
-            }
-        }
-        return $string;
-    }
-
     private function getSubQueryWhereColumn($where)
     {
         $string = null;
@@ -1472,29 +1457,6 @@ class QueryBuilder
         }
     }
 
-    private function getWhereIn()
-    {
-        $string = null;
-        $i = 0;
-        if ($this->whereIn !== null) {
-            foreach ($this->whereIn as $key => $value) {
-                $field = preg_replace('/__\d+$/', '', $key);
-                $check = $i == 0 && $this->where == null && $this->whereColumn == null;
-                if (is_array($value) && !empty($value)) {
-                    $in = addArray($value);
-                    $condition = $this->getWhereInField($field) . ' IN (' . $in . ')';
-                    $string .= $check ? ' WHERE ' . $condition . ' ' : ' AND ' . $condition . ' ';
-                } elseif ($value !== null && !is_array($value)) {
-                    $string .= $check ? ' WHERE ' . $field . ' IN ' . $value : ' AND ' . $field . ' IN ' . $value;
-                } else {
-                    $string .= $check ? $this->whereZero : $this->andZero;
-                }
-                $i++;
-            }
-        }
-        return $string;
-    }
-
     private function getSubQueryWhereIn($where)
     {
         $string = null;
@@ -1516,28 +1478,6 @@ class QueryBuilder
             } elseif ($current['whereIn'] !== null && !is_array($current['whereIn'])) {
                 $currentField = getCurrentField($this->subQueries, $this->currentField, $this->currentSubQueryNumber);
                 $string .= $current['where'] == null && $current['whereColumn'] == null ? ' WHERE ' . $currentField . ' IN ' . $current['whereIn'] . ' ' : ' AND ' . $currentField . ' IN ' . $current['whereIn'] . ' ';
-            }
-        }
-        return $string;
-    }
-
-    private function getWhereNotIn()
-    {
-        $string = null;
-        $i = 0;
-        if ($this->whereNotIn !== null) {
-            foreach ($this->whereNotIn as $key => $value) {
-                $field = preg_replace('/__\d+$/', '', $key);
-                $condition = $i == 0 && $this->where == null && $this->whereColumn == null && $this->whereIn == null;
-                if (is_array($value) && !empty($value)) {
-                    $in = addArray($value);
-                    $string .= $condition ? ' WHERE ' . $field . ' NOT IN (' . $in . ') ' : ' AND ' . $field . ' NOT IN (' . $in . ') ';
-                } elseif ($value !== null && !is_array($value)) {
-                    $string .= $condition ? ' WHERE ' . $field . ' NOT IN ' . $value : ' AND ' . $field . ' NOT IN ' . $value;
-                } else {
-                    $string .= $condition ? $this->whereZero : $this->andZero;
-                }
-                $i++;
             }
         }
         return $string;
@@ -2157,12 +2097,8 @@ class QueryBuilder
     private function getBaseSQL(string $baseSQL)
     {
         $where = $this->getWhere();
-        $whereColumn = $this->getWhereColumn();
-        $whereIn = $this->getWhereIn();
-        $whereNotIn = $this->getWhereNotIn();
-        $orWhere = $this->getOrWhere();
 
-        $baseSQL .= $where . $whereColumn . $whereIn . $whereNotIn . $orWhere;
+        $baseSQL .= $where;
         $trashed = $this->getTrashed();
         if ($trashed !== null) {
             $baseSQL .= $where !== null || $whereColumn !== null || $whereIn !== null || $whereNotIn !== null ? ' AND ' . $trashed : ' WHERE ' . $trashed;
