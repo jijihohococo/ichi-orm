@@ -1645,6 +1645,7 @@ class QueryBuilder
         $this->toSQL = false;
         $this->subQueryLimitNumber = 0;
         $this->whereKeyCounter = 0;
+        $this->whereOrder = [];
 
         $this->useUnionQuery = [0 => true];
         $this->unionQuery = [0 => null];
@@ -1869,6 +1870,7 @@ class QueryBuilder
             $query->boot();
 
             $mainSQL = $query->getQuery();
+            var_dump($mainSQL);
 
             if ($query->toSQL == true) {
                 $query->setLastSQLFields(

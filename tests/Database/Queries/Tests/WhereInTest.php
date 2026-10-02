@@ -23,7 +23,6 @@ class WhereInTest extends DriverTestCase
     public function testWhereInEmptyArrayProducesNoRows()
     {
         $rows = Blog::whereIn('id', [])->get();
-        var_dump(Blog::whereIn('id', [])->toSql()->get());
         $this->assertCount(0, $rows);
     }
 
