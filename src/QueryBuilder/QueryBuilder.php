@@ -2101,7 +2101,7 @@ class QueryBuilder
         $baseSQL .= $where;
         $trashed = $this->getTrashed();
         if ($trashed !== null) {
-            $baseSQL .= $where !== null || $whereColumn !== null || $whereIn !== null || $whereNotIn !== null ? ' AND ' . $trashed : ' WHERE ' . $trashed;
+            $baseSQL .= $where !== null ? ' AND ' . $trashed : ' WHERE ' . $trashed;
         }
         $baseSQL .= $this->getOrder() . $this->getGroupBy() . $this->getHaving() . $this->getLimit() . $this->getOffset();
         return $baseSQL;
