@@ -1334,7 +1334,7 @@ class QueryBuilder
                 if (isset($this->whereSubQuery[$uniqueKey . $type])) {
                     $string .= $prefix . $field . $operator . $value;
                 } else {
-                    $value = $this->where[$uniqueKey] === null ? 'NULL' : '?';
+                    $value = $value === null ? 'NULL' : '?';
                     $string .= $prefix . $field . $operator . $value;
                 }
             }
