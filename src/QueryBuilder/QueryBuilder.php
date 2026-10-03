@@ -600,12 +600,13 @@ class QueryBuilder
             $updatedFields = substr($updatedFields, 0, -1);
 
             $whereQuery = null;
+            $where = $this->getWhere();
 
             if ($idValue !== null && $idValue !== '') {
                 $whereQuery = " WHERE " . $getID . " = ?";
                 $updatedBindValues[] = $idValue;
-            } elseif ($this->where !== null || $this->whereColumn !== null || $this->whereIn !== null || $this->whereNotIn !== null) {
-                $whereQuery = $this->getWhere() . $this->getWhereColumn() . $this->getWhereIn() . $this->getWhereNotIn();
+            } elseif ($where !== null) {
+                $whereQuery = $where;
                 $fields = $this->getFields();
                 if (!empty($fields)) {
                     $updatedBindValues = array_merge($updatedBindValues, $fields);
@@ -1321,14 +1322,34 @@ class QueryBuilder
             $type = $condition['type'];
             $uniqueKey = $condition['key'];
             $field = preg_replace('/__\d+$/', '', $uniqueKey);
-            $prefix = $first ? '' : ($type === 'orWhere' || $type === 'orWhereIn' || $type === 'orWhereNotIn' ? ' OR ' : ' AND ');
-            if ($type === 'where') {
+            if ($first && ($type === 'orWhere' || $type === 'orWhereIn' || $type === 'orWhereNotIn' || $type === 'orWhereColumn')) {
+                throw new Exception("You can't use " . $type . " function before where function", 1);
+            }
+            $prefix = $first ? '' : ($type === 'orWhere' || $type === 'orWhereIn' || $type === 'orWhereNotIn' || $type === 'orWhereColumn' ? ' OR ' : ' AND ');
+            $value = $this->{$type}[$uniqueKey];
+            if ($type === 'where' || $type === 'orWhere') {
                 $operator = $this->operators[$uniqueKey . $type];
                 if (isset($this->whereSubQuery[$uniqueKey . $type])) {
-                    $string .= $prefix . $field . $operator . $this->where[$uniqueKey];
+                    $string .= $prefix . $field . $operator . $value;
                 } else {
                     $value = $this->where[$uniqueKey] === null ? 'NULL' : '?';
                     $string .= $prefix . $field . $operator . $value;
+                }
+            }
+            if ($type === 'whereColumn' || $type === 'orWhereColumn') {
+                $operator = $this->operators[$uniqueKey . $type];
+                $string .= $prefix . $field . $operator . $value;
+            }
+            if ($type === 'whereIn' || $type === 'whereNotIn' || $type === 'orWhereIn' || $type === 'orWhereNotIn') {
+                $operator = $type === 'whereIn' ? ' IN ' : ' NOT IN ';
+                if (is_array($value) && !empty($value)) {
+                    $in = addArray($value);
+                    $condition = $this->getWhereInField($field) . $operator . '(' . $in . ')';
+                    $string .= $prefix . $condition;
+                } elseif ($value !== null && !is_array($value)) {
+                    $string .= $prefix . $field . $operator . $value;
+                } else {
+                    $string .= $prefix . '1=0';
                 }
             }
             $first = false;
@@ -1336,47 +1357,20 @@ class QueryBuilder
         return $string;
     }
 
-    // private function getWhere()
+    // private function getWhereColumn()
     // {
     //     $string = null;
     //     $i = 0;
-    //     if ($this->where !== null) {
-    //         $string = ' WHERE ';
-
-    //         foreach ($this->where as $uniqueKey => $value) {
-    //             // Extract original field name from unique key (remove __counter suffix)
+    //     if ($this->whereColumn !== null) {
+    //         foreach ($this->whereColumn as $uniqueKey => $value) {
     //             $field = preg_replace('/__\d+$/', '', $uniqueKey);
-    //             $operator = $this->operators[$uniqueKey . 'where'];
-
-    //             if (isset($this->whereSubQuery[$uniqueKey . 'where'])) {
-    //                 $string .= $i == 0 ? $field . $operator . $value : ' AND ' . $field . $operator . $value;
-    //             } else {
-    //                 if ($value === null) {
-    //                     $string .= $i == 0 ? $field . $operator . 'NULL' : ' AND ' . $field . $operator . 'NULL';
-    //                 } else {
-    //                     $string .= $i == 0 ? $field . $operator . '?' : ' AND ' . $field . $operator . '?';
-    //                 }
-    //             }
+    //             $result = $field . $this->operators[$uniqueKey . 'whereColumn'] . $value;
+    //             $string .= $i == 0 && $this->where == null ? ' WHERE ' . $result : ' AND ' . $result;
     //             $i++;
     //         }
     //     }
     //     return $string;
     // }
-
-    private function getWhereColumn()
-    {
-        $string = null;
-        $i = 0;
-        if ($this->whereColumn !== null) {
-            foreach ($this->whereColumn as $uniqueKey => $value) {
-                $field = preg_replace('/__\d+$/', '', $uniqueKey);
-                $result = $field . $this->operators[$uniqueKey . 'whereColumn'] . $value;
-                $string .= $i == 0 && $this->where == null ? ' WHERE ' . $result : ' AND ' . $result;
-                $i++;
-            }
-        }
-        return $string;
-    }
 
     private function getSubQueryWhereColumn($where)
     {
@@ -1406,21 +1400,21 @@ class QueryBuilder
         return $string;
     }
 
-    private function getOrWhere()
-    {
-        $string = null;
-        if ($this->orWhere !== null) {
-            foreach ($this->orWhere as $uniqueKey => $value) {
-                $field = preg_replace('/__\d+$/', '', $uniqueKey);
-                if (isset($this->whereSubQuery[$uniqueKey . 'orWhere'])) {
-                    $string .= ' OR ' . $field . $this->operators[$uniqueKey . 'orWhere'] . $value;
-                } else {
-                    $string .= ' OR ' . $field . $this->operators[$uniqueKey . 'orWhere'] . '?';
-                }
-            }
-        }
-        return $string;
-    }
+    // private function getOrWhere()
+    // {
+    //     $string = null;
+    //     if ($this->orWhere !== null) {
+    //         foreach ($this->orWhere as $uniqueKey => $value) {
+    //             $field = preg_replace('/__\d+$/', '', $uniqueKey);
+    //             if (isset($this->whereSubQuery[$uniqueKey . 'orWhere'])) {
+    //                 $string .= ' OR ' . $field . $this->operators[$uniqueKey . 'orWhere'] . $value;
+    //             } else {
+    //                 $string .= ' OR ' . $field . $this->operators[$uniqueKey . 'orWhere'] . '?';
+    //             }
+    //         }
+    //     }
+    //     return $string;
+    // }
 
     private function getSubQueryOrWhere($where)
     {
@@ -1460,28 +1454,28 @@ class QueryBuilder
         }
     }
 
-    private function getWhereIn()
-    {
-        $string = null;
-        $i = 0;
-        if ($this->whereIn !== null) {
-            foreach ($this->whereIn as $key => $value) {
-                $field = preg_replace('/__\d+$/', '', $key);
-                $check = $i == 0 && $this->where == null && $this->whereColumn == null;
-                if (is_array($value) && !empty($value)) {
-                    $in = addArray($value);
-                    $condition = $this->getWhereInField($field) . ' IN (' . $in . ')';
-                    $string .= $check ? ' WHERE ' . $condition . ' ' : ' AND ' . $condition . ' ';
-                } elseif ($value !== null && !is_array($value)) {
-                    $string .= $check ? ' WHERE ' . $field . ' IN ' . $value : ' AND ' . $field . ' IN ' . $value;
-                } else {
-                    $string .= $check ? $this->whereZero : $this->andZero;
-                }
-                $i++;
-            }
-        }
-        return $string;
-    }
+    // private function getWhereIn()
+    // {
+    //     $string = null;
+    //     $i = 0;
+    //     if ($this->whereIn !== null) {
+    //         foreach ($this->whereIn as $key => $value) {
+    //             $field = preg_replace('/__\d+$/', '', $key);
+    //             $check = $i == 0 && $this->where == null && $this->whereColumn == null;
+    //             if (is_array($value) && !empty($value)) {
+    //                 $in = addArray($value);
+    //                 $condition = $this->getWhereInField($field) . ' IN (' . $in . ')';
+    //                 $string .= $check ? ' WHERE ' . $condition . ' ' : ' AND ' . $condition . ' ';
+    //             } elseif ($value !== null && !is_array($value)) {
+    //                 $string .= $check ? ' WHERE ' . $field . ' IN ' . $value : ' AND ' . $field . ' IN ' . $value;
+    //             } else {
+    //                 $string .= $check ? $this->whereZero : $this->andZero;
+    //             }
+    //             $i++;
+    //         }
+    //     }
+    //     return $string;
+    // }
 
     private function getSubQueryWhereIn($where)
     {
@@ -1509,27 +1503,27 @@ class QueryBuilder
         return $string;
     }
 
-    private function getWhereNotIn()
-    {
-        $string = null;
-        $i = 0;
-        if ($this->whereNotIn !== null) {
-            foreach ($this->whereNotIn as $key => $value) {
-                $field = preg_replace('/__\d+$/', '', $key);
-                $condition = $i == 0 && $this->where == null && $this->whereColumn == null && $this->whereIn == null;
-                if (is_array($value) && !empty($value)) {
-                    $in = addArray($value);
-                    $string .= $condition ? ' WHERE ' . $field . ' NOT IN (' . $in . ') ' : ' AND ' . $field . ' NOT IN (' . $in . ') ';
-                } elseif ($value !== null && !is_array($value)) {
-                    $string .= $condition ? ' WHERE ' . $field . ' NOT IN ' . $value : ' AND ' . $field . ' NOT IN ' . $value;
-                } else {
-                    $string .= $condition ? $this->whereZero : $this->andZero;
-                }
-                $i++;
-            }
-        }
-        return $string;
-    }
+    // private function getWhereNotIn()
+    // {
+    //     $string = null;
+    //     $i = 0;
+    //     if ($this->whereNotIn !== null) {
+    //         foreach ($this->whereNotIn as $key => $value) {
+    //             $field = preg_replace('/__\d+$/', '', $key);
+    //             $condition = $i == 0 && $this->where == null && $this->whereColumn == null && $this->whereIn == null;
+    //             if (is_array($value) && !empty($value)) {
+    //                 $in = addArray($value);
+    //                 $string .= $condition ? ' WHERE ' . $field . ' NOT IN (' . $in . ') ' : ' AND ' . $field . ' NOT IN (' . $in . ') ';
+    //             } elseif ($value !== null && !is_array($value)) {
+    //                 $string .= $condition ? ' WHERE ' . $field . ' NOT IN ' . $value : ' AND ' . $field . ' NOT IN ' . $value;
+    //             } else {
+    //                 $string .= $condition ? $this->whereZero : $this->andZero;
+    //             }
+    //             $i++;
+    //         }
+    //     }
+    //     return $string;
+    // }
 
     private function getSubQueryWhereNotIn($where)
     {
@@ -2144,15 +2138,11 @@ class QueryBuilder
     private function getBaseSQL(string $baseSQL)
     {
         $where = $this->getWhere();
-        $whereColumn = $this->getWhereColumn();
-        $whereIn = $this->getWhereIn();
-        $whereNotIn = $this->getWhereNotIn();
-        $orWhere = $this->getOrWhere();
 
-        $baseSQL .= $where . $whereColumn . $whereIn . $whereNotIn . $orWhere;
+        $baseSQL .= $where;
         $trashed = $this->getTrashed();
         if ($trashed !== null) {
-            $baseSQL .= $where !== null || $whereColumn !== null || $whereIn !== null || $whereNotIn !== null ? ' AND ' . $trashed : ' WHERE ' . $trashed;
+            $baseSQL .= $where !== null ? ' AND ' . $trashed : ' WHERE ' . $trashed;
         }
         $baseSQL .= $this->getOrder() . $this->getGroupBy() . $this->getHaving() . $this->getLimit() . $this->getOffset();
         return $baseSQL;
@@ -2357,9 +2347,6 @@ class QueryBuilder
 
             $selectData = $query->getSelect();
             $getWhere = $query->getWhere();
-            $getWhereIn = $query->getWhereIn();
-            $getWhereNotIn = $query->getWhereNotIn();
-            $getOrWhere = $query->getOrWhere();
             $getOrder = $query->getOrder();
             $getGroupBy = $query->getGroupBy();
             $getHaving = $query->getHaving();
@@ -2367,9 +2354,6 @@ class QueryBuilder
             $mainSQL = $query->checkUnion() ? $query->unionQuery[$query->currentUnionNumber] :
                 $selectData .
                 $getWhere .
-                $getWhereIn .
-                $getWhereNotIn .
-                $getOrWhere .
                 $getGroupBy .
                 $getHaving;
 
