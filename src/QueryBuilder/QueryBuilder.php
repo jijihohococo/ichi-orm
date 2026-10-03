@@ -1189,10 +1189,10 @@ class QueryBuilder
             if (is_callable($value) && $query->currentSubQueryNumber == null) {
                 $query->checkUnionQuery();
                 $query->boot();
-                $query->setSubQuery($field, $whereIn, $field);
-                $index = $query->whereKeyCounter - 1;
+                $index = $query->whereKeyCounter;
                 $uniqueKey = $query->currentField;
                 $query->addWhereOrder($whereIn, $uniqueKey, $index);
+                $query->setSubQuery($field, $whereIn, $field);
                 $subQueryKey = $query->currentField . $query->currentSubQueryNumber;
                 $query->subQueries[$subQueryKey] = $query->currentSubQueryNumber;
                 $result = $value($query);
