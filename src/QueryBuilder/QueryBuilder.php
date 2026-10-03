@@ -1331,6 +1331,7 @@ class QueryBuilder
                     $string .= $prefix . $field . $operator . $value;
                 }
             }
+            $first = false;
         }
         return $string;
     }
