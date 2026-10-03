@@ -1326,13 +1326,9 @@ class QueryBuilder
                 $operator = $this->operators[$uniqueKey . $type];
                 if (isset($this->whereSubQuery[$uniqueKey . $type])) {
                     $string .= $prefix . $field . $operator . $this->where[$uniqueKey];
-                    $string .= $first == true ? $field . $operator . $value : ' AND ' . $field . $operator . $value;
                 } else {
-                    if ($this->where[$uniqueKey] === null) {
-                        $string .= $prefix . $field . $operator . 'NULL';
-                    } else {
-                        $string .= $prefix . $field . $operator . '?';
-                    }
+                    $value = $this->where[$uniqueKey] === null ? 'NULL' : '?';
+                    $string .= $prefix . $field . $operator . $value;
                 }
             }
         }
