@@ -59,7 +59,16 @@ class QueryBuilder
     private $caller = [];
     private $calledClass;
     private $whereKeyCounter = 0;
+    private $whereOrder = [];
     private static $lastSQLFields = [];
+
+    private function addWhereOrder(string $type, string $key, int $index)
+    {
+        $this->whereOrder[$index] = [
+            'type' => $type,
+            'key' => $key,
+        ];
+    }
 
     private function setLastSQLFields(array $fields)
     {
@@ -910,13 +919,27 @@ class QueryBuilder
 
     private function setSubWhere($where, $value, $field, $operator, $whereSelect)
     {
-        $this->{$where}[$this->currentField . $this->currentSubQueryNumber][$whereSelect][$field] = $value;
-        $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['operators'][$field . $whereSelect] = makeOperator($operator);
+        $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
+        $this->{$where}[$subQueryKey][$whereSelect][$field] = $value;
+        $this->{$where}[$subQueryKey]['operators'][$field . $whereSelect] = makeOperator($operator);
+        $index = $this->{$where}[$subQueryKey]['whereKeyCounter']++;
+        $uniqueKey = $field . '__' . $index;
+        $this->{$where}[$subQueryKey]['whereOrder'][$index] = [
+            'type' => $whereSelect,
+            'key' => $uniqueKey,
+        ];
     }
 
     private function setSubWhereIn($where, $value, $field, $whereInSelect)
     {
-        $this->{$where}[$this->currentField . $this->currentSubQueryNumber][$whereInSelect][$field] = $value;
+        $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
+        $this->{$where}[$subQueryKey][$whereInSelect][$field] = $value;
+        $index = $this->{$where}[$subQueryKey]['whereKeyCounter']++;
+        $uniqueKey = $field . '__' . $index;
+        $this->{$where}[$subQueryKey]['whereOrder'][$index] = [
+            'type' => $whereInSelect,
+            'key' => $uniqueKey,
+        ];
     }
 
     private function makeDefaultSubQueryData()
@@ -1078,10 +1101,12 @@ class QueryBuilder
                     $query->boot();
 
                     // Create unique key for same field multiple times
-                    $uniqueKey = $field . '__' . $query->whereKeyCounter;
-                    $query->whereKeyCounter++;
+                    $index = $query->whereKeyCounter;
+                    $uniqueKey = $field . '__' . $index;
 
                     $query->{$where}[$uniqueKey] = $value;
+                    $query->addWhereOrder($where, $uniqueKey, $index);
+                    $query->whereKeyCounter++;
                     $query->operators[$uniqueKey . $where] = makeOperator($operator);
 
                     if ($value !== null && $where !== 'whereColumn') {
@@ -1093,6 +1118,13 @@ class QueryBuilder
                     $query->checkUnionQuery();
                     $query->boot();
                     $query->setSubQuery($field, $where);
+                    $index = $query->whereKeyCounter - 1;
+                    $uniqueKey = $query->currentField;
+                    $query->addWhereOrder(
+                        $where,
+                        $uniqueKey,
+                        $index
+                    );
                     $query->operators[$query->currentField . $where] = makeOperator($operator);
                     $subQueryKey = $query->currentField . $query->currentSubQueryNumber;
                     $query->subQueries[$subQueryKey] = $query->currentSubQueryNumber;
@@ -1143,6 +1175,10 @@ class QueryBuilder
                 $query->checkUnionQuery();
                 $query->boot();
                 $query->{$whereIn}[$field] = $value;
+                $index = $query->whereKeyCounter;
+                $uniqueKey = $field . '__' . $index;
+                $query->addWhereOrder($whereIn, $uniqueKey, $index);
+                $query->whereKeyCounter++;
                 if ($value !== null) {
                     $query->fields[] = $value;
                 }
@@ -1151,6 +1187,9 @@ class QueryBuilder
                 $query->checkUnionQuery();
                 $query->boot();
                 $query->setSubQuery($field, $whereIn, $field);
+                $index = $query->whereKeyCounter - 1;
+                $uniqueKey = $query->currentField;
+                $query->addWhereOrder($whereIn, $uniqueKey, $index);
                 $subQueryKey = $query->currentField . $query->currentSubQueryNumber;
                 $query->subQueries[$subQueryKey] = $query->currentSubQueryNumber;
                 $result = $value($query);
@@ -1270,32 +1309,62 @@ class QueryBuilder
         return $string;
     }
 
-    private function getWhere()
+    private function getWhereT()
     {
         $string = null;
-        $i = 0;
-        if ($this->where !== null) {
-            $string = ' WHERE ';
-
-            foreach ($this->where as $uniqueKey => $value) {
-                // Extract original field name from unique key (remove __counter suffix)
-                $field = preg_replace('/__\d+$/', '', $uniqueKey);
-                $operator = $this->operators[$uniqueKey . 'where'];
-
-                if (isset($this->whereSubQuery[$uniqueKey . 'where'])) {
-                    $string .= $i == 0 ? $field . $operator . $value : ' AND ' . $field . $operator . $value;
+        if (empty($this->whereOrder)) {
+            return $string;
+        }
+        $first = true;
+        $string = ' WHERE ';
+        foreach ($this->whereOrder as $condition) {
+            $type = $condition['type'];
+            $uniqueKey = $condition['key'];
+            $field = preg_replace('/__\d+$/', '', $uniqueKey);
+            $prefix = $first ? '' : ($type === 'orWhere' || $type === 'orWhereIn' || $type === 'orWhereNotIn' ? ' OR ' : ' AND ');
+            if ($type === 'where') {
+                $operator = $this->operators[$uniqueKey . $type];
+                if (isset($this->whereSubQuery[$uniqueKey . $type])) {
+                    $string .= $prefix . $field . $operator . $this->where[$uniqueKey];
+                    $string .= $first == true ? $field . $operator . $value : ' AND ' . $field . $operator . $value;
                 } else {
-                    if ($value === null) {
-                        $string .= $i == 0 ? $field . $operator . 'NULL' : ' AND ' . $field . $operator . 'NULL';
+                    if ($this->where[$uniqueKey] === null) {
+                        $string .= $prefix . $field . $operator . 'NULL';
                     } else {
-                        $string .= $i == 0 ? $field . $operator . '?' : ' AND ' . $field . $operator . '?';
+                        $string .= $prefix . $field . $operator . '?';
                     }
                 }
-                $i++;
             }
         }
         return $string;
     }
+
+    // private function getWhere()
+    // {
+    //     $string = null;
+    //     $i = 0;
+    //     if ($this->where !== null) {
+    //         $string = ' WHERE ';
+
+    //         foreach ($this->where as $uniqueKey => $value) {
+    //             // Extract original field name from unique key (remove __counter suffix)
+    //             $field = preg_replace('/__\d+$/', '', $uniqueKey);
+    //             $operator = $this->operators[$uniqueKey . 'where'];
+
+    //             if (isset($this->whereSubQuery[$uniqueKey . 'where'])) {
+    //                 $string .= $i == 0 ? $field . $operator . $value : ' AND ' . $field . $operator . $value;
+    //             } else {
+    //                 if ($value === null) {
+    //                     $string .= $i == 0 ? $field . $operator . 'NULL' : ' AND ' . $field . $operator . 'NULL';
+    //                 } else {
+    //                     $string .= $i == 0 ? $field . $operator . '?' : ' AND ' . $field . $operator . '?';
+    //                 }
+    //             }
+    //             $i++;
+    //         }
+    //     }
+    //     return $string;
+    // }
 
     private function getWhereColumn()
     {
