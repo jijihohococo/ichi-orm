@@ -3,7 +3,6 @@
 use JiJiHoHoCoCo\IchiORM\Database\Connector;
 use JiJiHoHoCoCo\IchiORM\Database\NullModel;
 use JiJiHoHoCoCo\IchiORM\UI\ErrorPage;
-use Exception;
 
 if (!function_exists('connectPDO')) {
     function connectPDO()
@@ -204,10 +203,10 @@ if (!function_exists('checkObserverFunctions')) {
             $functions = ['create', 'update', 'delete', 'restore', 'forceDelete'];
             foreach ($functions as $function) {
                 if (!method_exists($modelObserver, $function)) {
-                    throw new Exception("Observer class must have create,update,delete,restore and forceDelete functions", 1);
+                    throw new \Exception("Observer class must have create,update,delete,restore and forceDelete functions", 1);
                 }
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return showErrorPage($e->getMessage());
         }
     }
@@ -218,12 +217,12 @@ if (!function_exists('checkClass')) {
     {
         try {
             if (!class_exists($className)) {
-                throw new Exception($className . " is not exist", 1);
+                throw new \Exception($className . " is not exist", 1);
             }
             if (!is_subclass_of($className, 'JiJiHoHoCoCo\IchiORM\Database\Model')) {
-                throw new Exception($className . " must extend JiJiHoHoCoCo\IchiORM\Database\Model", 1);
+                throw new \Exception($className . " must extend JiJiHoHoCoCo\IchiORM\Database\Model", 1);
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return showErrorPage($e->getMessage());
         }
     }
@@ -299,7 +298,7 @@ if (!function_exists('checkDatabaseOperator')) {
     function checkDatabaseOperator(string $operator)
     {
         if (!in_array($operator, databaseOperators(), true)) {
-            throw new Exception("You can add only database operators in join function", 1);
+            throw new \Exception("You can add only database operators in join function", 1);
         }
     }
 }
