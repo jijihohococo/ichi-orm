@@ -901,6 +901,8 @@ class QueryBuilder
             'havingValue' => null,
             'selectQuery' => null,
             'alias' => $alias,
+            'whereKeyCounter' => 0,
+            'whereOrder' => [],
         ];
     }
 
