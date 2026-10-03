@@ -1469,7 +1469,7 @@ class QueryBuilder
                     } elseif ($value !== null) {
                         /*
                          * Subquery SQL.
-                         */    
+                         */
                         $string .= $prefix . $field . ' IN ' . $value;
                     } else {
                         /*
