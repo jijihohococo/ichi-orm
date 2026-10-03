@@ -2448,9 +2448,6 @@ class QueryBuilder
 
             $selectData = $query->getSelect();
             $getWhere = $query->getWhere();
-            $getWhereIn = $query->getWhereIn();
-            $getWhereNotIn = $query->getWhereNotIn();
-            $getOrWhere = $query->getOrWhere();
             $getOrder = $query->getOrder();
             $getGroupBy = $query->getGroupBy();
             $getHaving = $query->getHaving();
@@ -2458,9 +2455,6 @@ class QueryBuilder
             $mainSQL = $query->checkUnion() ? $query->unionQuery[$query->currentUnionNumber] :
                 $selectData .
                 $getWhere .
-                $getWhereIn .
-                $getWhereNotIn .
-                $getOrWhere .
                 $getGroupBy .
                 $getHaving;
 
