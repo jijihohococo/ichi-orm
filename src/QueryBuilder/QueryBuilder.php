@@ -1133,14 +1133,14 @@ class QueryBuilder
                 if (is_callable($value) && $query->currentSubQueryNumber == null) {
                     $query->checkUnionQuery();
                     $query->boot();
-                    $index = $query->getNextWhereIndex();
-                    $uniqueKey = $field . '__' . $index;
+                    $query->setSubQuery($field, $where);
+                    $index = $query->whereKeyCounter - 1;
+                    $uniqueKey = $query->currentField;
                     $query->addWhereOrder(
                         $where,
                         $uniqueKey,
                         $index
                     );
-                    $query->setSubQuery($field, $where);
                     $query->operators[$query->currentField . $where] = makeOperator($operator);
                     $subQueryKey = $query->currentField . $query->currentSubQueryNumber;
                     $query->subQueries[$subQueryKey] = $query->currentSubQueryNumber;
