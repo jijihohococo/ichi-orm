@@ -1133,6 +1133,13 @@ class QueryBuilder
                 if (is_callable($value) && $query->currentSubQueryNumber == null) {
                     $query->checkUnionQuery();
                     $query->boot();
+                    $index = $query->getNextWhereIndex();
+                    $uniqueKey = $field . '__' . $index;
+                    $query->addWhereOrder(
+                        $where,
+                        $uniqueKey,
+                        $index
+                    );
                     $query->setSubQuery($field, $where);
                     $query->operators[$query->currentField . $where] = makeOperator($operator);
                     $subQueryKey = $query->currentField . $query->currentSubQueryNumber;
@@ -1194,6 +1201,15 @@ class QueryBuilder
             if (is_callable($value) && $query->currentSubQueryNumber == null) {
                 $query->checkUnionQuery();
                 $query->boot();
+                $index = $query->getNextWhereIndex();
+                $uniqueKey = $field . '__' . $index;
+
+                $query->addWhereOrder(
+                    $whereIn,
+                    $uniqueKey,
+                    $index
+                );
+
                 $query->setSubQuery($field, $whereIn, $field);
                 $subQueryKey = $query->currentField . $query->currentSubQueryNumber;
                 $query->subQueries[$subQueryKey] = $query->currentSubQueryNumber;
@@ -1291,8 +1307,6 @@ class QueryBuilder
 
     private function getSubQueryWhere($where)
     {
-        $string = null;
-
         $subQueryKey = $this->currentField . $this->currentSubQueryNumber;
 
         if (!isset($this->{$where}[$subQueryKey])) {
@@ -1301,26 +1315,34 @@ class QueryBuilder
 
         $current = $this->{$where}[$subQueryKey];
 
+        /*
+         * Keep support for the existing scalar subquery condition.
+         */
+        if (empty($current['whereOrder']) && isset($current['where']) && $current['where'] !== null && !is_array($current['where'])) {
+            $currentField = getCurrentField($this->subQueries, $this->currentField, $this->currentSubQueryNumber);
+
+            return ' WHERE ' . $currentField . $current['operators'][$currentField . 'where'] . ' (' . $current['where'] . ') ';
+        }
+
         if (empty($current['whereOrder'])) {
             return null;
         }
 
         $string = ' WHERE ';
-        $i = 0;
+        $first = true;
 
         foreach ($current['whereOrder'] as $condition) {
             $type = $condition['type'];
-            $key = $condition['key'];
+            $uniqueKey = $condition['key'];
 
-            $field = preg_replace('/__\d+$/', '', $key);
+            $field = preg_replace('/__\d+$/', '', $uniqueKey);
 
-            $prefix = $i === 0
-                ? ''
-                : ($type === 'orWhere' ? ' OR ' : ' AND ');
+            $prefix = $first ? '' : ($type === 'orWhere' ? ' OR ' : ' AND ');
 
             if ($type === 'where' || $type === 'orWhere') {
-                $operator = $current['operators'][$key . $type];
-                $value = $current[$type][$key];
+                $operator = $current['operators'][$uniqueKey . $type];
+
+                $value = $current[$type][$uniqueKey];
 
                 if ($value === null) {
                     $string .= $prefix . $field . $operator . 'NULL';
@@ -1330,51 +1352,42 @@ class QueryBuilder
             }
 
             if ($type === 'whereColumn') {
-                $operator = $current['operators'][$key . 'whereColumn'];
-                $value = $current['whereColumn'][$key];
+                $operator = $current['operators'][$uniqueKey . 'whereColumn'];
+
+                $value = $current['whereColumn'][$uniqueKey];
 
                 $string .= $prefix . $field . $operator . $value;
             }
 
             if ($type === 'whereIn') {
-                $value = $current['whereIn'][$key];
+                $value = $current['whereIn'][$uniqueKey];
 
                 if (is_array($value) && !empty($value)) {
                     $in = addArray($value);
 
-                    $string .= $prefix
-                        . $this->getWhereInField($field)
-                        . ' IN (' . $in . ')';
+                    $string .= $prefix . $this->getWhereInField($field) . ' IN (' . $in . ')';
                 } elseif ($value !== null && !is_array($value)) {
-                    $string .= $prefix
-                        . $field
-                        . ' IN '
-                        . $value;
+                    $string .= $prefix . $field . ' IN ' . $value;
                 } else {
                     $string .= $prefix . '0 = 1';
                 }
             }
 
             if ($type === 'whereNotIn') {
-                $value = $current['whereNotIn'][$key];
+                $value = $current['whereNotIn'][$uniqueKey];
 
                 if (is_array($value) && !empty($value)) {
                     $in = addArray($value);
 
-                    $string .= $prefix
-                        . $field
-                        . ' NOT IN (' . $in . ')';
+                    $string .= $prefix . $field . ' NOT IN (' . $in . ')';
                 } elseif ($value !== null && !is_array($value)) {
-                    $string .= $prefix
-                        . $field
-                        . ' NOT IN '
-                        . $value;
+                    $string .= $prefix . $field . ' NOT IN ' . $value;
                 } else {
                     $string .= $prefix . '0 = 1';
                 }
             }
 
-            $i++;
+            $first = false;
         }
 
         return $string;
@@ -1382,8 +1395,10 @@ class QueryBuilder
 
     private function getWhere()
     {
+        $string = null;
+
         if (empty($this->whereOrder)) {
-            return null;
+            return $string;
         }
 
         $string = ' WHERE ';
@@ -1395,69 +1410,106 @@ class QueryBuilder
 
             $field = preg_replace('/__\d+$/', '', $uniqueKey);
 
-            $prefix = $first
-                ? ''
-                : ($type === 'orWhere' ? ' OR ' : ' AND ');
+            $prefix = $first ? '' : ($type === 'orWhere' ? ' OR ' : ' AND ');
 
+            /*
+             * where / orWhere
+             */
             if ($type === 'where' || $type === 'orWhere') {
-                $operator = $this->operators[$uniqueKey . $type];
-                $value = $this->{$type}[$uniqueKey];
+                /*
+                 * Normal value condition.
+                 */
+                if (isset($this->{$type}[$uniqueKey]) || array_key_exists($uniqueKey, $this->{$type})) {
+                    $value = $this->{$type}[$uniqueKey];
 
-                if (isset($this->whereSubQuery[$uniqueKey . $type])) {
-                    $string .= $prefix . $field . $operator . $value;
-                } elseif ($value === null) {
-                    $string .= $prefix . $field . $operator . 'NULL';
-                } else {
-                    $string .= $prefix . $field . $operator . '?';
+                    $operator = $this->operators[$uniqueKey . $type];
+
+                    if ($value === null) {
+                        $string .= $prefix . $field . $operator . 'NULL';
+                    } else {
+                        $string .= $prefix . $field . $operator . '?';
+                    }
                 }
             }
 
+            /*
+             * whereColumn
+             */
             if ($type === 'whereColumn') {
-                $operator = $this->operators[$uniqueKey . 'whereColumn'];
-                $value = $this->whereColumn[$uniqueKey];
+                if (isset($this->whereColumn[$uniqueKey]) || array_key_exists($uniqueKey, $this->whereColumn)) {
+                    $value = $this->whereColumn[$uniqueKey];
 
-                $string .= $prefix . $field . $operator . $value;
-            }
+                    $operator = $this->operators[$uniqueKey . 'whereColumn'];
 
-            if ($type === 'whereIn') {
-                $value = $this->whereIn[$uniqueKey];
-
-                if (is_array($value) && !empty($value)) {
-                    $in = addArray($value);
-
-                    $string .= $prefix .
-                        $this->getWhereInField($field) .
-                        ' IN (' . $in . ')';
-                } elseif ($value !== null && !is_array($value)) {
-                    $string .= $prefix .
-                        $field .
-                        ' IN ' .
-                        $value;
-                } else {
-                    $string .= $first
-                        ? $this->whereZero
-                        : $this->andZero;
+                    $string .= $prefix . $field . $operator . $value;
                 }
             }
 
+            /*
+             * whereIn
+             */
+            if ($type === 'whereIn') {
+                if (isset($this->whereIn[$uniqueKey]) || array_key_exists($uniqueKey, $this->whereIn)) {
+                    $value = $this->whereIn[$uniqueKey];
+
+                    /*
+                     * Array values.
+                     */
+                    if (is_array($value)) {
+                        if (!empty($value)) {
+                            $in = addArray($value);
+
+                            $string .= $prefix . $this->getWhereInField($field) . ' IN (' . $in . ')';
+                        } else {
+                            /*
+                             * Empty IN (...) must never be generated.
+                             */
+                            $string .= $prefix . '0 = 1';
+                        }
+                    } elseif ($value !== null) {
+                        /*
+                         * Subquery SQL.
+                         */    
+                        $string .= $prefix . $field . ' IN ' . $value;
+                    } else {
+                        /*
+                         * Null / invalid value.
+                         */
+                        $string .= $prefix . '0 = 1';
+                    }
+                }
+            }
+
+            /*
+             * whereNotIn
+             */
             if ($type === 'whereNotIn') {
-                $value = $this->whereNotIn[$uniqueKey];
+                if (isset($this->whereNotIn[$uniqueKey]) || array_key_exists($uniqueKey, $this->whereNotIn)) {
+                    $value = $this->whereNotIn[$uniqueKey];
 
-                if (is_array($value) && !empty($value)) {
-                    $in = addArray($value);
+                    /*
+                     * Array values.
+                     */
+                    if (is_array($value)) {
+                        if (!empty($value)) {
+                            $in = addArray($value);
 
-                    $string .= $prefix .
-                        $field .
-                        ' NOT IN (' . $in . ')';
-                } elseif ($value !== null && !is_array($value)) {
-                    $string .= $prefix .
-                        $field .
-                        ' NOT IN ' .
-                        $value;
-                } else {
-                    $string .= $first
-                        ? $this->whereZero
-                        : $this->andZero;
+                            $string .= $prefix . $field . ' NOT IN (' . $in . ')';
+                        } else {
+                            /*
+                             * Keep the current contract:
+                             * empty whereNotIn produces no rows.
+                             */
+                            $string .= $prefix . '0 = 1';
+                        }
+                    } elseif ($value !== null) {
+                        /*
+                         * Subquery SQL.
+                         */
+                        $string .= $prefix . $field . ' NOT IN ' . $value;
+                    } else {
+                        $string .= $prefix . '0 = 1';
+                    }
                 }
             }
 
