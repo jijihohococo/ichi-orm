@@ -1309,7 +1309,7 @@ class QueryBuilder
         return $string;
     }
 
-    private function getWhereT()
+    private function getWhere()
     {
         $string = null;
         if (empty($this->whereOrder)) {
