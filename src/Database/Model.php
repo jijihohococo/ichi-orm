@@ -159,6 +159,11 @@ abstract class Model
         return self::getQueryBuilder()->whereColumn(...$parameters);
     }
 
+    public static function orWhereColumn(...$parameters)
+    {
+        return self::getQueryBuilder()->orWhereColumn(...$parameters);
+    }
+
     public static function orWhere(...$parameters)
     {
         return self::getQueryBuilder()->orWhere(...$parameters);
@@ -169,9 +174,19 @@ abstract class Model
         return self::getQueryBuilder()->whereIn($field, $value);
     }
 
+    public static function orWhereIn(string $field, $value)
+    {
+        return self::getQueryBuilder()->orWhereIn($field, $value);
+    }
+
     public static function whereNotIn(string $field, $value)
     {
         return self::getQueryBuilder()->whereNotIn($field, $value);
+    }
+
+    public static function orWhereNotIn(string $field, $value)
+    {
+        return self::getQueryBuilder()->orWhereNotIn($field, $value);
     }
 
     public static function orderBy(string $field, string $sort = "ASC")

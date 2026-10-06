@@ -68,6 +68,21 @@ abstract class DriverTestCase extends TestCase
         $this->assertSame($expected, $actual);
     }
 
+    protected function getExpectedCastSql($sql)
+    {
+        return array_map(
+            function ($type) use ($sql) {
+                return sprintf($sql, $type);
+            },
+            [
+                'mysql'  => 'CHAR',
+                'pgsql'  => 'TEXT',
+                'sqlsrv' => 'VARCHAR(MAX)',
+                'sqlite' => 'TEXT',
+            ]
+        );
+    }
+
     public function setUp()
     {
         TestDatabase::begin();
