@@ -83,5 +83,5 @@ jobs:
           php tests/Database/Connections/SQLServer/test.charset_binary.php
           php tests/Database/Connections/SQLServer/test.charset_system.php
 
-      - name: Run SQL Server connection tests
+      - name: Run SQL Server query and ORM tests
         run: php tests/Database/Queries/run.php sqlsrv

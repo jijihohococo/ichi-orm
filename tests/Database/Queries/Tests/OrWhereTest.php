@@ -52,4 +52,20 @@ class OrWhereTest extends DriverTestCase
 
         $this->assertCount(3, $rows);
     }
+
+    public function testOrWhereFollowedByWhere()
+    {
+        $query = Blog::where('status', 'draft')
+            ->orWhere('status', 'published')
+            ->where('id', 1);
+
+        $expectedSQL = 'SELECT test_blogs.* FROM test_blogs WHERE status = ? OR status = ? AND id = ? AND test_blogs.deleted_at IS NULL';
+
+        $this->assertExactSql($query, [
+            'mysql' => $expectedSQL,
+            'pgsql' => $expectedSQL,
+            'sqlsrv' => $expectedSQL,
+            'sqlite' => $expectedSQL,
+        ]);
+    }
 }
