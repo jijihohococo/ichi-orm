@@ -321,14 +321,19 @@ class QueryBuilder
 
     private function makeSubQueryHaving($where, $field, $operator, $value)
     {
-        $current = $this->{$where}[$this->currentField . $this->currentSubQueryNumber];
-        if ($current['havingNumber'] == null) {
-            $current['havingNumber'] = 0;
+        $key = $this->currentField . $this->currentSubQueryNumber;
+
+        if ($this->{$where}[$key]['havingNumber'] === null) {
+            $this->{$where}[$key]['havingNumber'] = 0;
         }
-        $current['havingField'][$current['havingNumber']] = $field;
-        $current['havingOperator'][$current['havingNumber']] = $operator;
-        $current['havingValue'][$current['havingNumber']] = $value;
-        $current['havingNumber']++;
+
+        $number = $this->{$where}[$key]['havingNumber'];
+
+        $this->{$where}[$key]['havingField'][$number] = $field;
+        $this->{$where}[$key]['havingOperator'][$number] = $operator;
+        $this->{$where}[$key]['havingValue'][$number] = $value;
+
+        $this->{$where}[$key]['havingNumber']++;
     }
 
     private function makeSubQueryGroupBy($where, $groupBy)
@@ -1274,7 +1279,7 @@ class QueryBuilder
     {
         $driver = $this->connectDatabase()->getAttribute(PDO::ATTR_DRIVER_NAME);
         if ($driver === 'sqlsrv' && $this->offset !== null && $this->limit !== null) {
-            return $this->offset . 'FETCH NEXT ' . $this->limit . ' ROWS ONLY ';
+            return $this->offset . 'FETCH NEXT ' . $this->limit . ' ROWS ONLY';
         }
         return $this->offset;
     }
@@ -2043,7 +2048,7 @@ class QueryBuilder
         if ($trashed !== null) {
             $baseSQL .= $where !== null ? ' AND ' . $trashed : ' WHERE ' . $trashed;
         }
-        $baseSQL .= $this->getOrder() . $this->getGroupBy() . $this->getHaving() . $this->getLimit() . $this->getOffset();
+        $baseSQL .= $this->getGroupBy() . $this->getHaving() . $this->getOrder() . $this->getLimit() . $this->getOffset();
         return $baseSQL;
     }
 
@@ -2086,7 +2091,7 @@ class QueryBuilder
         if ($trashed !== null) {
             $result .= $subWhere !== null ? ' AND ' . $trashed : ' WHERE ' . $trashed;
         }
-        $result .= $this->getSubQueryOrder($where) . $this->getSubQueryGroupBy($where) . $this->getSubQueryHaving($where);
+        $result .= $this->getSubQueryGroupBy($where) . $this->getSubQueryHaving($where) . $this->getSubQueryOrder($where);
         if ($driver === 'sqlsrv' && $limit !== null && $offset === null) {
             return preg_replace('/^SELECT\s+/i', "SELECT TOP " . $limit . " ", $result);
         }

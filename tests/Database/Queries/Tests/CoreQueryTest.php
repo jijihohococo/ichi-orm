@@ -137,7 +137,7 @@ class CoreQueryTest extends DriverTestCase
         $this->assertExactSql($query, [
             'mysql' => $expectedSQL,
             'pgsql' => $expectedSQL,
-            'sqlsrv' => 'SELECT test_blogs.* FROM test_blogs WHERE test_blogs.deleted_at IS NULL ORDER BY id ASC OFFSET 2 ROWS FETCH NEXT 2 ROWS ONLY ',
+            'sqlsrv' => 'SELECT test_blogs.* FROM test_blogs WHERE test_blogs.deleted_at IS NULL ORDER BY id ASC OFFSET 2 ROWS FETCH NEXT 2 ROWS ONLY',
             'sqlite' => $expectedSQL,
         ]);
 
@@ -186,5 +186,41 @@ class CoreQueryTest extends DriverTestCase
 
         $this->assertCount(1, $rows);
         $this->assertSame(1000, (int) $rows[0]->total_views);
+    }
+
+    public function testGroupByHavingOrderByLimitOffsetInMainAndSubquery()
+    {
+        $query = Blog::select([
+            'author_id',
+            'COUNT(id) AS total_blogs',
+        ])
+            ->whereIn('author_id', function ($query) {
+                return $query
+                    ->select(['author_id'])
+                    ->where('status', 'published')
+                    ->groupBy(['author_id'])
+                    ->having('COUNT(id)', '>', 0)
+                    ->orderBy('author_id', 'ASC')
+                    ->limit(2)
+                    ->offset(1)
+                    ->get();
+            })
+            ->groupBy(['author_id'])
+            ->having('COUNT(id)', '>', 0)
+            ->orderBy('total_blogs', 'DESC')
+            ->limit(2)
+            ->offset(1);
+
+        $expectedSQL = 'SELECT author_id,COUNT(id) AS total_blogs FROM test_blogs WHERE author_id IN (SELECT * FROM (SELECT author_id FROM test_blogs WHERE status = ? AND test_blogs.deleted_at IS NULL GROUP BY author_id HAVING COUNT(id) > 0 ORDER BY author_id ASC LIMIT 2 OFFSET 1) AS l1) AND test_blogs.deleted_at IS NULL GROUP BY author_id HAVING COUNT(id) > 0 ORDER BY total_blogs DESC LIMIT 2 OFFSET 1';
+
+        $this->assertExactSql($query, [
+            'mysql' => $expectedSQL,
+            'pgsql' => $expectedSQL,
+            'sqlsrv' => 'SELECT author_id,COUNT(id) AS total_blogs FROM test_blogs WHERE author_id IN (SELECT * FROM (SELECT author_id FROM test_blogs WHERE status = ? AND test_blogs.deleted_at IS NULL GROUP BY author_id HAVING COUNT(id) > 0 ORDER BY author_id ASC OFFSET 1 ROWS FETCH NEXT 2 ROWS ONLY) AS l1) AND test_blogs.deleted_at IS NULL GROUP BY author_id HAVING COUNT(id) > 0 ORDER BY total_blogs DESC OFFSET 1 ROWS FETCH NEXT 2 ROWS ONLY',
+            'sqlite' => $expectedSQL,
+        ]);
+
+        $rows = $query->get();
+        $this->assertCount(1, $rows);
     }
 }
