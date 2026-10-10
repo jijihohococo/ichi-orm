@@ -246,7 +246,7 @@ use JiJiHoHoCoCo\IchiORM\Database\Model;
 class Blog extends Model
 {
 
-	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
+	public $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
 }
 ```
@@ -347,7 +347,7 @@ use JiJiHoHoCoCo\IchiORM\Database\Model;
 class Blog extends Model
 {
 
-	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
+	public $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
 	public function author()
 	{
@@ -366,7 +366,7 @@ use JiJiHoHoCoCo\IchiORM\Database\Model;
 class Blog extends Model
 {
 
-	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
+	public $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
 	public function author()
 	{
@@ -400,7 +400,7 @@ use JiJiHoHoCoCo\IchiORM\Database\Model;
 
 class Author extends Model
 {
-    publilc $id,$name,$created_at,$updated_at,$deleted_at;
+    public $id,$name,$created_at,$updated_at,$deleted_at;
 
  	public function blogs()
 	{
@@ -419,7 +419,7 @@ use JiJiHoHoCoCo\IchiORM\Database\Model;
 class Author extends Model
 {
  	
- 	publilc $authorID,$name,$created_at,$updated_at,$deleted_at;
+ 	public $authorID,$name,$created_at,$updated_at,$deleted_at;
 
  	public function blogs()
 	{
@@ -1399,7 +1399,7 @@ use JiJiHoHoCoCo\IchiORM\Database\Model;
 class Blog extends Model
 {
 
-	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
+	public $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
 	public function customFunction()
 	{
@@ -1444,7 +1444,7 @@ use JiJiHoHoCoCo\IchiORM\Database\Model;
 class Blog extends Model
 {
 
-	publilc $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
+	public $id,$author_id,$content,$created_at,$updated_at,$deleted_at;
 
 	public function author()
 	{
