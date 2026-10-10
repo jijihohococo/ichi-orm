@@ -37,8 +37,12 @@ This package is Open Source According to [MIT license](LICENSE.md)
 		- [LIMIT](#limit)
 		- [WHERE](#where)
 		- [OR WHERE](#or-where)
+		- [WHERE COLUMN](#where-column)
+		- [OR WHERE COLUMN](#or-where-column)
 		- [WHERE IN](#where-in)
+		- [OR WHERE IN](#or-where-in)
 		- [WHERE NOT IN](#where-not-in)
+		- [OR WHERE NOT IN](#or-where-not-in)
 		- [Join](#join)
 			- [Inner Join](#inner-join)
 			- [Left Join](#left-join)
@@ -650,6 +654,54 @@ Blog::where('id',1)->orWhere('content','=','Content')->get();
 Blog::where('id',1)->orWhere('content','like','%Content%')->get();
 ```
 
+### WHERE COLUMN
+
+To compare the values of two columns instead of comparing a column with a value, use the "whereColumn()" function.
+
+<i>For an equality comparison:</i>
+
+```php
+Blog::whereColumn('id', 'author_id')->get();
+```
+
+<i>You can also specify a comparison operator:</i>
+
+```php
+Blog::whereColumn('updated_at', '>', 'created_at')->get();
+```
+
+<i>You can use qualified column names when comparing columns from different tables:</i>
+
+```php
+Blog::whereColumn('blogs.author_id', 'authors.id')->get();
+```
+
+### OR WHERE COLUMN
+
+To compare two columns using an "OR" condition, use the "orWhereColumn()" function.
+
+```php
+Blog::whereColumn('id', 'author_id')
+    ->orWhereColumn('created_at', 'updated_at')
+    ->get();
+```
+
+<i>You can also specify a comparison operator:</i>
+
+```php
+Blog::whereColumn('updated_at', '>', 'created_at')
+    ->orWhereColumn('id', '>', 'author_id')
+    ->get();
+```
+
+<i>Qualified column names can also be used:</i>
+
+```php
+Blog::whereColumn('blogs.author_id', 'authors.id')
+    ->orWhereColumn('blogs.id', 'authors.blog_id')
+    ->get();
+```
+
 ### WHERE IN
 
 To add a "WHERE IN" clause to a SQL query, use the "whereIn" function as shown below:
@@ -658,6 +710,25 @@ To add a "WHERE IN" clause to a SQL query, use the "whereIn" function as shown b
 Blog::whereIn('id',[1,2])->get();
 ```
 
+### OR WHERE IN
+
+To add an "OR" condition that checks whether a column value matches any value in an array, use the "orWhereIn()" function.
+
+```php
+Blog::where('id', 1)
+    ->orWhereIn('id', [2, 3])
+    ->get();
+```
+
+<i>You can also use a subquery:</i>
+
+```php
+Blog::where('id', 1)
+    ->orWhereIn('author_id', function ($query) {
+        return $query->select(['id'])->where('id', 2)->get();
+    })
+    ->get();
+```
 
 ### WHERE NOT IN
 
@@ -665,6 +736,26 @@ To add a "WHERE NOT IN" clause to a SQL query, use the "whereNotIn" function as 
 
 ```php
 Blog::whereNotIn('id',[1,2])->get();
+```
+
+### OR WHERE NOT IN
+
+To add an "OR" condition that checks whether a column value does not match any value in an array, use the "orWhereNotIn()" function.
+
+```php
+Blog::where('id', 1)
+    ->orWhereNotIn('id', [2, 3])
+    ->get();
+```
+
+<i>You can also use a subquery:</i>
+
+```php
+Blog::where('id', 1)
+    ->orWhereNotIn('author_id', function ($query) {
+        return $query->select(['id'])->where('id', 2)->get();
+    })
+    ->get();
 ```
 
 ### Join

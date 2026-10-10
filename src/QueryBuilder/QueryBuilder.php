@@ -45,8 +45,6 @@ class QueryBuilder
     private $havingField;
     private $havingOperator;
     private $havingValue;
-    private $whereZero = ' WHERE 0 = 1 ';
-    private $andZero = ' AND 0 = 1 ';
     private $groupByString = ' GROUP BY ';
     private $selectQuery;
     protected $observerSubject;
