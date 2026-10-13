@@ -194,7 +194,7 @@ abstract class Model
         return self::getQueryBuilder()->orderBy($field, $sort);
     }
 
-    public static function latest(string $field = null)
+    public static function latest(?string $field = null)
     {
         return self::getQueryBuilder()->latest($field);
     }

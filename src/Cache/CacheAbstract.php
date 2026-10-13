@@ -8,7 +8,7 @@ abstract class CacheAbstract
 
     protected $cachedObject;
 
-    public function remember(string $key, $data, int $expiredTime = null)
+    public function remember(string $key, $data, ?int $expiredTime = null)
     {
         if ($this->cachedObject->get($key)) {
             return $this->get($key);
@@ -21,7 +21,7 @@ abstract class CacheAbstract
         }
     }
 
-    public function set(string $key, $data, int $expiredTime = null)
+    public function set(string $key, $data, ?int $expiredTime = null)
     {
         $serializedData = serialize($this->getData == false ? $this->getData($data) : $data);
         $this->cachedObject->set($key, $serializedData, $expiredTime);
