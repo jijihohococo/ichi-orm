@@ -1480,7 +1480,7 @@ class QueryBuilder
         $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['order'] = " ORDER BY " . $field . " " . $sort;
     }
 
-    public function latest(string $field = null)
+    public function latest(?string $field = null)
     {
         $query = clone $this;
         $query->caller = getCallerInfo();

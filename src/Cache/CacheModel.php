@@ -33,7 +33,7 @@ class CacheModel
         }
     }
 
-    public static function remember(string $key, $data, int $expiredTime = null)
+    public static function remember(string $key, $data, ?int $expiredTime = null)
     {
         try {
             self::$caller = getCallerInfo();
@@ -65,7 +65,7 @@ class CacheModel
         }
     }
 
-    public static function save(string $key, $data, int $expiredTime = null)
+    public static function save(string $key, $data, ?int $expiredTime = null)
     {
         try {
             self::$caller = getCallerInfo();
