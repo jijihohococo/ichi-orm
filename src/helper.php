@@ -207,7 +207,7 @@ if (!function_exists('checkObserverFunctions')) {
                 }
             }
         } catch (\Exception $e) {
-            return showErrorPage($e->getMessage());
+            return showExceptionPage($e->getMessage());
         }
     }
 }
@@ -223,7 +223,7 @@ if (!function_exists('checkClass')) {
                 throw new \Exception($className . " must extend JiJiHoHoCoCo\IchiORM\Database\Model", 1);
             }
         } catch (\Exception $e) {
-            return showErrorPage($e->getMessage());
+            return showExceptionPage($e->getMessage());
         }
     }
 }
@@ -235,8 +235,8 @@ if (!function_exists('makeOperator')) {
     }
 }
 
-if (!function_exists('showErrorPage')) {
-    function showErrorPage(string $message, int $code = 500)
+if (!function_exists('showExceptionPage')) {
+    function showExceptionPage(string $message, int $code = 500)
     {
         $headers = getallheaders();
         if (isset($headers['Content-Type']) && $headers['Content-Type'] == 'application/json') {

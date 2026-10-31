@@ -27,7 +27,7 @@ abstract class ResourceCollection
                 return $newArray;
             }
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo(self::$caller));
         }
     }
 
@@ -49,7 +49,7 @@ abstract class ResourceCollection
             }
             return $newArray;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo(self::$caller));
         }
     }
 }

@@ -29,7 +29,7 @@ class CacheModel
                 self::$memcached = new MemcachedCache($cacheObject);
             }
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo(self::$caller));
         }
     }
 
@@ -45,7 +45,7 @@ class CacheModel
             }
             throw new Exception("You need to set redis or memcached object firstly", 1);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo(self::$caller));
         }
     }
 
@@ -61,7 +61,7 @@ class CacheModel
             }
             throw new Exception("You need to set redis or memcached object firstly", 1);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo(self::$caller));
         }
     }
 
@@ -77,7 +77,7 @@ class CacheModel
             }
             throw new Exception("You need to set redis or memcached object firstly", 1);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo(self::$caller));
         }
     }
 
@@ -93,7 +93,7 @@ class CacheModel
             }
             throw new Exception("You need to set redis or memcached object firstly", 1);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo(self::$caller));
         }
     }
 
@@ -106,7 +106,7 @@ class CacheModel
             }
             throw new Exception("You need to set redis object firstly", 1);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo(self::$caller));
         }
     }
 
@@ -119,7 +119,7 @@ class CacheModel
             }
             throw new Exception("You need to set memcached object firstly", 1);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo(self::$caller));
         }
     }
 }

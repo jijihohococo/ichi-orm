@@ -216,7 +216,7 @@ class QueryBuilder
                 throw new Exception(showDuplicateModelMessage($this->getCalledClass(), $this->className), 1);
             }
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 
@@ -227,7 +227,7 @@ class QueryBuilder
                 throw new Exception("You are not allowed to use", 1);
             }
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 
@@ -241,7 +241,7 @@ class QueryBuilder
                 throw new Exception("You are not allowed to use", 1);
             }
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 
@@ -446,7 +446,7 @@ class QueryBuilder
             $stmt->execute();
             $this->disableBooting();
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 
@@ -502,7 +502,7 @@ class QueryBuilder
             $stmt->execute();
             $this->disableBooting();
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 
@@ -566,7 +566,7 @@ class QueryBuilder
 
             return $object;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 
@@ -641,7 +641,7 @@ class QueryBuilder
             $this->makeObserver((string) get_class($this), 'update', $object);
             return $object;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 
@@ -665,7 +665,7 @@ class QueryBuilder
             $this->disableBooting();
             return $object;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 
@@ -694,7 +694,7 @@ class QueryBuilder
             $this->disableBooting();
             return $object;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 
@@ -732,7 +732,7 @@ class QueryBuilder
                 $query->makeObserver((string) get_class($instance), 'delete', $instance);
             }
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -757,7 +757,7 @@ class QueryBuilder
                 $query->makeObserver((string) get_class($instance), 'delete', $instance);
             }
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -783,7 +783,7 @@ class QueryBuilder
                 $query->makeObserver((string) get_class($instance), 'restore', $instance);
             }
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -834,7 +834,7 @@ class QueryBuilder
             }
             return $query;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -1035,7 +1035,7 @@ class QueryBuilder
             }
             throw new Exception("You can use 'from' function in only sub queries", 1);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -1061,7 +1061,7 @@ class QueryBuilder
             $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['select'] = $table . '.*';
             $this->{$where}[$this->currentField . $this->currentSubQueryNumber]['className'] = $className;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 
@@ -1176,7 +1176,7 @@ class QueryBuilder
             }
             return $query;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -1228,7 +1228,7 @@ class QueryBuilder
             }
             return $query;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -1761,7 +1761,7 @@ class QueryBuilder
             }
             return $query;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -1856,7 +1856,7 @@ class QueryBuilder
 
             return $object;
         } catch (Exception $e) {
-            return showErrorPage(
+            return showExceptionPage(
                 $e->getMessage() .
                 showCallerInfo($query->caller)
             );
@@ -2125,7 +2125,7 @@ class QueryBuilder
             $query->select = $query->table = null;
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -2159,7 +2159,7 @@ class QueryBuilder
             }
             throw new Exception("You are not allow to use addSelect function in subquery", 1);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -2183,7 +2183,7 @@ class QueryBuilder
             }
             return $query;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 
@@ -2223,7 +2223,7 @@ class QueryBuilder
             }
             return $query;
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -2294,7 +2294,7 @@ class QueryBuilder
                 $objectArray
             );
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($query->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
     }
 
@@ -2387,7 +2387,7 @@ class QueryBuilder
             }
             throw new Exception("You need to pass correct parameters");
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 
@@ -2402,7 +2402,7 @@ class QueryBuilder
             $className = (string) $this->getCalledClass();
             $this->observerSubject->attach($className, $modelObserver);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($this->caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($this->caller));
         }
     }
 

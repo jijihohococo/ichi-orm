@@ -98,7 +98,7 @@ class Connector
                 self::$instance = $this;
             }
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo(self::$caller));
         }
     }
 
@@ -113,7 +113,7 @@ class Connector
                 self::$pdo = $this->pdos[$connection];
             }
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo(self::$caller));
         }
     }
 
@@ -136,7 +136,7 @@ class Connector
             }
             throw new Exception("Your database connection is unavailable", 1);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo(self::$caller));
         }
     }
 
