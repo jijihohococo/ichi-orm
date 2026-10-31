@@ -264,7 +264,7 @@ abstract class Model
             }
             throw new Exception($field . ' is not available', 1);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($caller));
         }
     }
 
@@ -279,7 +279,7 @@ abstract class Model
             }
             throw new Exception($referField . ' is not available', 1);
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo($caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo($caller));
         }
     }
 

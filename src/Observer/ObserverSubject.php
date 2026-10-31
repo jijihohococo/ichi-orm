@@ -36,7 +36,7 @@ class ObserverSubject
                 $reflectionMethod->invokeArgs($observer, is_array($parameters) ? $parameters : [$parameters]);
             }
         } catch (Exception $e) {
-            return showErrorPage($e->getMessage() . showCallerInfo(self::$caller));
+            return showExceptionPage($e->getMessage() . showCallerInfo(self::$caller));
         }
     }
 }
