@@ -208,4 +208,18 @@ class CrudTest extends DriverTestCase
         $this->assertNotNull($item);
         $this->assertSame('Manual ID item', TestDatabase::scalar('SELECT name FROM test_manual_items WHERE id = 5000'));
     }
+
+    public function testDeletePhysicallyDeletesModelWithoutSoftDeletes()
+    {
+        $item = ManualItem::find(5000);
+
+        $item->delete();
+
+        $this->assertSame(
+            0,
+            (int) TestDatabase::scalar(
+                'SELECT COUNT(*) FROM test_manual_items WHERE id = 5000'
+            )
+        );
+    }
 }

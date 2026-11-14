@@ -714,23 +714,46 @@ class QueryBuilder
     public function delete()
     {
         $query = clone $this;
+
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
+
             if ($query->currentSubQueryNumber !== null) {
                 throw new Exception("delete function can't be used in subquery");
             }
-            if ($query->currentSubQueryNumber == null) {
-                $query->boot();
-                $instance = $query;
+
+            $getID = $query->getID();
+            $idValue = isset($query->{$getID}) ? $query->{$getID} : null;
+
+            $query->boot();
+
+            $mainSQL = null;
+            $fields = [];
+
+            if ($idValue !== null && $idValue !== '') {
+                $checkTrash = property_exists($query->getCalledClass(), 'deleted_at');
+                $updateSQL = "UPDATE " . $query->table . " SET deleted_at='" . now() . "' WHERE " . $getID . " = ?";
+                $deleteSQL = "DELETE FROM " . $query->table . " WHERE " . $getID . " = ?";
+                $mainSQL = $checkTrash ? $updateSQL : $deleteSQL;
+                $fields = [$idValue];
+            } else {
+                $whereQuery = $query->getWhere();
+
+                if ($whereQuery === null) {
+                    throw new Exception("Model id or where condition is required for delete", 1);
+                }
+
                 $mainSQL = $query->deleteQuery();
                 $fields = $query->getFields();
-                $stmt = $instance->connectDatabase()->prepare($mainSQL);
-                bindValues($stmt, $fields);
-                $stmt->execute();
-                $query->disableBooting();
-                $query->makeObserver((string) get_class($instance), 'delete', $instance);
             }
+
+            $stmt = $query->connectDatabase()->prepare($mainSQL);
+            bindValues($stmt, $fields);
+            $stmt->execute();
+
+            $query->disableBooting();
+            $query->makeObserver((string) get_class($query), 'delete', $query);
         } catch (Exception $e) {
             return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
@@ -739,23 +762,40 @@ class QueryBuilder
     public function forceDelete()
     {
         $query = clone $this;
+
         try {
             $query->caller = getCallerInfo();
             $query->checkInstance();
+
             if ($query->currentSubQueryNumber !== null) {
                 throw new Exception("force delete function can't be used in subquery");
             }
-            if ($query->currentSubQueryNumber == null) {
-                $query->boot();
-                $instance = $query;
+
+            $query->boot();
+
+            $getID = $query->getID();
+            $idValue = isset($query->{$getID}) ? $query->{$getID} : null;
+
+            if ($idValue !== null && $idValue !== '') {
+                $mainSQL = "DELETE FROM " . $query->table . " WHERE " . $getID . " = ?";
+                $fields = [$idValue];
+            } else {
+                $whereQuery = $query->getWhere();
+
+                if ($whereQuery === null) {
+                    throw new Exception("Model id or where condition is required for force delete", 1);
+                }
+
                 $mainSQL = $query->forceDeleteQuery();
                 $fields = $query->getFields();
-                $stmt = $instance->connectDatabase()->prepare($mainSQL);
-                bindValues($stmt, $fields);
-                $stmt->execute();
-                $query->disableBooting();
-                $query->makeObserver((string) get_class($instance), 'delete', $instance);
             }
+
+            $stmt = $query->connectDatabase()->prepare($mainSQL);
+            bindValues($stmt, $fields);
+            $stmt->execute();
+
+            $query->disableBooting();
+            $query->makeObserver((string) get_class($query), 'delete', $query);
         } catch (Exception $e) {
             return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
@@ -770,18 +810,37 @@ class QueryBuilder
             if ($query->currentSubQueryNumber !== null) {
                 throw new Exception("restore function can't be used in subquery");
             }
-            if ($query->currentSubQueryNumber == null) {
-                $query->boot();
-                $query->withTrashed = true;
-                $instance = $query;
+
+            $query->boot();
+            $query->withTrashed = true;
+
+            if (!property_exists($query->getCalledClass(), 'deleted_at')) {
+                throw new Exception("This model does not support soft deletes");
+            }
+
+            $getID = $query->getID();
+            $idValue = isset($query->{$getID}) ? $query->{$getID} : null;
+
+            if ($idValue !== null && $idValue !== '') {
+                $mainSQL = "UPDATE " . $query->table . " SET deleted_at = NULL WHERE " . $getID . " = ?";
+                $fields = [$idValue];
+            } else {
+                $whereQuery = $query->getWhere();
+
+                if ($whereQuery === null) {
+                    throw new Exception("Model id or where condition is required for restore", 1);
+                }
+
                 $mainSQL = $query->restoreQuery();
                 $fields = $query->getFields();
-                $stmt = $instance->connectDatabase()->prepare($mainSQL);
-                bindValues($stmt, $fields);
-                $stmt->execute();
-                $query->disableBooting();
-                $query->makeObserver((string) get_class($instance), 'restore', $instance);
             }
+
+            $stmt = $query->connectDatabase()->prepare($mainSQL);
+            bindValues($stmt, $fields);
+            $stmt->execute();
+
+            $query->disableBooting();
+            $query->makeObserver((string) get_class($query), 'restore', $query);
         } catch (Exception $e) {
             return showExceptionPage($e->getMessage() . showCallerInfo($query->caller));
         }
