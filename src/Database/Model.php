@@ -113,19 +113,28 @@ abstract class Model
         return self::getQueryBuilder()->findBy($field, $value);
     }
 
-    public static function delete()
+    public function delete()
     {
-        self::getQueryBuilder()->delete();
+        $queryBuilder = self::getQueryBuilder();
+        $getID = $queryBuilder->getID();
+        $queryBuilder->{$getID} = $this->{$getID};
+        $queryBuilder->delete();
     }
 
-    public static function forceDelete()
+    public function forceDelete()
     {
-        self::getQueryBuilder()->forceDelete();
+        $queryBuilder = self::getQueryBuilder();
+        $getID = $queryBuilder->getID();
+        $queryBuilder->{$getID} = $this->{$getID};
+        $queryBuilder->forceDelete();
     }
 
     public function restore()
     {
-        self::getQueryBuilder()->restore();
+        $queryBuilder = self::getQueryBuilder();
+        $getID = $queryBuilder->getID();
+        $queryBuilder->{$getID} = $this->{$getID};
+        $queryBuilder->restore();
     }
 
 
