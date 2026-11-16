@@ -733,7 +733,7 @@ class QueryBuilder
 
             if ($idValue !== null && $idValue !== '') {
                 $checkTrash = property_exists($query->getCalledClass(), 'deleted_at');
-                $updateSQL = "UPDATE " . $query->table . " SET deleted_at='" . now() . "' WHERE " . $getID . " = ?";
+                $updateSQL = "UPDATE " . $query->table . " SET deleted_at = '" . now() . "' WHERE " . $getID . " = ?";
                 $deleteSQL = "DELETE FROM " . $query->table . " WHERE " . $getID . " = ?";
                 $mainSQL = $checkTrash ? $updateSQL : $deleteSQL;
                 $fields = [$idValue];
@@ -2117,7 +2117,7 @@ class QueryBuilder
     private function deleteSQL()
     {
         $checkTrash = property_exists($this->getCalledClass(), 'deleted_at');
-        $updateSQL = "UPDATE " . $this->table . " SET deleted_at='" . now() . "'";
+        $updateSQL = "UPDATE " . $this->table . " SET deleted_at = '" . now() . "'";
         $deleteSQL = $checkTrash ? $updateSQL : $this->makeDelete();
         return $this->getBaseSQL($deleteSQL);
     }
